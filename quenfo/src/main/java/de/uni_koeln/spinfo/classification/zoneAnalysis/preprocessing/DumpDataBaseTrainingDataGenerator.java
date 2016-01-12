@@ -1,0 +1,122 @@
+package de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
+import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.read.biff.BiffException;
+
+/**
+ * 
+ * @author geduldia
+ *
+ */
+
+public class DumpDataBaseTrainingDataGenerator {
+	
+	SingleToMultiClassConverter stmc;
+	List<JASCClassifyUnit> data = null;
+	File databaseFile;
+	int classID;
+	Map<ClassifyUnit, Integer> correctedData = new HashMap<ClassifyUnit, Integer>();
+	TrainingDataGenerator tdg;
+	
+	public DumpDataBaseTrainingDataGenerator(SingleToMultiClassConverter stmc, File databaseFile, int classID, File newTrainingDataFile) throws IOException{
+		this.stmc = stmc;	
+		this.databaseFile = databaseFile;
+		this.classID = classID;
+		if(!newTrainingDataFile.exists()){
+			newTrainingDataFile.createNewFile();
+		}
+		this.tdg = new TrainingDataGenerator(newTrainingDataFile);
+		//readClassifiedParagraphsFromFile();
+	}
+	
+	
+//	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
+//		if(data == null){
+//			data = new ArrayList<JASCClassifyUnit>();
+//			JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
+//			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(databaseFile)));
+//			String line = in.readLine();
+//			JASCClassifyUnit cu = null;
+//			StringBuffer sb = null;
+//			while (line != null) {
+//				if(line.startsWith("\"") && !(line.startsWith("\"\""))){
+//					if(cu != null){
+//						String content = sb.toString();
+//						content = content.substring(0, content.length()-2);
+//						content = content.replaceAll("\"\"", "\"");
+//						cu.setContent(content);	
+//						((JASCClassifyUnit) cu).setActualClassID(classID);
+//						data.add(cu);
+//					}
+//					cu = new JASCClassifyUnit("",-1);
+//					sb = new StringBuffer();
+//					sb.append(line.split("\";\"")[1]+"\n");
+//				}
+//				else{
+//					sb.append(line+"\n");
+//				}
+//				line = in.readLine();
+//			}
+//			in.close();
+//		}
+//	}
+	
+	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
+		data = new ArrayList<JASCClassifyUnit>();
+		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
+		
+		Workbook w;
+		try {
+			WorkbookSettings ws = new WorkbookSettings();
+			ws.setEncoding("UTF-8");
+			w = Workbook.getWorkbook(databaseFile, ws);
+			Sheet sheet = w.getSheet(0);
+			JASCClassifyUnit cu;
+			boolean[] classes;
+			for (int i = 1; i < sheet.getRows(); i++) {
+				classes = new boolean[4];
+				String content = sheet.getCell(5,i).getContents();
+				UUID id = UUID.fromString(sheet.getCell(2,i).getContents());
+				for(int column = 7; column <= 10; column++){
+					boolean b;
+					if(sheet.getCell(column,i).getContents().equals("0")){
+						b = false;
+					}
+					else{
+						b = true;
+					}
+					classes[column-7] = b;
+				}
+				int jahrgang = Integer.parseInt(sheet.getCell(3,i).getContents());
+				int zeilennr = Integer.parseInt(sheet.getCell(4,i).getContents());
+				cu = new JASCClassifyUnit(content, jahrgang, zeilennr, id);
+				cu.setClassIDs(classes);
+				data.add(cu);
+			}
+		}
+		catch(BiffException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void annotate() throws IOException{
+		tdg.annotate(data);
+	}
+
+}
