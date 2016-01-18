@@ -14,7 +14,16 @@ public class CompetenceUnit {
 	private DependencyTree tree;
 	private UUID classifyUnitID;
 	private int jobAdID;
+	private int secondJobAdID;
 	
+	public int getSecondJobAdID() {
+		return secondJobAdID;
+	}
+
+	public void setSecondJobAdID(int secondJobAdID) {
+		this.secondJobAdID = secondJobAdID;
+	}
+
 	public UUID getClassifyUnitID() {
 		return classifyUnitID;
 	}

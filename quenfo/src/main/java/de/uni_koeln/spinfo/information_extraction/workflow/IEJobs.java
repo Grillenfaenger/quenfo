@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.io.output.FileWriterWithEncoding;
+
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
@@ -94,6 +96,7 @@ public class IEJobs {
 	 * initializeCompetenceUnits) Ordnet jeder ClassifyUnit eine Liste ihrer
 	 * Sätze zu (potentielle CompetenceUnits)
 	 * 
+	 * 
 	 * @param classifyUnits
 	 * @return toReturn Map von ClassifyUnits (key) und Liste ihrer Sentences
 	 *         (value)
@@ -154,6 +157,7 @@ public class IEJobs {
 					CompetenceUnit compUnit = new CompetenceUnit();
 					compUnit.setSentence(sentence);
 					compUnit.setJobAdID(((JASCClassifyUnit) cu).getParentID());
+					compUnit.setSecondJobAdID(((JASCClassifyUnit) cu).getSecondParentID());
 					compUnit.setClassifyUnitID(cu.getID());
 					compUnit.setJobAdID(((JASCClassifyUnit) cu).getParentID());
 					toReturn.add(compUnit);
@@ -319,7 +323,8 @@ public class IEJobs {
 		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
 		for (CompetenceUnit compUnit : toWrite) {
 			out.write("ID: " + compUnit.getClassifyUnitID() + "\n");
-			out.write("JobAdID: "+ compUnit.getJobAdID()+"\n");
+			out.write("JobAdID: "+ compUnit.getJobAdID()+"-"+compUnit.getSecondJobAdID()+"\n");
+			
 			out.write("SENTENCE: "+compUnit.getSentence() + "\n");
 			if (compUnit.getCompetences() != null) {
 				for (Competence comp : compUnit.getCompetences()) {
@@ -350,7 +355,10 @@ public class IEJobs {
 				line = in.readLine(); continue;
 			}
 			if(line.startsWith("JobAdID:")){
-				compUnit.setJobAdID(Integer.parseInt(line.split(":")[1].trim()));
+				int jobAdID = Integer.parseInt(line.split(":")[1].split("-")[0].trim());
+				int secondJobAdID = Integer.parseInt(line.split(":")[1].split("-")[1].trim());
+				compUnit.setJobAdID(jobAdID);
+				compUnit.setSecondJobAdID(secondJobAdID);
 				line = in.readLine(); continue;
 			}
 			if(line.startsWith("COMP:")){
@@ -370,5 +378,31 @@ public class IEJobs {
 		in.close();
 		return toReturn;
 	}
+
+	public List<ClassifyUnit> treatEncoding(List<ClassifyUnit> competenceCUs) {
+		List<ClassifyUnit> toReturn = new ArrayList<ClassifyUnit>();
+		for (ClassifyUnit classifyUnit : competenceCUs) {
+			String content = classifyUnit.getContent();
+			content = content.replace("Ã¤", "ä");
+			content = content.replace("Ã¼", "ü");
+			content = content.replace("Ã¶", "ö");
+			content = content.replace("Ãœ", "Ü");
+			content = content.replace("ã¶", "ö");
+			content = content.replace("ã¤", "ä");
+			content = content.replace("ÃŸ", "ß");
+			content =  content.replace("ãÿ", "ß");
+			content = content.replace("ã¼", "ü");
+			content =  content.replace("Ã„", "Ä");
+			content = content.replace("Ã–", "Ö");
+			content = content.replace("ãœ", "ü");
+			content = content.replace("Â¿", "-");	
+			content = content.replace("Â€", "€");
+			classifyUnit.setContent(content);
+			toReturn.add(classifyUnit);
+		}
+		return toReturn;
+	}
+
+	
 
 }

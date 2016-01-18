@@ -27,7 +27,9 @@ public class ZoneSingleExperimentExecutor {
 			
 //			try {
 //				Connection connection = DbConnector.connect("C:/sqlite/ClassifiedParagraphs.db");
-//				paragraphs.addAll(jobs.getCategorizedASCIIParagraphsFromDB(connection, false));
+//				List<ClassifyUnit> dbParas = jobs.getCategorizedASCIIParagraphsFromDB(connection, false);
+//				paragraphs.addAll(dbParas);
+//				System.out.println("added "+ dbParas.size() + " paragraphs from db");
 //		
 //			} catch (ClassNotFoundException e) {
 //				// TODO Auto-generated catch block
@@ -36,14 +38,16 @@ public class ZoneSingleExperimentExecutor {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-			
+//			
 		}
 		else{
 			paragraphs =jobs.getCategorizedParagraphsFromFile(expConfig.getDataFile());
-//			Connection connection;
+			Connection connection;
 //			try {
 //				connection = DbConnector.connect("C:/sqlite/ClassifiedParagraphs.db");
-//				paragraphs.addAll(jobs.getCategorizedParagraphsFromDB(connection, false));
+//				List<ClassifyUnit> dbParas = jobs.getCategorizedParagraphsFromDB(connection, false);
+//				paragraphs.addAll(dbParas);
+//				System.out.println("added "+ dbParas.size() + " paragraphs from db");
 //			} catch (ClassNotFoundException e) {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
@@ -51,7 +55,7 @@ public class ZoneSingleExperimentExecutor {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-//			
+			
 
 		}
 		

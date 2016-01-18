@@ -1,10 +1,7 @@
 package de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,52 +27,18 @@ public class DumpDataBaseTrainingDataGenerator {
 	SingleToMultiClassConverter stmc;
 	List<JASCClassifyUnit> data = null;
 	File databaseFile;
-	int classID;
 	Map<ClassifyUnit, Integer> correctedData = new HashMap<ClassifyUnit, Integer>();
 	TrainingDataGenerator tdg;
 	
-	public DumpDataBaseTrainingDataGenerator(SingleToMultiClassConverter stmc, File databaseFile, int classID, File newTrainingDataFile) throws IOException{
+	public DumpDataBaseTrainingDataGenerator(SingleToMultiClassConverter stmc, File databaseFile,  File newTrainingDataFile) throws IOException{
 		this.stmc = stmc;	
 		this.databaseFile = databaseFile;
-		this.classID = classID;
 		if(!newTrainingDataFile.exists()){
 			newTrainingDataFile.createNewFile();
 		}
 		this.tdg = new TrainingDataGenerator(newTrainingDataFile);
 		//readClassifiedParagraphsFromFile();
 	}
-	
-	
-//	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
-//		if(data == null){
-//			data = new ArrayList<JASCClassifyUnit>();
-//			JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
-//			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(databaseFile)));
-//			String line = in.readLine();
-//			JASCClassifyUnit cu = null;
-//			StringBuffer sb = null;
-//			while (line != null) {
-//				if(line.startsWith("\"") && !(line.startsWith("\"\""))){
-//					if(cu != null){
-//						String content = sb.toString();
-//						content = content.substring(0, content.length()-2);
-//						content = content.replaceAll("\"\"", "\"");
-//						cu.setContent(content);	
-//						((JASCClassifyUnit) cu).setActualClassID(classID);
-//						data.add(cu);
-//					}
-//					cu = new JASCClassifyUnit("",-1);
-//					sb = new StringBuffer();
-//					sb.append(line.split("\";\"")[1]+"\n");
-//				}
-//				else{
-//					sb.append(line+"\n");
-//				}
-//				line = in.readLine();
-//			}
-//			in.close();
-//		}
-//	}
 	
 	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
 		data = new ArrayList<JASCClassifyUnit>();

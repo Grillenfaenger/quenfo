@@ -21,7 +21,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 
 public class AddTrainingDataToTestDB {
 
-	static String trainingDataFileName = "classification/data/newTrainingData_class3.csv";
+	static String trainingDataFileName = "classification/data/newTrainingData2016.csv";
 	static String outputDBPath = "C:/sqlite/";
 	static String outputDBFileName = "ClassifiedParagraphs.db";
 

@@ -49,8 +49,8 @@ public class SingleExperimentExecution {
 		boolean preClassify = true;
 		File outputFolder = new File("classification/output/singleResults/preClassified");
 		int knnValue = 5;
-		boolean ignoreStopwords = true;
-		boolean normalizeInput = false;
+		boolean ignoreStopwords = false;
+		boolean normalizeInput = true;
 		boolean useStemmer = true;
 		boolean suffixTrees = true;
 		int[] nGrams = new int[]{3,4};
@@ -78,9 +78,6 @@ public class SingleExperimentExecution {
 		translations.put(6, categories);
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 		ZoneJobs jobs = new ZoneJobs(stmc);		
-		
-	
-		
 		
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
 				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,

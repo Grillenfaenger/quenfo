@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.DumpDataBaseTrainingDataGenerator;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
+import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class AnnotateNewTrainingDataFromBIBBFile {
 	
@@ -33,9 +36,15 @@ public class AnnotateNewTrainingDataFromBIBBFile {
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 		jobs = new ZoneJobs(stmc);
 		
-		DumpDataBaseTrainingDataGenerator ddtdg = new DumpDataBaseTrainingDataGenerator(jobs.getStmc(),new File(inBIBBClassifiedParagraphs), 3, new File(newTrainingDataFile));
-		ddtdg.readInBIBBClassifiedParagraphsFromFile();
-		ddtdg.annotate();		
+	//	DumpDataBaseTrainingDataGenerator ddtdg = new DumpDataBaseTrainingDataGenerator(jobs.getStmc(),new File(inBIBBClassifiedParagraphs), new File(newTrainingDataFile));
+		//ddtdg.readInBIBBClassifiedParagraphsFromFile();
+		//ddtdg.annotate();		
+		TrainingDataGenerator tdg = new TrainingDataGenerator(new File("classification/data/newTrainingData2016.csv"), 4, 6, translations);
+		List<ClassifyUnit> cus = tdg.getTrainingData();
+		IEJobs jobs = new IEJobs();
+		cus = jobs.treatEncoding(cus);
+		tdg.writeTrainingDataFile(new File("classification/data/newTrainingData2016.csv"), cus);
+		
 	}
 	
 
