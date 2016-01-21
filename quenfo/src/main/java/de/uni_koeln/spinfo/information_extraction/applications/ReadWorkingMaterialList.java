@@ -28,6 +28,7 @@ public class ReadWorkingMaterialList {
 	private static File workingMaterialFile = new File("information_extraction/data/Liste_konsolidiert.xls");
 	private static Tool lemmatizer = new Lemmatizer(
 			"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
+	private static IETokenizer tokenizer = new IETokenizer();
 
 	public static void main(String[] args) throws IOException {
 		readWorkMaterials();
@@ -41,13 +42,42 @@ public class ReadWorkingMaterialList {
 			if(cu.getCompetences() != null){
 				for (Competence c : cu.getCompetences()) {
 					String content = c.getCompetence();
+				//	String[] contentToken = tokenizer.tokenizeSentence(content);
 					for (String workM : workMaterials.keySet()) {
-						//compare
+						if(workM.length() < 3){
+							System.out.println(workM);
+						}
+						
+						if(content.contains(workM)){
+//							System.out.println("content: " + content);
+//							System.out.println("workMat: " + workM);
+						}
+//						String[] workMToken = tokenizer.tokenizeSentence(workM);
+//						if(compare(workMToken, contentToken)){
+//							System.out.println("content: " + content);
+//							System.out.println("workMat: " + workM);
+//						}
 					}
 				}
 			}
 		}
 		
+	}
+
+	private static boolean compare(String[] workMToken, String[] contentToken) {
+		int workMSize = workMToken.length;
+		int matchCount = 0;
+		for (String wm : workMToken) {
+			for (String c : contentToken) {
+				if(c.equals(wm)){
+					 matchCount++;
+				}
+			}
+		}
+		if(matchCount == workMSize){
+			return true;
+		}
+		return false;
 	}
 
 	private static void readWorkMaterials() throws IOException {

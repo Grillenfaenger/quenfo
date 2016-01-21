@@ -78,7 +78,7 @@ public class CompetenceDetector {
 				mod = a.getLemma();
 			} else {
 				Competence comp = new Competence(mod + " "
-						+ a.getLemma(), cu.getJobAdID());
+						+ a.getLemma(), cu.getJobAdID(), cu.getSecondJobAdID());
 				cu.setCompetence(comp);
 			}
 		}
@@ -103,7 +103,7 @@ public class CompetenceDetector {
 					}
 
 				}
-				Competence comp = new Competence(cu.getJobAdID());
+				Competence comp = new Competence(cu.getJobAdID(), cu.getSecondJobAdID());
 				setCompValues(comp, verbTree.values());
 				cu.setCompetence(comp);
 			}
@@ -115,7 +115,7 @@ public class CompetenceDetector {
 		List<Map<Integer, WordNode>> NNTrees = getNounTrees(cu);
 		for (int i = 0; i < NNTrees.size(); i++) {
 			//Map<Integer, WordNode> map = NNTrees.get(i);
-			Competence comp = new Competence(cu.getJobAdID());
+			Competence comp = new Competence(cu.getJobAdID(), cu.getSecondJobAdID());
 			setCompValues(comp, NNTrees.get(i).values());
 			cu.setCompetence(comp);
 

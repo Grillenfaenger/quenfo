@@ -45,7 +45,10 @@ public class ClassifiedCompetencesTrainingDataGenerator {
 			while(line != null){
 				
 				String[] split = line.split("\t");
-				Competence c = new Competence(Integer.parseInt(split[5]));
+				String[] jobAdIDs = split[5].split("-");
+				int jobAdID = Integer.parseInt(jobAdIDs[0].trim());
+				int secondJobAdID = Integer.parseInt(jobAdIDs[1]);
+				Competence c = new Competence(jobAdID, secondJobAdID);
 				c.setCompetence(split[1]);
 				c.setQuality(split[2]);
 				c.setImportance(split[3]);
@@ -142,7 +145,7 @@ public class ClassifiedCompetencesTrainingDataGenerator {
 //			}
 //		}
 		for (Competence comp : classifiedCompetences) {
-			out.write(comp+"\t"+comp.getType().toString()+"\t"+comp.getJobAdID()+"\n");
+			out.write(comp+"\t"+comp.getType().toString()+"\t"+comp.getJobAdID()+"-"+comp.getSecondJobAdID()+"\n");
 		}
 		out.flush();out.close();
 	}

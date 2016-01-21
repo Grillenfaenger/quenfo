@@ -363,7 +363,7 @@ public class IEJobs {
 			}
 			if(line.startsWith("COMP:")){
 				String[] split = line.split("COMP:")[1].split("\t");
-				Competence comp = new Competence(split[0], compUnit.getJobAdID());
+				Competence comp = new Competence(split[0], compUnit.getJobAdID(), compUnit.getSecondJobAdID());
 				comp.setQuality(split[1]);
 				comp.setImportance(split[2]);
 				compUnit.setCompetence(comp);

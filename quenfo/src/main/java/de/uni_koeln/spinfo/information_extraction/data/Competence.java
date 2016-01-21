@@ -1,5 +1,7 @@
 package de.uni_koeln.spinfo.information_extraction.data;
 
+import com.sun.org.apache.regexp.internal.recompile;
+
 /**
  * 
  * @author geduldia
@@ -14,13 +16,15 @@ public class Competence {
 	private String importance;
 	private TYPE type = null;
 	private int jobAdID = -1;;
+	private int secondJobAdID = -1;
 	
-	public Competence(String competence, int jobAdID){
+	public Competence(String competence, int jobAdID, int secondJobAdID){
 		this.competence = competence;
 		this.jobAdID = jobAdID;
+		this.secondJobAdID = secondJobAdID;
 	}
 	
-	public Competence(int jobAdID){
+	public Competence(int jobAdID, int secondJobAdID){
 		this.jobAdID = jobAdID;
 	}
 	
@@ -36,8 +40,8 @@ public class Competence {
 		return jobAdID;
 	}
 
-	public void setJobAdID(int jobAdID) {
-		this.jobAdID = jobAdID;
+	public int getSecondJobAdID(){
+		return secondJobAdID;
 	}
 
 	public void setType(TYPE type){
@@ -76,4 +80,5 @@ public class Competence {
 		sb.append("COMP:"+"\t" + competence+"\t" + quality+"\t"+ importance);
 		return sb.toString();
 	}
+
 }
