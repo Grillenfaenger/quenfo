@@ -196,6 +196,10 @@ public class IEJobs {
 				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/parser-ger-3.6.model");
 		CONLLWriter09 writer = null;
 		if (sdOutputFileName != null) {
+			File file = new File(sdOutputFileName+".csv");
+			if(!file.exists()){
+				file.createNewFile();
+			}
 			writer = new is2.io.CONLLWriter09(sdOutputFileName + ".csv");
 		}
 		for (CompetenceUnit compUnit : compUnits) {

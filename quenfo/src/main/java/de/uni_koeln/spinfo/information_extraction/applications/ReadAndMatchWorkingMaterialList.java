@@ -35,8 +35,8 @@ public class ReadAndMatchWorkingMaterialList {
 
 	public static void main(String[] args) throws IOException {
 		readWorkMaterials();
-		matchWorkingMaterialsWithCompetences();
-		//matchWorkingMaterialsWithCompUnits();
+	//matchWorkingMaterialsWithCompetences();
+		matchWorkingMaterialsWithCompUnits();
 //		for (String wm : workMaterials.keySet()) {
 //			for (String sec : workMaterials.get(wm)) {
 //				System.out.println("--> " + sec);
@@ -58,7 +58,8 @@ public class ReadAndMatchWorkingMaterialList {
 		int matchCount = 0;
 		int totalNumberOfCompUnits = 0;
 		IEJobs jobs = new IEJobs();
-		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3.txt"));
+		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3"
+				+ "+.txt"));
 		totalNumberOfCompUnits = compUnits.size();
 		for (CompetenceUnit cu : compUnits) {
 					String content = cu.getSentence();
@@ -105,6 +106,10 @@ public class ReadAndMatchWorkingMaterialList {
 			System.out.println(i+": ");
 			for (String	wm  : stats.get(i)) {
 				System.out.println(wm);
+				List<String> secs = workMaterials.get(wm);
+				for (String s : secs) {
+					System.out.println("--> " + s + " --> "+ sectors.get(s));
+				}
 			}
 			
 			
