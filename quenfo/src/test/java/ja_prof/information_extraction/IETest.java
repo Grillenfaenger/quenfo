@@ -29,7 +29,7 @@ public class IETest {
 	static File classifyUnitsFile;
 	static File filteredUnitsFile;
 	static File sentencesFile;
-	static Integer[] relevantClasses = new Integer[] { 2, 3, 6 };
+	static Integer[] relevantClasses = new Integer[] {2};
 	static String sentenceDataFileName;
 	static File competenceDataOutputFile;
 	static boolean innerSentenceSplitting = true;
@@ -40,6 +40,7 @@ public class IETest {
 				// "src/test/resources/classification/cuTestData.csv");
 				// "classification/data/trainingDataScrambled.csv");
 				"classification/data/newTrainingData2016.csv");
+				//"src/test/resources/information_extraction/TestTrainingData2016.csv");
 		// Translations
 		Map<Integer, List<Integer>> translations = new HashMap<Integer, List<Integer>>();
 		List<Integer> categories = new ArrayList<Integer>();
@@ -182,9 +183,10 @@ public class IETest {
 		ieJobs.setCompetences(compUnits);
 		for (CompetenceUnit cu : compUnits) {
 			Assert.assertTrue(cu.getDependencyTree() != null);
-			if(cu.getCompetences() == null){
+			if(cu.getCompetences() != null){
 				System.out.println(cu);
 			}
+			System.out.println("______________________________");
 		}
 	}
 

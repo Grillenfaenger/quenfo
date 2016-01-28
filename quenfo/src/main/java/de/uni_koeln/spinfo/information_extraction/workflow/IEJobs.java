@@ -317,6 +317,16 @@ public class IEJobs {
 		CompetenceDetector detector = new CompetenceDetector();
 		detector.setCompetences(compUnits);
 	}
+	
+	public List<CompetenceUnit> filterEmptyCompetenceUnits(List<CompetenceUnit> toFilter){
+		List<CompetenceUnit> toReturn = new ArrayList<>();
+		for (CompetenceUnit cu : toFilter) {
+			if(cu.getCompetences() != null){
+				toReturn.add(cu);
+			}
+		}
+		return toReturn;
+	}
 
 	public void writeCompetenceData(List<CompetenceUnit> toWrite,
 			File outputFile) throws IOException {

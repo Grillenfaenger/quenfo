@@ -108,7 +108,6 @@ public class CompetenceDetector {
 				cu.setCompetence(comp);
 			}
 		}
-	
 	}
 
 	public void setNounCompetences(CompetenceUnit cu) {
@@ -179,9 +178,10 @@ public class CompetenceDetector {
 		StringBuffer sb = new StringBuffer();
 		while (it.hasNext()) {
 			WordNode next = it.next();
+			if(!next.getPosTag().equals("ART"))
 			sb.append(next.getLemma().trim() + " ");
 		}
-		String text = sb.toString().trim();
+		String text = " "+sb.toString();
 		for (String q : qualityTerms) {
 			if (text.contains(" "+q+" ")) {
 				comp.setQuality(q);
