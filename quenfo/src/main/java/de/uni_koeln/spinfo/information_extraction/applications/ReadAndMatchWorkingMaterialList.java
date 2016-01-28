@@ -25,7 +25,7 @@ import jxl.read.biff.BiffException;
 
 public class ReadAndMatchWorkingMaterialList {
 	
-	static Map<String, List<String>> workMaterials = new HashMap<String, List<String>>();
+	static Map<String, Set<String>> workMaterials = new HashMap<String, Set<String>>();
 	static Map<String,String> sectors = new HashMap<String, String>();
 
 	private static File workingMaterialFile = new File("information_extraction/data/Liste_konsolidiert.xls");
@@ -53,13 +53,13 @@ public class ReadAndMatchWorkingMaterialList {
 
 
 	private static void matchWorkingMaterialsWithCompUnits() throws IOException{
-		Map<String, List<String>> matches = new HashMap<String, List<String>>();
+		Map<String, Set<String>> matches = new HashMap<String, Set<String>>();
 		Set<CompetenceUnit> matchingCompUnits = new HashSet<CompetenceUnit>();
+		Map<CompetenceUnit, List<String>> compUnitsWithSectors = new HashMap<CompetenceUnit, List<String>>();
 		int matchCount = 0;
 		int totalNumberOfCompUnits = 0;
 		IEJobs jobs = new IEJobs();
-		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3"
-				+ "+.txt"));
+		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3.txt"));
 		totalNumberOfCompUnits = compUnits.size();
 		for (CompetenceUnit cu : compUnits) {
 					String content = cu.getSentence();
@@ -79,12 +79,16 @@ public class ReadAndMatchWorkingMaterialList {
 						if(content.toLowerCase().contains(" "+workM.toLowerCase()+" ")){
 							matchingCompUnits.add(cu);
 							matchCount++;
-							List<String> list = matches.get(workM);
+							Set<String> list = matches.get(workM);
 							if(list == null){
-								list = new ArrayList<String>();
+								list = new HashSet<String>();
 							}
-							list.add(content);
+							list.add("CompUnit-ID: "+cu.getClassifyUnitID()+" Sentence: " + content );
 							matches.put(workM, list);
+							List<String> secList = compUnitsWithSectors.get(cu);
+							if(secList == null) secList = new ArrayList<String>();
+							secList.addAll(workMaterials.get(workM));
+							compUnitsWithSectors.put(cu, secList);
 						}
 					}
 				
@@ -93,27 +97,35 @@ public class ReadAndMatchWorkingMaterialList {
 		System.out.println("total number of compUnits: " + totalNumberOfCompUnits);
 		System.out.println("NumberOfMatches: " + matchCount);
 		System.out.println("NumberOfMatchingCompUnits: " + matchingCompUnits.size());
-	    Map<Integer, List<String>> stats = new TreeMap<Integer, List<String>>();
-	    for (String wm : matches.keySet()) {
-			int comps = matches.get(wm).size();
-			List<String> list = stats.get(comps);
-			if(list == null) list = new ArrayList<String>();
-			list.add(wm);
-			stats.put(comps, list);
-		}
-	    for (Integer i : stats.keySet()) {
-	    	
-			System.out.println(i+": ");
-			for (String	wm  : stats.get(i)) {
-				System.out.println(wm);
-				List<String> secs = workMaterials.get(wm);
-				for (String s : secs) {
-					System.out.println("--> " + s + " --> "+ sectors.get(s));
-				}
+		for (CompetenceUnit competenceUnit : compUnitsWithSectors.keySet()) {
+			System.out.println(competenceUnit);
+			for (String s : compUnitsWithSectors.get(competenceUnit)) {
+				System.out.println("--> " + s);
 			}
-			
-			
+			System.out.println("_________________________________");
+			System.out.println();
 		}
+//	    Map<Integer, List<String>> stats = new TreeMap<Integer, List<String>>();
+//	    for (String wm : matches.keySet()) {
+//			int comps = matches.get(wm).size();
+//			List<String> list = stats.get(comps);
+//			if(list == null) list = new ArrayList<String>();
+//			list.add(wm);
+//			stats.put(comps, list);
+//		}
+//	    for (Integer i : stats.keySet()) {
+//	    	
+//			System.out.println(i+": ");
+//			for (String	wm  : stats.get(i)) {
+//				System.out.println(wm);
+//				List<String> secs = workMaterials.get(wm);
+//				for (String s : secs) {
+//					System.out.println("--> " + s + " --> "+ sectors.get(s));
+//				}
+//			}
+//			
+//			
+//		}
 	}
 
 	private static void matchWorkingMaterialsWithCompetences() throws IOException {
@@ -185,7 +197,7 @@ public class ReadAndMatchWorkingMaterialList {
 
 	private static void readWorkMaterials() throws IOException {
 		IETokenizer tokenizer = new IETokenizer();
-		workMaterials = new HashMap<String, List<String>>();
+		workMaterials = new HashMap<String, Set<String>>();
 	    sectors = new HashMap<String,String>();
 
 		Workbook w;
@@ -209,9 +221,9 @@ public class ReadAndMatchWorkingMaterialList {
 						sd.init(tokenizer.tokenizeSentence(wm));
 						lemmatizer.apply(sd);
 						String[] lemmas = sd.plemmas;
-						List<String> sectors = workMaterials.get(wm);
+						Set<String> sectors = workMaterials.get(wm);
 						if(sectors == null){
-							sectors = new ArrayList<String>();
+							sectors = new HashSet<String>();
 						}
 						sectors.add(sector);
 						workMaterials.put(wm, sectors);
