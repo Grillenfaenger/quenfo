@@ -1,15 +1,21 @@
 
 package de.uni_koeln.spinfo.information_extraction.applications;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 
 import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
@@ -38,7 +44,9 @@ public class ReadAndMatchWorkingMaterialList {
 			"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 	private static IETokenizer tokenizer = new IETokenizer();
 	private static IEJobs jobs = new IEJobs();
-
+	private static File stopwordFile = new File("classification/data/stopwords.txt");
+	
+	
 	public static void main(String[] args) throws IOException {
 		readWorkMaterials();
 		Map<CompetenceUnit, List<String>> matchesWithCompetenceUnits = matchWorkingMaterialsWithCompUnits();
@@ -257,6 +265,7 @@ public class ReadAndMatchWorkingMaterialList {
 		}
 		printMatchingCompetences(matchingCompUnits, all, filtered, matchCount, matchingCompetences);
 		printNotMatchingCompUnits(notMatchingCompUnits, all);
+		analyseNotMatchingCompetences(notMatchingCompetences);
 		return matchingCompUnits;
 	}
 
@@ -280,8 +289,55 @@ public class ReadAndMatchWorkingMaterialList {
 //		}
 	}
 
-	private static void analyseNotMatchingCompetences(){
-		
+	private static void analyseNotMatchingCompetences(List<Competence> notMatchingCompetences) throws IOException{
+		Set<String> stopwords = readStopwords();
+		Map<String, Integer> tokenCounts = new HashMap<String,Integer>();
+		for (Competence c : notMatchingCompetences) {
+			List<String> tokens = Arrays.asList(tokenizer.tokenizeSentence(c.getCompetence()));
+			for (String token : tokens) {
+				if(stopwords.contains(token)){
+					continue;
+				}
+				if(tokenCounts.keySet().contains(token)){
+					int i = tokenCounts.get(token);
+					i++;
+					tokenCounts.put(token, i);
+				}
+				else{
+					tokenCounts.put(token, 1);
+				}	
+			}
+		}
+		Map<Integer, List<String>> sortedTokenCounts = new TreeMap<Integer,List<String>>();
+		for (String s : tokenCounts.keySet()) {
+			int i = tokenCounts.get(s);
+			List<String> list = sortedTokenCounts.get(i);
+			if(list == null) list = new ArrayList<String>();
+			list.add(s);
+			sortedTokenCounts.put(i++, list);
+		}
+		System.out.println("Tokens in not matching Competences:");
+		List<Integer> keys = new ArrayList<Integer>(sortedTokenCounts.keySet());
+		for (Integer i = sortedTokenCounts.size()-1; i >=0; i--) {
+			int count = keys.get(i);
+			System.out.println();
+			System.out.println(count);
+			for (String s : sortedTokenCounts.get(count)) {
+				System.out.println(s);
+			}
+		}
 	}
-
+	
+	private static Set<String> readStopwords() throws IOException{
+		Set<String> stopwords = new HashSet<String>();
+		BufferedReader in = new BufferedReader(new FileReader(stopwordFile));
+		String line = in.readLine();
+		while(line!=null){
+			stopwords.add(line.trim());
+			line = in.readLine();
+		}
+		in.close();
+		return stopwords;
+	}
+	
 }
