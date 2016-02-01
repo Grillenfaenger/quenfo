@@ -1,3 +1,4 @@
+
 package de.uni_koeln.spinfo.information_extraction.applications;
 
 import java.io.File;
@@ -24,181 +25,106 @@ import jxl.WorkbookSettings;
 import jxl.read.biff.BiffException;
 
 public class ReadAndMatchWorkingMaterialList {
-	
+
+	// a mapping from workmaterial to sectors
 	static Map<String, Set<String>> workMaterials = new HashMap<String, Set<String>>();
-	static Map<String,String> sectors = new HashMap<String, String>();
+	// a mapping from sector to superior sectorfields
+	static Map<String, String> sectors = new HashMap<String, String>();
 
 	private static File workingMaterialFile = new File("information_extraction/data/Liste_konsolidiert.xls");
+	private static File competenceUnitsFile = new File(
+			"src/test/resources/information_extraction/competenceData_newTrainingData2016_2_3_6.txt");
 	private static Tool lemmatizer = new Lemmatizer(
 			"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 	private static IETokenizer tokenizer = new IETokenizer();
+	private static IEJobs jobs = new IEJobs();
 
 	public static void main(String[] args) throws IOException {
 		readWorkMaterials();
-	//matchWorkingMaterialsWithCompetences();
-		matchWorkingMaterialsWithCompUnits();
-//		for (String wm : workMaterials.keySet()) {
-//			for (String sec : workMaterials.get(wm)) {
-//				System.out.println("--> " + sec);
-//				System.out.println();
-//			}
-//		}
-//		for (String sector : sectors.keySet()) {
-//			System.out.println("sector: " + sector);
-//			System.out.println("Überbegriff: " + sectors.get(sector));
-//			System.out.println();
-//		}
+		Map<CompetenceUnit, List<String>> matchesWithCompetenceUnits = matchWorkingMaterialsWithCompUnits();
+		Map<CompetenceUnit, List<String>> matchesWithCompetences = matchWorkingMaterialsWithCompetences();
+		//Map<String, Map<CompetenceUnit, List<String>>> matchingJobAds = matchJobAdsWithSectors(matches);
 	}
 
-
-
-	private static void matchWorkingMaterialsWithCompUnits() throws IOException{
-		Map<String, Set<String>> matches = new HashMap<String, Set<String>>();
-		Set<CompetenceUnit> matchingCompUnits = new HashSet<CompetenceUnit>();
-		Map<CompetenceUnit, List<String>> compUnitsWithSectors = new HashMap<CompetenceUnit, List<String>>();
-		int matchCount = 0;
-		int totalNumberOfCompUnits = 0;
-		IEJobs jobs = new IEJobs();
-		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3.txt"));
-		totalNumberOfCompUnits = compUnits.size();
-		for (CompetenceUnit cu : compUnits) {
-					String content = cu.getSentence();
-					if(content.equals("")){
-						System.out.println("empty content");
-						continue;
-					}
-					SentenceData09 sd = new SentenceData09();
-					sd.init(tokenizer.tokenizeSentence(content));
-					lemmatizer.apply(sd);
-					StringBuffer sb = new StringBuffer();
-					for (String lemma : sd.plemmas) {
-						sb.append(lemma +" ");
-					}
-					content = " "+sb.toString();
-					for (String workM : workMaterials.keySet()) {				
-						if(content.toLowerCase().contains(" "+workM.toLowerCase()+" ")){
-							matchingCompUnits.add(cu);
-							matchCount++;
-							Set<String> list = matches.get(workM);
-							if(list == null){
-								list = new HashSet<String>();
-							}
-							list.add("CompUnit-ID: "+cu.getClassifyUnitID()+" Sentence: " + content );
-							matches.put(workM, list);
-							List<String> secList = compUnitsWithSectors.get(cu);
-							if(secList == null) secList = new ArrayList<String>();
-							secList.addAll(workMaterials.get(workM));
-							compUnitsWithSectors.put(cu, secList);
-						}
-					}
-				
-			
-		}
-		System.out.println("total number of compUnits: " + totalNumberOfCompUnits);
-		System.out.println("NumberOfMatches: " + matchCount);
-		System.out.println("NumberOfMatchingCompUnits: " + matchingCompUnits.size());
-		for (CompetenceUnit competenceUnit : compUnitsWithSectors.keySet()) {
-			System.out.println(competenceUnit);
-			for (String s : compUnitsWithSectors.get(competenceUnit)) {
-				System.out.println("--> " + s);
+	private static void printWorkMaterials() {
+		for (String wm : workMaterials.keySet()) {
+			System.out.println(wm);
+			for (String sector : workMaterials.get(wm)) {
+				System.out.println("\t" + sector);
 			}
-			System.out.println("_________________________________");
 			System.out.println();
 		}
-//	    Map<Integer, List<String>> stats = new TreeMap<Integer, List<String>>();
-//	    for (String wm : matches.keySet()) {
-//			int comps = matches.get(wm).size();
-//			List<String> list = stats.get(comps);
-//			if(list == null) list = new ArrayList<String>();
-//			list.add(wm);
-//			stats.put(comps, list);
-//		}
-//	    for (Integer i : stats.keySet()) {
-//	    	
-//			System.out.println(i+": ");
-//			for (String	wm  : stats.get(i)) {
-//				System.out.println(wm);
-//				List<String> secs = workMaterials.get(wm);
-//				for (String s : secs) {
-//					System.out.println("--> " + s + " --> "+ sectors.get(s));
-//				}
-//			}
-//			
-//			
-//		}
 	}
 
-	private static void matchWorkingMaterialsWithCompetences() throws IOException {
-		Map<String, List<String>> matches = new HashMap<String, List<String>>();
-		Set<Competence> matchingCompetences = new HashSet<Competence>();
-		int matchCount = 0;
-		int totalNumbOfCpmpetences = 0;
-		int totalNumberOfCompUnits = 0;
-		int numberOfNotEmptyCompUnits = 0;
-		int numberOfMatchingCompUnits = 0;
-		IEJobs jobs = new IEJobs();
-		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(new File("src/test/resources/information_extraction/competenceData_newTrainingData2016_3.txt"));
-		totalNumberOfCompUnits = compUnits.size();
-		compUnits = jobs.filterEmptyCompetenceUnits(compUnits);
-		numberOfNotEmptyCompUnits = compUnits.size();
-		boolean matched = false;
+	private static Map<CompetenceUnit, List<String>> matchWorkingMaterialsWithCompUnits() throws IOException {
+		int totalNumberOfMatches = 0;
+		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(competenceUnitsFile);
+		int totalNumberOfCompUnits = compUnits.size();
+		Map<CompetenceUnit, List<String>> compUnitsWithWorkMats = new HashMap<CompetenceUnit, List<String>>();
+		List<CompetenceUnit> notMatchingCompUnits = new ArrayList<CompetenceUnit>();
+		// get content to compare with workMats
 		for (CompetenceUnit cu : compUnits) {
-			matched = false;
-			if(cu.getCompetences() != null){
-				for (Competence c : cu.getCompetences()) {
-					totalNumbOfCpmpetences++;
-					String content = " "+c.getCompetence()+" ";
-					for (String workM : workMaterials.keySet()) {				
-						if(content.toLowerCase().contains(" "+workM.toLowerCase()+" ")){
-							matchingCompetences.add(c);
-							if(!matched){
-								numberOfMatchingCompUnits++;
-								matched = true;
-							}	
-							matchCount++;
-							List<String> list = matches.get(workM);
-							if(list == null){
-								list = new ArrayList<String>();
-							}
-							list.add(content);
-							matches.put(workM, list);
-						}
-					}
+			boolean isMatching = false;
+			String content = cu.getSentence().trim();
+			if (content.equals("")) {
+				continue;
+			}
+			SentenceData09 sd = new SentenceData09();
+			sd.init(tokenizer.tokenizeSentence(content));
+			lemmatizer.apply(sd);
+			StringBuffer sb = new StringBuffer();
+			for (String lemma : sd.plemmas) {
+				sb.append(lemma + " ");
+			}
+			content = sb.toString().trim().replace("--", "");
+			// compare
+			for (String workM : workMaterials.keySet()) {
+				if ((" " + content.toLowerCase() + " ").contains(" " + workM.toLowerCase() + " ")) {
+					isMatching = true;
+					totalNumberOfMatches++;
+					List<String> workMatSet = compUnitsWithWorkMats.get(cu);
+					if (workMatSet == null)
+						workMatSet = new ArrayList<String>();
+					workMatSet.add(workM);
+					compUnitsWithWorkMats.put(cu, workMatSet);
 				}
 			}
-		}
-		System.out.println("total number of compUnits: " + totalNumberOfCompUnits);
-		System.out.println("number of not empty compUnits: " + numberOfNotEmptyCompUnits);
-		System.out.println("NumberOfMatches: " + matchCount);
-		System.out.println("total number Of competences: " + totalNumbOfCpmpetences );
-		System.out.println("NumberOfMatchingCompetences: " + matchingCompetences.size());
-		System.out.println("numberOfMatchingComptUnits: " + numberOfMatchingCompUnits);
-	    Map<Integer, List<String>> stats = new TreeMap<Integer, List<String>>();
-	    for (String wm : matches.keySet()) {
-			int comps = matches.get(wm).size();
-			List<String> list = stats.get(comps);
-			if(list == null) list = new ArrayList<String>();
-			list.add(wm);
-			stats.put(comps, list);
-		}
-	    for (Integer i : stats.keySet()) {
-	    	
-			System.out.println(i+": ");
-			for (String	wm  : stats.get(i)) {
-				System.out.println(wm);
+			if (!isMatching) {
+				notMatchingCompUnits.add(cu);
 			}
-			
-			
 		}
+		printNotMatchingCompUnits(notMatchingCompUnits, compUnits.size());
+		printMatchingCompUnits(totalNumberOfMatches, compUnitsWithWorkMats, totalNumberOfCompUnits);
+		return compUnitsWithWorkMats;
 	}
 
+	private static void printNotMatchingCompUnits(List<CompetenceUnit> notMatchingCompUnits, int all) {
+		System.out.println("Not Matching CompUnits: " + notMatchingCompUnits.size() + " of " + all);
+	}
 
-
+	private static void printMatchingCompUnits(int totalNumberOfMatches,
+			Map<CompetenceUnit, List<String>> compUnitsWithWorkMats, int totalNumberOfCompUnits) {
+		System.out.println("Result of Match with CompeteneUnits: ");
+		System.out.println("TotalNumberOfCompetenceUnist: " + totalNumberOfCompUnits);
+		System.out.println("TotalNumberOfMatches: " + totalNumberOfMatches);
+		System.out.println("Matching CompUnits:   " + compUnitsWithWorkMats.keySet().size());
+//		for (CompetenceUnit cu : compUnitsWithWorkMats.keySet()) {
+//			System.out.println(cu);
+//			for (String wm : compUnitsWithWorkMats.get(cu)) {
+//				System.out.println("WorkMat: " + wm);
+//				for (String sec : workMaterials.get(wm)) {
+//					System.out.println("Sector: " + sec);
+//				}
+//				System.out.println();
+//			}
+//			System.out.println("____________________________________________________");
+//		}
+	}
 
 	private static void readWorkMaterials() throws IOException {
 		IETokenizer tokenizer = new IETokenizer();
 		workMaterials = new HashMap<String, Set<String>>();
-	    sectors = new HashMap<String,String>();
+		sectors = new HashMap<String, String>();
 
 		Workbook w;
 		try {
@@ -213,7 +139,7 @@ public class ReadAndMatchWorkingMaterialList {
 				Cell sectorCell = sheet.getCell(0, i);
 				if (sectorCell.getContents().equals("")) {
 					String wmContent = sheet.getCell(1, i).getContents();
-					//lemmatisieren
+					// lemmatisieren
 					String[] workMats = wmContent.split(",");
 					for (String wm : workMats) {
 						wm = wm.trim();
@@ -222,7 +148,7 @@ public class ReadAndMatchWorkingMaterialList {
 						lemmatizer.apply(sd);
 						String[] lemmas = sd.plemmas;
 						Set<String> sectors = workMaterials.get(wm);
-						if(sectors == null){
+						if (sectors == null) {
 							sectors = new HashSet<String>();
 						}
 						sectors.add(sector);
@@ -244,4 +170,118 @@ public class ReadAndMatchWorkingMaterialList {
 			e.printStackTrace();
 		}
 	}
+
+	private static Map<String, Map<CompetenceUnit, List<String>>> matchJobAdsWithSectors(
+			Map<CompetenceUnit, List<String>> matchingCompUnits) {
+		Map<String, Map<CompetenceUnit, List<String>>> jobAdIdsWithSectors = new HashMap<String, Map<CompetenceUnit, List<String>>>();
+		for (CompetenceUnit cu : matchingCompUnits.keySet()) {
+			String jobAdId = cu.getJobAdID() + " " + cu.getSecondJobAdID();
+			Map<CompetenceUnit, List<String>> comps = jobAdIdsWithSectors.get(jobAdId);
+			if (comps == null) {
+				comps = new HashMap<CompetenceUnit, List<String>>();
+			}
+			List<String> workMats = matchingCompUnits.get(cu);
+			List<String> sectorList2 = comps.get(cu);
+			if (sectorList2 == null) {
+				sectorList2 = new ArrayList<String>();
+			}
+			for (String workMat : workMats) {
+				Set<String> sectors = workMaterials.get(workMat);
+				sectorList2.addAll(sectors);
+				comps.put(cu, sectorList2);
+				jobAdIdsWithSectors.put(jobAdId, comps);
+			}
+		}
+		// printJobAdsWithSectors(jobAdIdsWithSectors);
+		return jobAdIdsWithSectors;
+	}
+
+	private static void printJobAdsWithSectors(Map<String, Map<CompetenceUnit, List<String>>> jobAdIdsWithSectors) {
+		for (String id : jobAdIdsWithSectors.keySet()) {
+			int includingCompUnits = 0;
+			System.out.println("ID: " + id);
+			List<String> allSectors = new ArrayList<String>();
+			Map<CompetenceUnit, List<String>> map = jobAdIdsWithSectors.get(id);
+			System.out.println("compUnits: ");
+			for (CompetenceUnit comp : map.keySet()) {
+				System.out.println("- " + comp.getSentence());
+				includingCompUnits++;
+				allSectors.addAll(map.get(comp));
+			}
+			System.out.println("compUnits: " + includingCompUnits);
+			for (String sector : allSectors) {
+				System.out.println("Sector: " + sector);
+			}
+			System.out.println();
+		}
+	}
+
+	private static Map<CompetenceUnit, List<String>> matchWorkingMaterialsWithCompetences() throws IOException {
+		List<CompetenceUnit> compUnits = jobs.readCompetenceUnitsFromFile(competenceUnitsFile);
+		int all = compUnits.size();
+		compUnits = jobs.filterEmptyCompetenceUnits(compUnits);
+		int filtered = compUnits.size();
+		Map<CompetenceUnit, List<String>> matchingCompUnits = new HashMap<CompetenceUnit, List<String>>();
+		List<CompetenceUnit> notMatchingCompUnits = new ArrayList<CompetenceUnit>();
+		List<Competence> notMatchingCompetences = new ArrayList<Competence>();
+		int matchCount = 0;
+		int matchingCompetences = 0;
+		for (CompetenceUnit cu : compUnits) {
+			boolean isMatchingCompUnit = false;
+			for (Competence c : cu.getCompetences()) {
+				boolean isMatchingCompetence = false;
+				String content = " " + c.getCompetence() + " ";
+				for (String workM : workMaterials.keySet()) {
+					if (content.toLowerCase().contains(" " + workM.toLowerCase() + " ")) {
+						isMatchingCompetence = true;
+						isMatchingCompUnit = true;
+						matchCount++;
+						List<String> workMas = matchingCompUnits.get(cu);
+						if (workMas == null) {
+							workMas = new ArrayList<String>();
+						}
+						workMas.add(workM);
+						matchingCompUnits.put(cu, workMas);
+					}
+				}
+				if(isMatchingCompetence){
+					matchingCompetences++;
+				}
+				else{
+					notMatchingCompetences.add(c);
+				}
+			}
+			if(!isMatchingCompUnit){
+				notMatchingCompUnits.add(cu);
+			}
+		}
+		printMatchingCompetences(matchingCompUnits, all, filtered, matchCount, matchingCompetences);
+		printNotMatchingCompUnits(notMatchingCompUnits, all);
+		return matchingCompUnits;
+	}
+
+	private static void printMatchingCompetences(Map<CompetenceUnit, List<String>> compUnitsWithWorkMaterials,int compUnitsNum, int filteredCompUnits, int matchCount, int matchingCompetences) {
+		System.out.println();
+		System.out.println("Result of Match with Competences: ");
+		System.out.println("TotalNumberOfCompetenceUnist: " + compUnitsNum);
+		System.out.println("TotalNumberOfMatches: " + matchCount);
+		System.out.println("Matching CompUnits:   " + compUnitsWithWorkMaterials.keySet().size());
+		System.out.println("Matching Competences: " + matchingCompetences);
+//		for (CompetenceUnit cu : compUnitsWithWorkMaterials.keySet()) {
+//			System.out.println(cu);
+//			for (String wm : compUnitsWithWorkMaterials.get(cu)) {
+//				System.out.println("WorkMat: " + wm);
+//				for (String sec : workMaterials.get(wm)) {
+//					System.out.println("Sector: " + sec);
+//				}
+//				System.out.println();
+//			}
+//			System.out.println("____________________________________________________");
+//		}
+	}
+
+	private static void analyseNotMatchingCompetences(){
+		
+	}
+
 }
