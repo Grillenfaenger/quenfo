@@ -39,7 +39,7 @@ public class ReadAndMatchWorkingMaterialList {
 
 	private static File workingMaterialFile = new File("information_extraction/data/Liste_konsolidiert.xls");
 	private static File competenceUnitsFile = new File(
-			"src/test/resources/information_extraction/competenceData_newTrainingData2016_2_3_6.txt");
+			"src/test/resources/information_extraction/competenceData_newTrainingData2016_2.txt");
 	private static Tool lemmatizer = new Lemmatizer(
 			"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 	private static IETokenizer tokenizer = new IETokenizer();
