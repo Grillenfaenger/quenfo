@@ -357,9 +357,7 @@ public class IEJobs {
 		BufferedReader in = new BufferedReader(new FileReader(toRead));
 		String line = in.readLine();
 		CompetenceUnit compUnit = null;
-		while(line != null){
-		
-			
+		while(line != null){	
 			if(line.startsWith("ID:")){
 				if(compUnit!= null){
 					toReturn.add(compUnit);
@@ -380,11 +378,12 @@ public class IEJobs {
 				Competence comp = new Competence(split[0], compUnit.getJobAdID(), compUnit.getSecondJobAdID());
 				comp.setQuality(split[1]);
 				comp.setImportance(split[2]);
+				
 				compUnit.setCompetence(comp);
 				line = in.readLine(); continue;
 			}
 			if(line.startsWith("SENTENCE: ")){
-				compUnit.setSentence(line.split(":")[1].trim());
+				compUnit.setSentence(line.split("SENTENCE:")[1].trim());
 				line = in.readLine(); continue;
 			}
 			line = in.readLine();

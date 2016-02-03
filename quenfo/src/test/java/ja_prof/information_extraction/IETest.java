@@ -32,7 +32,7 @@ public class IETest {
 	static Integer[] relevantClasses = new Integer[] {2};
 	static String sentenceDataFileName;
 	static File competenceDataOutputFile;
-	static boolean innerSentenceSplitting = true;
+	static boolean innerSentenceSplitting = false;
 
 	@BeforeClass
 	public static void prepare() throws IOException {
