@@ -22,14 +22,14 @@ import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.ClassifiedCompetencesTrainingDataGenerator;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
-public class IETest {
+public class CompetenceIETest {
 
 	static ZoneJobs jobs;
 	static IEJobs ieJobs;
 	static File classifyUnitsFile;
 	static File filteredUnitsFile;
 	static File sentencesFile;
-	static Integer[] relevantClasses = new Integer[] {2};
+	static Integer[] relevantClasses = new Integer[] {2,3,6};
 	static String sentenceDataFileName;
 	static File competenceDataOutputFile;
 	static boolean innerSentenceSplitting = false;

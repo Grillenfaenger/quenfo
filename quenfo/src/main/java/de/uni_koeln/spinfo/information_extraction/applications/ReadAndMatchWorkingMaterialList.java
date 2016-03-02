@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 
 import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
@@ -39,7 +38,7 @@ public class ReadAndMatchWorkingMaterialList {
 
 	private static File workingMaterialFile = new File("information_extraction/data/Liste_konsolidiert.xls");
 	private static File competenceUnitsFile = new File(
-			"src/test/resources/information_extraction/competenceData_newTrainingData2016_2.txt");
+			"src/test/resources/information_extraction/competenceData_newTrainingData2016_2_3_6.txt");
 	private static Tool lemmatizer = new Lemmatizer(
 			"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 	private static IETokenizer tokenizer = new IETokenizer();
@@ -49,9 +48,10 @@ public class ReadAndMatchWorkingMaterialList {
 	
 	public static void main(String[] args) throws IOException {
 		readWorkMaterials();
-		Map<CompetenceUnit, List<String>> matchesWithCompetenceUnits = matchWorkingMaterialsWithCompUnits();
-		Map<CompetenceUnit, List<String>> matchesWithCompetences = matchWorkingMaterialsWithCompetences();
+//		Map<CompetenceUnit, List<String>> matchesWithCompetenceUnits = matchWorkingMaterialsWithCompUnits();
+//		Map<CompetenceUnit, List<String>> matchesWithCompetences = matchWorkingMaterialsWithCompetences();
 		//Map<String, Map<CompetenceUnit, List<String>>> matchingJobAds = matchJobAdsWithSectors(matches);
+
 	}
 
 	private static void printWorkMaterials() {
@@ -128,6 +128,7 @@ public class ReadAndMatchWorkingMaterialList {
 //			System.out.println("____________________________________________________");
 //		}
 	}
+	
 
 	private static void readWorkMaterials() throws IOException {
 		IETokenizer tokenizer = new IETokenizer();

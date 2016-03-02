@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 public class CompetenceUnit {
 
 	private String sentence;
@@ -15,6 +16,11 @@ public class CompetenceUnit {
 	private UUID classifyUnitID;
 	private int jobAdID;
 	private int secondJobAdID;
+	private List<Token> tokens = new ArrayList<Token>();
+	
+	public List<Token> getTokenObjects(){
+		return tokens;
+	}
 
 	public int getSecondJobAdID() {
 		return secondJobAdID;
@@ -75,6 +81,14 @@ public class CompetenceUnit {
 
 	public void setSentenceData(SentenceData09 sentenceData) {
 		this.sentenceData = sentenceData;
+		Token token = null;
+		for(int i = 0; i < getTokens().length; i++){
+			String[] tokens = getTokens();
+			String[] lemmas = getLemmata();
+			String[] posTags = getPosTags();
+			token = new Token(tokens[i], lemmas[i], posTags[i]);
+			this.tokens.add(token);
+		}
 	}
 
 	public SentenceData09 getSentenceData() {
