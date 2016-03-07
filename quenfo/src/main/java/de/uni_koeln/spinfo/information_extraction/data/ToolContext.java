@@ -5,7 +5,7 @@ import java.util.List;
 
 import javafx.scene.AmbientLight;
 
-public class AMContext {
+public class ToolContext {
 	
 	List<Token> tokens = new ArrayList<Token>();
 	private int amPointer;
@@ -46,7 +46,7 @@ public class AMContext {
 	}
 	
 
-	public int getAMPointer(){
+	public int getToolPointer(){
 		return amPointer;
 	}
 	

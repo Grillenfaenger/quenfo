@@ -17,34 +17,29 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.information_extraction.applications.ReadAndMatchWorkingMaterialList;
-import de.uni_koeln.spinfo.information_extraction.data.AMContext;
+import de.uni_koeln.spinfo.information_extraction.data.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.data.Token;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class ArbeitsmittelIETest {
-	
+
 	int maxNumberOfIterations = 5;
 
 	static ZoneJobs jobs;
 	static IEJobs ieJobs;
-	static File classifyUnitsFile;
+	static List<File> trainingDataFiles = new ArrayList<File>();
 	static File filteredUnitsFile;
-	static File amFile = new File("information_extraction/data/arbeitsmittel.txt");
-	static File noAMFile = new File("information_extraction/data/kein_arbeitsmittel.txt");
-	static File contextFile = new File("information_extraction/data/amContexts.txt");
+	static File toolsFile = new File("information_extraction/data/tools.txt");
+	static File noToolsFile = new File("information_extraction/data/no_tools.txt");
+	static File contextFile = new File("information_extraction/data/toolContexts.txt");
 	static File sectorsFiles = new File("information_extraction/data/Liste_konsolidiert.xls");
-	// static File sentencesFile;
+	static File toolCountsFile = new File("information_extraction/data/toolCounts.txt");
 	static Integer[] relevantClasses = new Integer[] { 2, 3, 6 };
-	// static String sentenceDataFileName;
-	static File competenceDataOutputFile;
 	static boolean innerSentenceSplitting = false;
 
 	@BeforeClass
 	public static void prepare() throws IOException {
-		classifyUnitsFile = new File(
-				//"classification/data/trainingDataScrambled.csv");				
-				"classification/data/newTrainingData2016.csv");
 
 		// Translations
 		Map<Integer, List<Integer>> translations = new HashMap<Integer, List<Integer>>();
@@ -61,45 +56,45 @@ public class ArbeitsmittelIETest {
 		jobs = new ZoneJobs(stmc);
 		ieJobs = new IEJobs();
 
+		trainingDataFiles.add(new File("classification/data/trainingDataScrambled.csv"));
+		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));
+
 		StringBuffer sb = new StringBuffer();
-		sb.append(classifyUnitsFile.getName().split("\\.")[0] + "_");
 		for (int i = 0; i < relevantClasses.length; i++) {
 			sb.append(relevantClasses[i]);
 			if (i < relevantClasses.length - 1) {
 				sb.append("_");
 			}
 		}
-
-		filteredUnitsFile = new File(
-				"src/test/resources/information_extraction/output/filtered_" + sb.toString() + ".txt");
-		competenceDataOutputFile = new File(
-				"src/test/resources/information_extraction/competenceData_" + sb.toString() + ".txt");
+		
 	}
 
 	@Test
 	public void workFlowTest() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+		List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
+		for (File file : trainingDataFiles) {
+			cus.addAll(jobs.getCategorizedParagraphsFromFile(file));
+		}
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
 		competenceCUs = ieJobs.treatEncoding(competenceCUs);
 		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
-//		ieJobs.setSentenceData(compUnits, null);
-//		ieJobs.readAMLists(amFile, noAMFile);
-//		int iteration = 0;
-//		boolean goOn = true;
-//		while(goOn) {
-//			ieJobs.matchWithAMList(compUnits);
-//			Map<CompetenceUnit, Map<Integer, List<AMContext>>> matches = ieJobs.extractNewAMs(contextFile, compUnits);
-//			if(matches.isEmpty()){
-//				break;
-//			}
-//			goOn = ieJobs.annotateDetectedAMs(matches, amFile, noAMFile, iteration, maxNumberOfIterations);
-//			iteration++;
-//		};
-//		ieJobs.countAMs(compUnits, new File("information_extraction/data/AM_counts.txt"));
-		ieJobs.matchAMsWithSectors(compUnits, sectorsFiles);
+		ieJobs.setSentenceData(compUnits, null);
+		ieJobs.readToolLists(toolsFile, noToolsFile);
+		int iteration = 0;
+		boolean goOn = true;
+		while (goOn) {
+			ieJobs.matchWithToolLists(compUnits);
+			Map<CompetenceUnit, Map<Integer, List<ToolContext>>> matches = ieJobs.extractNewTools(contextFile, compUnits);
+			if (matches.isEmpty()) {
+				break;
+			}
+			goOn = ieJobs.annotateDetectedAMs(matches, toolsFile, noToolsFile, iteration, maxNumberOfIterations);
+			iteration++;
+		}
+		;
+		ieJobs.countTools(compUnits, toolCountsFile);
+		// ieJobs.matchAMsWithSectors(compUnits, sectorsFiles);
 	}
-	
-
 
 	@AfterClass
 	public static void deleteOutput() {

@@ -7,14 +7,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.google.common.hash.HashCode;
 
-public class Arbeitsmittel {
+public class Tool {
 	
 	String word;
 	boolean complete;
 	List<String> context;
 	
 	
-	public Arbeitsmittel(String word, boolean complete){
+	public Tool(String word, boolean complete){
 		this.word = word;
 		this.complete = complete;
 	}
@@ -57,7 +57,7 @@ public class Arbeitsmittel {
 	
 	@Override
 	public boolean equals(Object o){
-		Arbeitsmittel am = (Arbeitsmittel) o;
+		Tool am = (Tool) o;
 		return new EqualsBuilder().append(word, am.word).append(complete, am.complete).append(context, am.context).isEquals();
 	}
 

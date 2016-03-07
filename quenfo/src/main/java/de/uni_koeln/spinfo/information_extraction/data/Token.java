@@ -5,38 +5,29 @@ public class Token {
 	private String posTag;
 	private String lemma;
 	private String string;
-	private boolean isAM;
-	private boolean isStartOfAM;
-	private boolean isNoAM;
-	private boolean canBeRepeated;
+	private boolean isTool;
+	private boolean isStartOfTool;
+	private boolean isNoTool;
 	private int required;
 	
 	
 	
 	
 	
-	public boolean isNoAM() {
-		return isNoAM;
+	public boolean isNoTool() {
+		return isNoTool;
 	}
 
-	public void setNoAM(boolean isNoAM) {
-		this.isNoAM = isNoAM;
+	public void setNoTool(boolean isNoTool) {
+		this.isNoTool = isNoTool;
 	}
 
-	public boolean canBeRepeated() {
-		return canBeRepeated;
+	public boolean isStartOfTool() {
+		return isStartOfTool;
 	}
 
-	public void setCanBeRepeated(boolean canBeRepeated) {
-		this.canBeRepeated = canBeRepeated;
-	}
-
-	public boolean isStartOfAM() {
-		return isStartOfAM;
-	}
-
-	public void setIsStartOfAM(boolean isPartOfAM) {
-		this.isStartOfAM = isPartOfAM;
+	public void setIsStartOfTool(boolean isStartOfTool) {
+		this.isStartOfTool = isStartOfTool;
 	}
 
 	public int getRequired() {
@@ -57,11 +48,11 @@ public class Token {
 		this.posTag = posTag;
 		this.string = string;
 		this.lemma = lemma;
-		this.isAM = isAM;
+		this.isTool = isAM;
 	}
 	
-	public void setAM(boolean isAm){
-		this.isAM = isAm;
+	public void setTool(boolean isTool){
+		this.isTool = isTool;
 	}
 	
 	public String getPosTag() {
@@ -72,8 +63,8 @@ public class Token {
 		return lemma;
 	}
 
-	public boolean isAM(){
-		return isAM;
+	public boolean isTool(){
+		return isTool;
 	}
 	public String getString() {
 		return string;
@@ -112,9 +103,9 @@ public class Token {
 				return false;
 			}
 		}
-		if(contextToken.isAM){
-			if(this.isStartOfAM) return isStartOfAM;
-			return isAM;
+		if(contextToken.isTool){
+			if(this.isStartOfTool) return isStartOfTool;
+			return isTool;
 		}
 		return true;
 	}
@@ -122,7 +113,7 @@ public class Token {
 	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
-		sb.append(string+"\t"+lemma+"\t"+posTag+"\t"+isAM+"\t"+isStartOfAM+"\t"+required);
+		sb.append(string+"\t"+lemma+"\t"+posTag+"\t"+isTool+"\t"+isStartOfTool+"\t"+required);
 		return sb.toString();
 	}
 

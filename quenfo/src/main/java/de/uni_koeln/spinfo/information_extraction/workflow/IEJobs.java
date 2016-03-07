@@ -2,7 +2,6 @@ package de.uni_koeln.spinfo.information_extraction.workflow;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,12 +23,12 @@ import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.information_extraction.CompetenceDetector;
-import de.uni_koeln.spinfo.information_extraction.data.AMContext;
-import de.uni_koeln.spinfo.information_extraction.data.Arbeitsmittel;
 import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.data.DependencyTree;
 import de.uni_koeln.spinfo.information_extraction.data.Token;
+import de.uni_koeln.spinfo.information_extraction.data.Tool;
+import de.uni_koeln.spinfo.information_extraction.data.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.data.WordNode;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import is2.data.SentenceData09;
@@ -37,12 +36,10 @@ import is2.io.CONLLWriter09;
 import is2.lemmatizer.Lemmatizer;
 import is2.parser.Parser;
 import is2.tag.Tagger;
-import is2.tools.Tool;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
-import jxl.biff.WorkbookMethods;
 import jxl.read.biff.BiffException;
 
 /**
@@ -53,14 +50,11 @@ import jxl.read.biff.BiffException;
 
 public class IEJobs {
 
-	private Map<String, Set<Arbeitsmittel>> ams;
-	private Set<String> noAMs;
-	
-	Map<String, Set<String>> sectorsFileAMs = new HashMap<String, Set<String>>();
-	Map<String, String> sectors = new HashMap<String, String>(); 
-	
-	
+	private Map<String, Set<Tool>> tools;
+	private Set<String> noTools;
 
+	Map<String, Set<String>> sectorsFileTools = new HashMap<String, Set<String>>();
+	Map<String, String> sectors = new HashMap<String, String>();
 
 	/**
 	 * Methode zum Filtern von ClassifyUnits bestimmter Klassen
@@ -197,11 +191,11 @@ public class IEJobs {
 	 */
 	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName) throws IOException {
 		IETokenizer tokenizer = new IETokenizer();
-		Tool lemmatizer = new Lemmatizer("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
+		is2.tools.Tool lemmatizer = new Lemmatizer("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 		is2.mtag.Tagger morphTagger = new is2.mtag.Tagger(
 				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/morphology-ger-3.6.model");
-		Tool tagger = new Tagger("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/tag-ger-3.6.model");
-		Tool parser = new Parser("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/parser-ger-3.6.model");
+		is2.tools.Tool tagger = new Tagger("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/tag-ger-3.6.model");
+		is2.tools.Tool parser = new Parser("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/parser-ger-3.6.model");
 		CONLLWriter09 writer = null;
 		if (sdOutputFileName != null) {
 			File file = new File(sdOutputFileName + ".csv");
@@ -394,11 +388,11 @@ public class IEJobs {
 		return toReturn;
 	}
 
-	private List<AMContext> readAMContextFile(File file) throws IOException {
-		List<AMContext> toReturn = new ArrayList<AMContext>();
+	private List<ToolContext> readToolContextFile(File file) throws IOException {
+		List<ToolContext> toReturn = new ArrayList<ToolContext>();
 		BufferedReader in = new BufferedReader(new FileReader(file));
 		String line = in.readLine();
-		AMContext context = new AMContext();
+		ToolContext context = new ToolContext();
 		while (line != null) {
 			String[] split = line.split("\t");
 			if (line.startsWith("TOKEN:")) {
@@ -412,20 +406,15 @@ public class IEJobs {
 				if (posTag.equals("null"))
 					posTag = null;
 				Token token = new Token(string, lemma, posTag, Boolean.parseBoolean(split[4]));
-				if (split.length > 5) {
-					if (split[5].equals("+")) {
-						token.setCanBeRepeated(true);
-					}
-				}
 				context.addToken(token);
 			}
-			if (line.startsWith("AM:")) {
+			if (line.startsWith("TOOL:")) {
 				context.setAMPointer(Integer.parseInt(split[1]));
 			}
 			if (line.startsWith("CONF:")) {
 				context.setConf(Double.parseDouble(split[1]));
 				toReturn.add(context);
-				context = new AMContext();
+				context = new ToolContext();
 			}
 			line = in.readLine();
 		}
@@ -433,94 +422,94 @@ public class IEJobs {
 		return toReturn;
 	}
 
-	public void writeAMContextFile(List<AMContext> contexts, File file, boolean overwrite) throws IOException {
-		List<AMContext> toWrite = new ArrayList<AMContext>();
+	public void writeToolContextFile(List<ToolContext> contexts, File file, boolean overwrite) throws IOException {
+		List<ToolContext> toWrite = new ArrayList<ToolContext>();
 		if (!overwrite) {
-			List<AMContext> read = readAMContextFile(file);
+			List<ToolContext> read = readToolContextFile(file);
 			toWrite.addAll(read);
 		}
 		toWrite.addAll(contexts);
 		PrintWriter out = new PrintWriter(new FileWriter(file));
-		for (AMContext context : toWrite) {
+		for (ToolContext context : toWrite) {
 			for (Token token : context.getTokens()) {
 				out.write("TOKEN:\t");
 				out.write(token.getString() + "\t");
 				out.write(token.getLemma() + "\t");
 				out.write(token.getPosTag() + "\t");
-				out.write(token.isAM() + "\n");
-				out.write("AM:\t");
-				out.write(context.getAMPointer() + "\n");
+				out.write(token.isTool() + "\n");
+				out.write("TOOL:\t");
+				out.write(context.getToolPointer() + "\n");
 				out.write("CONF:\t");
 				out.write(context.getConf() + "\n");
 			}
 		}
 		out.close();
 	}
-	
-	public void readAMLists(File amFile, File noAMsFile) throws IOException{
-		ams = new TreeMap<String, Set<Arbeitsmittel>>();
-		noAMs = new TreeSet<String>();
-		//read AMs from File
-		BufferedReader in = new BufferedReader(new FileReader(amFile));
+
+	public void readToolLists(File toolsFile, File noToolsFile) throws IOException {
+		tools = new TreeMap<String, Set<Tool>>();
+		noTools = new TreeSet<String>();
+		// read AMs from File
+		BufferedReader in = new BufferedReader(new FileReader(toolsFile));
 		String line = in.readLine();
 		while (line != null) {
 			String split[] = line.split(" ");
-			Set<Arbeitsmittel> set = ams.get(split[0]);
+			Set<Tool> set = tools.get(split[0]);
 			if (set == null)
-				set = new HashSet<Arbeitsmittel>();
-			Arbeitsmittel am = new Arbeitsmittel(split[0], split.length == 1);
-			am.setContext(Arrays.asList(split));
-			set.add(am);
-			ams.put(split[0], set);
+				set = new HashSet<Tool>();
+			Tool tool = new Tool(split[0], split.length == 1);
+			tool.setContext(Arrays.asList(split));
+			set.add(tool);
+			tools.put(split[0], set);
 			line = in.readLine();
 		}
 		in.close();
-		//read noAMs From File
-		in = new BufferedReader(new FileReader(noAMsFile));
+		// read noAMs From File
+		in = new BufferedReader(new FileReader(noToolsFile));
 		line = in.readLine();
-		while(line != null){
-			noAMs.add(line.toLowerCase().trim());
+		while (line != null) {
+			noTools.add(line.toLowerCase().trim());
 			line = in.readLine();
 		}
 	}
 
-	public void matchWithAMList(List<CompetenceUnit> compUnits) throws IOException {
-		
-		//search for and flag as AMs or noAMs in competenceUnits
+	public void matchWithToolLists(List<CompetenceUnit> compUnits) throws IOException {
+
+		// search for and flag as AMs or noAMs in competenceUnits
 		for (CompetenceUnit cu : compUnits) {
 			List<Token> tokens = cu.getTokenObjects();
 			for (int i = 0; i < tokens.size(); i++) {
 				Token token = tokens.get(i);
 				String lemma = normalizeLemma(token.getLemma());
-				if(noAMs.contains(lemma)){
-					//flas as noAM
-					token.setNoAM(true);
+				if (noTools.contains(lemma)) {
+					// flas as noAM
+					token.setNoTool(true);
 					continue;
 				}
-				if(ams.keySet().contains(lemma)){
-				
-					for (Arbeitsmittel am : ams.get(lemma)) {
-						if (am.isComplete()) {
-							//token is single AM
-							token.setAM(true);
+				if (tools.keySet().contains(lemma)) {
+
+					for (Tool tool : tools.get(lemma)) {
+						if (tool.isComplete()) {
+							// token is single AM
+							token.setTool(true);
 							continue;
 						}
-						//token could be start of AM
+						// token could be start of AM
 						boolean matches = false;
-						for (int c = 1; c < am.getContext().size(); c++) {
-							if(tokens.size() <= i+c){
+						for (int c = 1; c < tool.getContext().size(); c++) {
+							if (tokens.size() <= i + c) {
 								matches = false;
 								break;
 							}
-							matches = am.getContext().get(c).equals(tokens.get(i + c).getLemma());								
+							matches = tool.getContext().get(c).equals(tokens.get(i + c).getLemma());
 							if (!matches) {
 								break;
 							}
 						}
-						//Token is start of AM
+						// Token is start of AM
 						if (matches) {
-							token.setIsStartOfAM(true);
-							token.setRequired(am.getContext().size() - 1);
+							token.setIsStartOfTool(true);
+							token.setRequired(tool.getContext().size() - 1);
 						}
 					}
 				}
@@ -552,61 +541,61 @@ public class IEJobs {
 		return toReturn;
 	}
 
-	public Map<CompetenceUnit, Map<Integer, List<AMContext>>> extractNewAMs(File contextFile,
+	public Map<CompetenceUnit, Map<Integer, List<ToolContext>>> extractNewTools(File contextFile,
 			List<CompetenceUnit> compUnits) throws IOException {
-		//read contexts from file
-		List<AMContext> contexts = readAMContextFile(contextFile);
-		//<cu, <Tokenindex, contexts>>
-		Map<CompetenceUnit, Map<Integer, List<AMContext>>> toReturn = new HashMap<CompetenceUnit, Map<Integer, List<AMContext>>>();
+		// read contexts from file
+		List<ToolContext> contexts = readToolContextFile(contextFile);
+		// <cu, <Tokenindex, contexts>>
+		Map<CompetenceUnit, Map<Integer, List<ToolContext>>> toReturn = new HashMap<CompetenceUnit, Map<Integer, List<ToolContext>>>();
 
 		for (CompetenceUnit cu : compUnits) {
 			List<Token> tokens = cu.getTokenObjects();
-			
-			for (AMContext context : contexts) {
+
+			for (ToolContext context : contexts) {
 				// compare tokens with context
 				for (int i = 0; i <= tokens.size() - context.getSize(); i++) {
-					
+
 					boolean match = false;
 					int plus = 0;
-					//context window
+					// context window
 					for (int c = 0; c < context.getSize(); c++) {
-						if((i+c+plus) >= tokens.size()){
+						if ((i + c + plus) >= tokens.size()) {
 							continue;
 						}
-						Token token = tokens.get(i+c+plus);
+						Token token = tokens.get(i + c + plus);
 						Token contextToken = context.getTokenAt(c);
 						match = token.isEqualsContextToken(contextToken);
 						if (!match) {
-							//move to next context windoew
+							// move to next context windoew
 							break;
 						}
-						//skip over required tokens
-						if(c < context.getSize()-1){
+						// skip over required tokens
+						if (c < context.getSize() - 1) {
 							plus = plus + token.getRequired();
 						}
-						
+
 					}
-					//if context window matches context:
-					if (match && (i+context.getAMPointer()+plus < tokens.size())) {
-						Token amToken = tokens.get(i + context.getAMPointer()+plus);
-						int amTokenIndex = i + context.getAMPointer()+plus;
-						plus = plus+amToken.getRequired();
-						boolean isNew = !amToken.isAM();
-						if(isNew){
-							isNew = !amToken.isStartOfAM();
+					// if context window matches context:
+					if (match && (i + context.getToolPointer() + plus < tokens.size())) {
+						Token toolToken = tokens.get(i + context.getToolPointer() + plus);
+						int toolTokenIndex = i + context.getToolPointer() + plus;
+						plus = plus + toolToken.getRequired();
+						boolean isNew = !toolToken.isTool();
+						if (isNew) {
+							isNew = !toolToken.isStartOfTool();
 						}
-						boolean isNoAM = amToken.isNoAM();
-						if (isNew && !(isNoAM)) {
-							//token is not in AMs or noAMs
-								Map<Integer, List<AMContext>> map = toReturn.get(cu);
-								if (map == null)
-									map = new HashMap<Integer, List<AMContext>>();
-								List<AMContext> list = map.get(amTokenIndex);
-								if (list == null)
-									list = new ArrayList<AMContext>();
-								list.add(context);
-								map.put(amTokenIndex, list);
-								toReturn.put(cu, map);				
+						boolean isNoTool = toolToken.isNoTool();
+						if (isNew && !(isNoTool)) {
+							// token is not in AMs or noAMs
+							Map<Integer, List<ToolContext>> map = toReturn.get(cu);
+							if (map == null)
+								map = new HashMap<Integer, List<ToolContext>>();
+							List<ToolContext> list = map.get(toolTokenIndex);
+							if (list == null)
+								list = new ArrayList<ToolContext>();
+							list.add(context);
+							map.put(toolTokenIndex, list);
+							toReturn.put(cu, map);
 						}
 					}
 				}
@@ -614,63 +603,64 @@ public class IEJobs {
 		}
 		return toReturn;
 	}
-	
-	
-	public boolean annotateDetectedAMs(Map<CompetenceUnit, Map<Integer,List<AMContext>>> detected, File amFile, File noAMFile, int currentIteration, int maxNumberOfIterations) throws IOException{
+
+	public boolean annotateDetectedAMs(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
+			File noToolsFile, int currentIteration, int maxNumberOfIterations) throws IOException {
 		System.out.println("annotate...");
-		//List<String> AMs = new ArrayList<String>();
-		boolean lastWasAM = false;
+		boolean lastWasTool = false;
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String answer;
-		Arbeitsmittel lastAM = null;
-		String lastNotAM = null;
+		Tool lastTool = null;
+		String lastNoTool = null;
 		for (CompetenceUnit cu : detected.keySet()) {
 			System.out.println(cu);
 			System.out.println();
 			List<Integer> tokenIndices = new ArrayList<Integer>(detected.get(cu).keySet());
 			int i = 0;
 			while (i < tokenIndices.size()) {
-				if(i < 0) continue;
-				int amTokenIndex = tokenIndices.get(i);
-				Token amToken = cu.getTokenObjects().get(amTokenIndex);
-				String potentialAM = normalizeLemma(amToken.getLemma());
-				System.out.println("--> "+potentialAM);
+				if (i < 0)
+					continue;
+				int toolTokenIndex = tokenIndices.get(i);
+				Token toolToken = cu.getTokenObjects().get(toolTokenIndex);
+				String potentialTool = normalizeLemma(toolToken.getLemma());
+				System.out.println("--> " + potentialTool);
 				answer = in.readLine().toLowerCase().trim();
-				if(answer.equals("y")){
-					lastWasAM = true;
+				if (answer.equals("y")) {
+					lastWasTool = true;
 					System.out.println("is complete?");
 					answer = in.readLine();
-					if(answer.trim().toLowerCase().equals("y")){
-						Arbeitsmittel newAM = new Arbeitsmittel(potentialAM, true);
-						System.out.println("added: " + potentialAM);
-						Set<Arbeitsmittel> list = ams.get(potentialAM);
-						if(list == null) list = new HashSet<Arbeitsmittel>();
-						list.add(newAM);
-						ams.put(potentialAM, list);
-						lastAM = newAM;
+					if (answer.trim().toLowerCase().equals("y")) {
+						Tool newTool = new Tool(potentialTool, true);
+						System.out.println("added: " + potentialTool);
+						Set<Tool> list = tools.get(potentialTool);
+						if (list == null)
+							list = new HashSet<Tool>();
+						list.add(newTool);
+						tools.put(potentialTool, list);
+						lastTool = newTool;
 						System.out.println("added new AM");
 					}
-					if(answer.trim().toLowerCase().equals("n")){
+					if (answer.trim().toLowerCase().equals("n")) {
 						boolean answered = false;
-						while(!answered){
+						while (!answered) {
 							System.out.println("enter number of required words");
 							answer = in.readLine();
 							try {
 								int required = Integer.parseInt(answer);
-								Arbeitsmittel newAM = new Arbeitsmittel(potentialAM, false);
-								System.out.println("added: " + potentialAM);
+								Tool newTool = new Tool(potentialTool, false);
+								System.out.println("added: " + potentialTool);
 								List<String> context = new ArrayList<String>();
-								for(int r = 0; r <= required; r++){
-									context.add(cu.getTokenObjects().get(amTokenIndex+r).getLemma());
+								for (int r = 0; r <= required; r++) {
+									context.add(cu.getTokenObjects().get(toolTokenIndex + r).getLemma());
 								}
-								newAM.setContext(context);
-								Set<Arbeitsmittel> list = ams.get(potentialAM);
-								if(list == null){
-									list = new HashSet<Arbeitsmittel>();
+								newTool.setContext(context);
+								Set<Tool> list = tools.get(potentialTool);
+								if (list == null) {
+									list = new HashSet<Tool>();
 								}
-								list.add(newAM);
-								ams.put(potentialAM, list);
-								lastAM = newAM;
+								list.add(newTool);
+								tools.put(potentialTool, list);
+								lastTool = newTool;
 								System.out.println("added new AM: ");
 								answered = true;
 							} catch (Exception e) {
@@ -681,153 +671,172 @@ public class IEJobs {
 					i++;
 					continue;
 				}
-				if(answer.equals("n")){
-					lastWasAM = false;
-					noAMs.add(amToken.getLemma());
-					lastNotAM = amToken.getLemma();
+				if (answer.equals("n")) {
+					lastWasTool = false;
+					noTools.add(toolToken.getLemma());
+					lastNoTool = toolToken.getLemma();
 					System.out.println("saved as noAM");
 					i++;
 					continue;
 				}
-				if(answer.equals("stop")){
-					writeAMFile(amFile, noAMFile);
+				if (answer.equals("stop")) {
+					writeToolFiles(toolsFile, noToolsFile);
 					return false;
 				}
-//				if(answer.equals("b")){
-//					if(lastWasAM && lastAM != null){
-//						Set<Arbeitsmittel> amSet = ams.get(lastAM.getWord());
-//						amSet.remove(lastAM);
-//						StringBuffer removed = new StringBuffer(lastAM.getWord());
-//						if(lastAM.getContext() != null){
-//							for (String s : lastAM.getContext()) {
-//								removed.append(" "+s);
-//							}
-//						}
-//						System.out.println("removed: "  + removed+" from AMList");
-//						i--;
-//						i--;
-//						continue;
-//					}
-//					if(!lastWasAM && lastNotAM != null){
-//						noAMs.remove(lastNotAM);
-//						System.out.println("removed " + lastNotAM+" from notAMList");
-//						i--;
-//						i--;
-//						continue;
-//					}
-//				}
-				else{
+				// if(answer.equals("b")){
+				// if(lastWasAM && lastAM != null){
+				// Set<Arbeitsmittel> amSet = ams.get(lastAM.getWord());
+				// amSet.remove(lastAM);
+				// StringBuffer removed = new StringBuffer(lastAM.getWord());
+				// if(lastAM.getContext() != null){
+				// for (String s : lastAM.getContext()) {
+				// removed.append(" "+s);
+				// }
+				// }
+				// System.out.println("removed: " + removed+" from AMList");
+				// i--;
+				// i--;
+				// continue;
+				// }
+				// if(!lastWasAM && lastNotAM != null){
+				// noAMs.remove(lastNotAM);
+				// System.out.println("removed " + lastNotAM+" from notAMList");
+				// i--;
+				// i--;
+				// continue;
+				// }
+				// }
+				else {
 					System.out.println("invalid answer...");
 					i--;
 				}
 			}
 		}
-		writeAMFile(amFile, noAMFile);
-		if(currentIteration < maxNumberOfIterations){
+		writeToolFiles(toolsFile, noToolsFile);
+		if (currentIteration < maxNumberOfIterations) {
 			return true;
-		}
-		else{
+		} else {
 			return false;
 		}
 	}
 
-	private void writeAMFile(File amsFile, File noAMsFile) throws IOException {
-		PrintWriter out = new PrintWriter(new FileWriter(noAMsFile));
-		for (String string : noAMs) {
-			out.write(string+"\n");
+	private void writeToolFiles(File toolsFile, File noToolsFile) throws IOException {
+		PrintWriter out = new PrintWriter(new FileWriter(noToolsFile));
+		for (String string : noTools) {
+			out.write(string + "\n");
 		}
 		out.close();
-		out = new PrintWriter(new FileWriter(amsFile));
-		for (String string : ams.keySet()) {
-			for (Arbeitsmittel am : ams.get(string)) {
+		out = new PrintWriter(new FileWriter(toolsFile));
+		for (String string : tools.keySet()) {
+			for (Tool tool : tools.get(string)) {
 				StringBuffer sb = new StringBuffer();
 				sb.append(string);
-				if(!am.isComplete()){
-					for (int i = 1; i < am.getContext().size(); i++) {
-						sb.append(" "+am.getContext().get(i));
+				if (!tool.isComplete()) {
+					for (int i = 1; i < tool.getContext().size(); i++) {
+						sb.append(" " + tool.getContext().get(i));
 					}
 				}
-				out.write(sb.toString()+"\n");
+				out.write(sb.toString() + "\n");
 			}
 		}
 		out.close();
 	}
-	
-	
-	public Map<Integer, List<String>> countAMs(List<CompetenceUnit> comps, File outputfile) throws IOException{
-		Map<Integer,List<String>> toReturn = new TreeMap<Integer,List<String>>();
-		Map<String,Integer> countMap = new TreeMap<String,Integer>();
+
+	public Map<Integer, List<String>> countTools(List<CompetenceUnit> comps, File outputfile) throws IOException {
+		Map<Integer, List<String>> toReturn = new TreeMap<Integer, List<String>>();
+		Map<String, Integer> countMap = new TreeMap<String, Integer>();
 		for (CompetenceUnit cu : comps) {
-			for (int t = 0; t < cu.getTokenObjects().size();t++) {
+			for (int t = 0; t < cu.getTokenObjects().size(); t++) {
 				Token token = cu.getTokenObjects().get(t);
 				String lemma = normalizeLemma(token.getLemma());
-				if(token.isAM()){
+				if (token.isTool()) {
 					int count = 0;
-					if(countMap.keySet().contains(lemma)){
+					if (countMap.keySet().contains(lemma)) {
 						count = countMap.get(lemma);
 					}
 					count++;
 					countMap.put(lemma, count);
 				}
-				if(token.isStartOfAM()){
+				if (token.isStartOfTool()) {
 					int count = 0;
 					StringBuffer sb = new StringBuffer();
 					sb.append(lemma);
-					for(int i = t+1; i <= token.getRequired(); i++){			
+					for (int i = t + 1; i <= token.getRequired(); i++) {
 						String contextLemma = normalizeLemma(cu.getTokenObjects().get(i).getLemma());
-				
-						sb.append(" "+contextLemma);
+
+						sb.append(" " + contextLemma);
 					}
 					String am = sb.toString();
-					if(countMap.keySet().contains(am)){
+					if (countMap.keySet().contains(am)) {
 						count = countMap.get(am);
 					}
 					count++;
-					countMap.put(token.getLemma(), count);
+					countMap.put(am, count);
 				}
 			}
 		}
 		for (String s : countMap.keySet()) {
 			List<String> list = toReturn.get(countMap.get(s));
-			if(list == null) list = new ArrayList<String>();
+			if (list == null)
+				list = new ArrayList<String>();
 			list.add(s);
 			toReturn.put(countMap.get(s), list);
 		}
-		if(outputfile != null){
+		if (outputfile != null) {
 			PrintWriter out = new PrintWriter(new FileWriter(outputfile));
 			List<Integer> reordered = new ArrayList<Integer>(toReturn.keySet());
-			for (int i = reordered.size()-1; i >=0;i--) {
+			for (int i = reordered.size() - 1; i >= 0; i--) {
 				int count = reordered.get(i);
 				for (String am : toReturn.get(count)) {
-					out.write(count+"\t"+am+"\n");
+					out.write(count + "\t" + am + "\n");
 				}
 			}
 			out.close();
 		}
 		return toReturn;
 	}
-	
-	
-	private String normalizeLemma(String lemma){
-		if(lemma.startsWith("-")){
+
+	private String normalizeLemma(String lemma) {
+		if (lemma.startsWith("-")) {
 			lemma = lemma.substring(1);
 		}
-		if(lemma.endsWith("/")){
-			lemma = lemma.substring(0, lemma.length()-1);
+		if (lemma.endsWith("/")) {
+			lemma = lemma.substring(0, lemma.length() - 1);
 		}
 		return lemma;
 	}
 
-	public void matchAMsWithSectors(List<CompetenceUnit> compUnits, File sectorsFile) throws IOException {
+	public Set<String> matchToolsWithSectors(List<CompetenceUnit> compUnits, File sectorsFile) throws IOException {
+		Set<String> matches = new TreeSet<String>();
 		readSectorsList(sectorsFile);
-		
+		for (String s : sectorsFileTools.keySet()) {
+			System.out.println(s);
+		}
+		for (String s : tools.keySet()) {
+			for (Tool tool : tools.get(s)) {
+				String expression;
+				if (tool.getContext() != null) {
+					StringBuffer sb = new StringBuffer();
+					for (String con : tool.getContext()) {
+						sb.append(" " + con);
+					}
+					expression = sb.toString().substring(1);
+				} else {
+					expression = tool.getWord();
+				}
+				if (sectorsFileTools.keySet().contains(expression)) {
+					matches.add(expression);
+				}
+			}
+		}
+		return matches;
 	}
+
 	private void readSectorsList(File sectorsFile) throws IOException {
-		Tool lemmatizer = new Lemmatizer(
-				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
+		is2.tools.Tool lemmatizer = new Lemmatizer("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 		IETokenizer tokenizer = new IETokenizer();
-		
-		sectorsFileAMs = new HashMap<String, Set<String>>();
+
+		sectorsFileTools = new HashMap<String, Set<String>>();
 		sectors = new HashMap<String, String>();
 		Workbook w;
 		try {
@@ -841,27 +850,27 @@ public class IEJobs {
 				// Zeile i
 				Cell sectorCell = sheet.getCell(0, i);
 				if (sectorCell.getContents().equals("")) {
-					String wmContent = sheet.getCell(1, i).getContents();
-					
+					String toolContent = sheet.getCell(1, i).getContents();
+
 					// lemmatisieren
-					String[] workMats = wmContent.split(",");
-					
-					for (String wm : workMats) {
-						wm = wm.trim();
+					String[] tools = toolContent.split(",");
+
+					for (String t : tools) {
+						t = t.trim();
 						SentenceData09 sd = new SentenceData09();
-						sd.init(tokenizer.tokenizeSentence(wm));
+						sd.init(tokenizer.tokenizeSentence(t));
 						lemmatizer.apply(sd);
 						StringBuffer sb = new StringBuffer();
 						String[] lemmas = sd.plemmas;
 						for (String lemma : lemmas) {
-							sb.append(" "+lemma);
+							sb.append(" " + lemma);
 						}
-						Set<String> sectors = sectorsFileAMs.get(sb.toString().substring(1));
+						Set<String> sectors = sectorsFileTools.get(sb.toString().substring(1));
 						if (sectors == null) {
 							sectors = new HashSet<String>();
 						}
 						sectors.add(sector);
-						sectorsFileAMs.put(sb.toString().substring(1), sectors);
+						sectorsFileTools.put(sb.toString().substring(1), sectors);
 					}
 					continue;
 				} else {
@@ -880,4 +889,3 @@ public class IEJobs {
 		}
 	}
 }
-
