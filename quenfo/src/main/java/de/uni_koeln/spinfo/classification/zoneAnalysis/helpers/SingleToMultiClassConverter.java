@@ -1,5 +1,6 @@
 package de.uni_koeln.spinfo.classification.zoneAnalysis.helpers;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,26 @@ public class SingleToMultiClassConverter {
 	
 	private void reportTranslationError(int classID){
 		System.err.println("Your class/category translation is not well defiened. Please check your code. Error in class " + classID);
+	}
+	
+	public int getSingleClass(boolean[] classes){
+		List<Integer> classList = new ArrayList<Integer>();
+		for (int i = 0; i < classes.length;i++) {
+			if(classes[i]){
+				classList.add(i+1);
+			}
+		}
+		if(classList.size()==1){
+			return classList.get(0);
+		}
+		if(classList.size()==2){
+			for (int c : translations.keySet()) {
+				if(translations.get(c).equals(classList)){
+					return c;
+				}
+			}
+		}
+		return -1;
 	}
 
 	public boolean[] getMultiClasses(int singleClassID){

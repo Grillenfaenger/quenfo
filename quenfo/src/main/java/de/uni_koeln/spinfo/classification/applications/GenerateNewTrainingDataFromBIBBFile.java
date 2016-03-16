@@ -15,11 +15,12 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDat
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
-public class AnnotateNewTrainingDataFromBIBBFile {
+public class GenerateNewTrainingDataFromBIBBFile {
 	
-	private static String inBIBBClassifiedParagraphs = "classification/data/inBIBBClassifiedParagraphs2016.xls";
-	private static String newTrainingDataFile = "classification/data/newTrainingData2016.csv";
+	private static String inBIBBClassifiedParagraphs = "classification/data/inBIBBClassifiedParagraphs_March2016.xls";
+	private static String newTrainingDataFile = "classification/data/notAnnotatedTrainingData_March2016.csv";
 	private static ZoneJobs jobs;
+	private static IEJobs ieJobs;
 	
 	
 	
@@ -35,16 +36,12 @@ public class AnnotateNewTrainingDataFromBIBBFile {
 		translations.put(6, categories);
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 		jobs = new ZoneJobs(stmc);
-		
-	//	DumpDataBaseTrainingDataGenerator ddtdg = new DumpDataBaseTrainingDataGenerator(jobs.getStmc(),new File(inBIBBClassifiedParagraphs), new File(newTrainingDataFile));
-		//ddtdg.readInBIBBClassifiedParagraphsFromFile();
-		//ddtdg.annotate();		
-		TrainingDataGenerator tdg = new TrainingDataGenerator(new File("classification/data/newTrainingData2016.csv"), 4, 6, translations);
-		List<ClassifyUnit> cus = tdg.getTrainingData();
-		IEJobs jobs = new IEJobs();
-		cus = jobs.treatEncoding(cus);
-		tdg.writeTrainingDataFile(new File("classification/data/newTrainingData2016.csv"), cus);
-		
+		ieJobs = new IEJobs();
+		DumpDataBaseTrainingDataGenerator ddtdg = new DumpDataBaseTrainingDataGenerator(jobs.getStmc(),new File(inBIBBClassifiedParagraphs), new File(newTrainingDataFile));
+		ddtdg.readInBIBBClassifiedParagraphsFromFile();
+		TrainingDataGenerator tdg = new TrainingDataGenerator(new File(newTrainingDataFile), 4, 6, translations);
+		tdg.writeTrainingDataFile(ieJobs.treatEncoding(ddtdg.getData()));
+	
 	}
 	
 

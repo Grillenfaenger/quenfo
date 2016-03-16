@@ -3,6 +3,7 @@ package de.uni_koeln.spinfo.classification.jasc.data;
 import java.util.UUID;
 
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 
 /** 
  * A basic unit for all classify tasks.
@@ -50,5 +51,7 @@ public class JASCClassifyUnit extends ZoneClassifyUnit {
 	
 	public String toString(){
 		return parentID + "\t" + actualClassID + "\n" +  content + "\n";
-	}	
+	}
+
+	
 }

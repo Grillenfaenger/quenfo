@@ -60,5 +60,20 @@ public class Tool {
 		Tool am = (Tool) o;
 		return new EqualsBuilder().append(word, am.word).append(complete, am.complete).append(context, am.context).isEquals();
 	}
+	
+	@Override
+	public String toString(){
+		if(isComplete()){
+			return word;
+		}
+		else{
+			StringBuffer sb = new StringBuffer();
+			for (String string : context) {
+				sb.append(string+" ");
+			}
+			return sb.toString().substring(0,sb.length()-1);
+		}
+	}
+	
 
 }

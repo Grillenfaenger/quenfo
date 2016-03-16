@@ -14,12 +14,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
+import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.information_extraction.applications.ReadAndMatchWorkingMaterialList;
 import de.uni_koeln.spinfo.information_extraction.data.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.data.Token;
+import de.uni_koeln.spinfo.information_extraction.data.Tool;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class ArbeitsmittelIETest {
@@ -56,8 +58,9 @@ public class ArbeitsmittelIETest {
 		jobs = new ZoneJobs(stmc);
 		ieJobs = new IEJobs();
 
-		trainingDataFiles.add(new File("classification/data/trainingDataScrambled.csv"));
-		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));
+//		trainingDataFiles.add(new File("classification/data/trainingDataScrambled.csv"));
+		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));	
+//		trainingDataFiles.add(new File("classification/data/notAnnotatedTrainingData_March2016.csv"));
 
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < relevantClasses.length; i++) {
@@ -76,6 +79,7 @@ public class ArbeitsmittelIETest {
 			cus.addAll(jobs.getCategorizedParagraphsFromFile(file));
 		}
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+		System.out.println(competenceCUs.size());
 		competenceCUs = ieJobs.treatEncoding(competenceCUs);
 		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, null);
@@ -94,6 +98,13 @@ public class ArbeitsmittelIETest {
 		;
 		ieJobs.countTools(compUnits, toolCountsFile);
 		// ieJobs.matchAMsWithSectors(compUnits, sectorsFiles);
+//		Map<CompetenceUnit, List<Tool>> toolsByCU = ieJobs.getToolsByCU(compUnits);
+//		for (CompetenceUnit cu : toolsByCU.keySet()) {
+//			System.out.println(cu.getSentence());
+//			for (Tool tool : toolsByCU.get(cu)) {
+//				System.out.println("--> "+tool);
+//			}
+//		}
 	}
 
 	@AfterClass

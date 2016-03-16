@@ -10,6 +10,7 @@ public class Token {
 	private boolean isNoTool;
 	private int required;
 	
+	private int potentialContextCount;
 	
 	
 	
@@ -115,6 +116,14 @@ public class Token {
 		StringBuffer sb = new StringBuffer();
 		sb.append(string+"\t"+lemma+"\t"+posTag+"\t"+isTool+"\t"+isStartOfTool+"\t"+required);
 		return sb.toString();
+	}
+
+	public int getPotentialStartOfTool() {
+		return potentialContextCount;
+	}
+
+	public void setPotentialStartOfTool(int potentialStartOfTool) {
+		this.potentialContextCount = potentialStartOfTool;
 	}
 
 }

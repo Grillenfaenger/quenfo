@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -25,7 +26,7 @@ import jxl.read.biff.BiffException;
 public class DumpDataBaseTrainingDataGenerator {
 	
 	SingleToMultiClassConverter stmc;
-	List<JASCClassifyUnit> data = null;
+	List<ClassifyUnit> data = null;
 	File databaseFile;
 	Map<ClassifyUnit, Integer> correctedData = new HashMap<ClassifyUnit, Integer>();
 	TrainingDataGenerator tdg;
@@ -41,7 +42,7 @@ public class DumpDataBaseTrainingDataGenerator {
 	}
 	
 	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
-		data = new ArrayList<JASCClassifyUnit>();
+		data = new ArrayList<ClassifyUnit>();
 		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
 		
 		Workbook w;
@@ -70,6 +71,7 @@ public class DumpDataBaseTrainingDataGenerator {
 				int zeilennr = Integer.parseInt(sheet.getCell(4,i).getContents());
 				cu = new JASCClassifyUnit(content, jahrgang, zeilennr, id);
 				cu.setClassIDs(classes);
+				cu.setActualClassID(stmc.getSingleClass(classes));
 				data.add(cu);
 			}
 		}
@@ -80,6 +82,10 @@ public class DumpDataBaseTrainingDataGenerator {
 	
 	public void annotate() throws IOException{
 		tdg.annotate(data);
+	}
+	
+	public List<ClassifyUnit> getData(){
+		return data;
 	}
 
 }

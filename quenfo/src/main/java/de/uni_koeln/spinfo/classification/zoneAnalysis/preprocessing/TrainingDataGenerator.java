@@ -147,7 +147,7 @@ public class TrainingDataGenerator {
 	 * @param dataList
 	 * @throws IOException
 	 */
-	public void annotate(List<JASCClassifyUnit> dataList) throws IOException {
+	public void annotate(List<ClassifyUnit> dataList) throws IOException {
 		
 		getTrainingData();
 		System.out.println("Training Data Size: " + classifiedData.size());
@@ -181,7 +181,7 @@ public class TrainingDataGenerator {
 		}
 		// annotate...
 		for (int i = start; i < dataList.size(); i++) {
-			JASCClassifyUnit currentCU = dataList.get(i);
+			JASCClassifyUnit currentCU = (JASCClassifyUnit) dataList.get(i);
 			int classID = 0;
 			System.out.println(currentCU.getContent());
 			String answer = in.readLine();
@@ -209,7 +209,7 @@ public class TrainingDataGenerator {
 			currentCU.setActualClassID(classID);
 			classifiedData.add(currentCU);
 		}
-		writeTrainingDataFile(tdFile, classifiedData);
+		writeTrainingDataFile(classifiedData);
 	}
 
 
@@ -253,6 +253,10 @@ public class TrainingDataGenerator {
 		}
 		writeTrainingDataFile(newTrainingDataFile, goodData);
 		writeTrainingDataFile(badDataFile, badData);
+	}
+	
+	public void writeTrainingDataFile(List<ClassifyUnit> toWrite) throws IOException{
+		writeTrainingDataFile(tdFile, toWrite);
 	}
 
 	/**
