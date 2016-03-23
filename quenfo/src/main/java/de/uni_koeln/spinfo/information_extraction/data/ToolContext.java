@@ -10,15 +10,7 @@ public class ToolContext {
 	List<Token> tokens = new ArrayList<Token>();
 	private int amPointer;
 	double conf = 0.0;
-	int contextCount = 0;
-	
-	public void setContextCount(int cc){
-		this.contextCount = cc;
-	}
-	
-	public int getContextCount(){
-		return contextCount;
-	}
+
 	
 	public void setConf(double conf){
 		this.conf = conf;

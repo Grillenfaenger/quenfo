@@ -59,8 +59,8 @@ public class ArbeitsmittelIETest {
 		ieJobs = new IEJobs();
 
 //		trainingDataFiles.add(new File("classification/data/trainingDataScrambled.csv"));
-		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));	
-//		trainingDataFiles.add(new File("classification/data/notAnnotatedTrainingData_March2016.csv"));
+//		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));	
+		trainingDataFiles.add(new File("classification/data/notAnnotatedTrainingData_March2016.csv"));
 
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < relevantClasses.length; i++) {
@@ -78,8 +78,8 @@ public class ArbeitsmittelIETest {
 		for (File file : trainingDataFiles) {
 			cus.addAll(jobs.getCategorizedParagraphsFromFile(file));
 		}
+		cus = cus.subList(4200, 4250);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		System.out.println(competenceCUs.size());
 		competenceCUs = ieJobs.treatEncoding(competenceCUs);
 		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, null);
@@ -92,7 +92,7 @@ public class ArbeitsmittelIETest {
 			if (matches.isEmpty()) {
 				break;
 			}
-			goOn = ieJobs.annotateDetectedAMs(matches, toolsFile, noToolsFile, iteration, maxNumberOfIterations);
+			goOn = ieJobs.annotatePotentialTools(matches, toolsFile, noToolsFile, iteration, maxNumberOfIterations);
 			iteration++;
 		}
 		;

@@ -1,11 +1,10 @@
 package de.uni_koeln.spinfo.information_extraction.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import com.google.common.hash.HashCode;
 
 public class Tool {
 	
@@ -42,6 +41,13 @@ public class Tool {
 
 	public List<String> getContext() {
 		return context;
+	}
+	
+	public void addToContext(String lemma){
+		if(context == null){
+			context = new ArrayList<String>();
+		}
+		context.add(lemma);
 	}
 
 

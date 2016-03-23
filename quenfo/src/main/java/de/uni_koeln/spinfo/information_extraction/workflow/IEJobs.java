@@ -396,6 +396,10 @@ public class IEJobs {
 		String line = in.readLine();
 		ToolContext context = new ToolContext();
 		while (line != null) {
+			if (line.startsWith("//")) {
+				line = in.readLine();
+				continue;
+			}
 			String[] split = line.split("\t");
 			if (line.startsWith("TOKEN:")) {
 				String string = split[1];
@@ -412,9 +416,6 @@ public class IEJobs {
 			}
 			if (line.startsWith("TOOL:")) {
 				context.setAMPointer(Integer.parseInt(split[1]));
-			}
-			if (line.startsWith("CONTEXTCOUNT:")) {
-				context.setContextCount(Integer.parseInt(split[1]));
 			}
 			if (line.startsWith("CONF:")) {
 				context.setConf(Double.parseDouble(split[1]));
@@ -452,6 +453,7 @@ public class IEJobs {
 	}
 
 	public void readToolLists(File toolsFile, File noToolsFile) throws IOException {
+		System.out.println("(no-)Tools from files...");
 		tools = new TreeMap<String, Set<Tool>>();
 		noTools = new TreeSet<String>();
 		// read AMs from File
@@ -459,13 +461,15 @@ public class IEJobs {
 		String line = in.readLine();
 		while (line != null) {
 			String split[] = line.split(" ");
-			Set<Tool> set = tools.get(split[0]);
-			if (set == null)
-				set = new HashSet<Tool>();
+			Set<Tool> toolSet = tools.get(split[0]);
+			if (toolSet == null)
+				toolSet = new HashSet<Tool>();
 			Tool tool = new Tool(split[0], split.length == 1);
-			tool.setContext(Arrays.asList(split));
-			set.add(tool);
-			tools.put(split[0], set);
+			if (!tool.isComplete()) {
+				tool.setContext(Arrays.asList(split));
+			}
+			toolSet.add(tool);
+			tools.put(split[0], toolSet);
 			line = in.readLine();
 		}
 		in.close();
@@ -479,16 +483,16 @@ public class IEJobs {
 	}
 
 	public void matchWithToolLists(List<CompetenceUnit> compUnits) throws IOException {
-
-		// search for and flag as AMs or noAMs in competenceUnits
-		for (CompetenceUnit cu : compUnits) {
-			List<Token> tokens = cu.getTokenObjects();
+		System.out.println("match with (no-)Tools Lists");
+		for (CompetenceUnit currentCU : compUnits) {
+			List<Token> tokens = currentCU.getTokenObjects();
 			for (int i = 0; i < tokens.size(); i++) {
 				Token token = tokens.get(i);
 				String lemma = normalizeLemma(token.getLemma());
 
 				if (tools.keySet().contains(lemma)) {
 
+					// potential tool
 					for (Tool tool : tools.get(lemma)) {
 						if (tool.isComplete()) {
 							// token is single AM
@@ -497,6 +501,7 @@ public class IEJobs {
 						}
 						// token could be start of AM
 						boolean matches = false;
+						// check if token has required context
 						for (int c = 1; c < tool.getContext().size(); c++) {
 							if (tokens.size() <= i + c) {
 								matches = false;
@@ -515,10 +520,10 @@ public class IEJobs {
 					}
 				}
 				if (noTools.contains(lemma)) {
-					// flas as noAM
+					// flag as noAM
 					token.setNoTool(true);
-					continue;
 				}
+
 			}
 		}
 	}
@@ -560,7 +565,6 @@ public class IEJobs {
 			for (ToolContext context : contexts) {
 				// compare tokens with context
 				for (int i = 0; i <= tokens.size() - context.getSize(); i++) {
-
 					boolean match = false;
 					int plus = 0;
 					// context window
@@ -572,7 +576,7 @@ public class IEJobs {
 						Token contextToken = context.getTokenAt(c);
 						match = token.isEqualsContextToken(contextToken);
 						if (!match) {
-							// move to next context windoew
+							// move to next context windowe
 							break;
 						}
 						// skip over required tokens
@@ -583,6 +587,7 @@ public class IEJobs {
 					}
 					// if context window matches context:
 					if (match && (i + context.getToolPointer() + plus < tokens.size())) {
+						
 						Token toolToken = tokens.get(i + context.getToolPointer() + plus);
 						int toolTokenIndex = i + context.getToolPointer() + plus;
 						plus = plus + toolToken.getRequired();
@@ -592,11 +597,6 @@ public class IEJobs {
 						}
 						boolean isNoTool = toolToken.isNoTool();
 						if (isNew && !(isNoTool)) {
-							if (context.getContextCount() > 0) {
-								int cc = context.getContextCount();
-								cu.getTokenObjects().get(toolTokenIndex).setPotentialStartOfTool(cc);
-							}
-
 							// token is not in AMs or noAMs
 							Map<Integer, List<ToolContext>> map = toReturn.get(cu);
 							if (map == null)
@@ -615,28 +615,285 @@ public class IEJobs {
 		return toReturn;
 	}
 
+	/**
+	 * @param detected
+	 *            <CompetenceUnit with potential Tools, < <tokenIndex of
+	 *            potential Tool, list of matching contexts>>
+	 * @param toolsFile
+	 * @param noToolsFile
+	 * @param currentIteration
+	 * @param maxNumberOfIterations
+	 * @return true, if this iteration was not the last iteration. false, if
+	 *         this was the last iteration
+	 * @throws IOException
+	 */
+	public boolean annotatePotentialTools(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
+			File noToolsFile, int currentIteration, int maxNumberOfIterations) throws IOException {
+		
+
+		System.out.println("\n annotate potential Tools...");
+
+		Tool lastSingleTool = null;
+		Tool lastNestedTool = null;
+		String lastNoTool = null;
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String answer;
+		List<CompetenceUnit> compUnits = new ArrayList<CompetenceUnit>(detected.keySet());
+
+		boolean continueLastIteration = false;
+		int compUnitIndex = 0;
+		int listIndex;
+		while (compUnitIndex < compUnits.size()) {
+			if (compUnitIndex < 0)
+				compUnitIndex = 0;
+			CompetenceUnit currentCompUnit = compUnits.get(compUnitIndex);
+			System.out.println("\n" + currentCompUnit.getSentence() + "\n");
+			for (Token token : currentCompUnit.getTokenObjects()) {
+				System.out.println(token);
+			}
+			// all potential toolTokenIndices
+			List<Integer> toolTokenIndices = new ArrayList<Integer>(detected.get(currentCompUnit).keySet());
+			listIndex = 0;
+			if(continueLastIteration){
+				listIndex = toolTokenIndices.size()-1;
+			}
+			while (listIndex < toolTokenIndices.size()) {
+
+				if (listIndex < 0) {
+					// back to previous compUnit :
+					compUnitIndex--;
+					compUnitIndex--;
+					break;
+				}
+				int toolTokenIndex = toolTokenIndices.get(listIndex);
+				Token currentToolToken = currentCompUnit.getTokenObjects().get(toolTokenIndex);
+				String currentToolLemma = normalizeLemma(currentToolToken.getLemma());
+
+				System.out.println("\n --> " + currentToolLemma);
+				System.out.println("\n is single Tool? (press 'y' or 'n')");
+
+				answer = in.readLine().trim();
+
+				if (answer.equals("b")) {
+					if (lastNoTool == null && lastSingleTool == null & lastNestedTool == null) {
+						System.out.println("Sorry, you can't go back. ");
+						continue;
+					}
+					// remove last noTool
+					if (lastNoTool != null) {
+						noTools.remove(lastNoTool);
+						lastNoTool = null;
+					}
+					// remove last singleTool
+					if (lastSingleTool != null) {
+						Set<Tool> toolSet = tools.get(lastSingleTool.getWord());
+						toolSet.remove(lastSingleTool);
+						if (toolSet.isEmpty()) {
+							tools.remove(lastSingleTool.getWord());
+						} else {
+							tools.put(lastSingleTool.getWord(), toolSet);
+						}
+						lastSingleTool = null;
+					}
+					// remove last nestedTool
+					if (lastNestedTool != null) {
+						Set<Tool> toolSet = tools.get(lastNestedTool.getWord());
+						toolSet.remove(lastNestedTool);
+						if (toolSet.isEmpty()) {
+							tools.remove(lastNestedTool.getWord());
+						} else {
+							tools.put(lastNestedTool.getWord(), toolSet);
+						}
+						lastNestedTool = null;
+					}
+					// go back to removedTool
+					listIndex--;
+					continue;
+				}
+				if (answer.equals("stop")) {
+					// writeToolFiles
+					writeToolFiles(toolsFile, noToolsFile);
+					in.close();
+					// interrupt iteration
+					return false;
+				}
+				if (answer.equals("y")) {
+					// add new single Tool to tools
+					Tool newSingleTool = new Tool(currentToolLemma, true);
+					Set<Tool> toolsForLemma = tools.get(currentToolLemma);
+					if (toolsForLemma == null) {
+						toolsForLemma = new HashSet<Tool>();
+					}
+					toolsForLemma.add(newSingleTool);
+					tools.put(currentToolLemma, toolsForLemma);
+					// set lastSingleTool to newTool
+					lastSingleTool = newSingleTool;
+					// setLastNestedTool to null
+					lastNestedTool = null;
+					// setLastNoTool to null
+					lastNoTool = null;
+
+					// next step: is nestedTool?
+				} else if (answer.equals("n")) {
+					// add currentToolLemma to noTools
+					noTools.add(currentToolLemma);
+					// set lastNoTool to currentToolLemma
+					lastNoTool = currentToolLemma;
+					// set lastSingleTool to null
+					lastSingleTool = null;
+					// set LastNestedTool to null;
+					lastNestedTool = null;
+
+					// nextStep: is nestedTool?
+				} else {
+					System.out.println("\n invalid answer! Please try again...\n");
+					continue;
+				}
+				boolean answered = false;
+				while (!answered) {
+					System.out.println("\n --> " + currentToolLemma);
+					System.out.println("\n is nested Tool? (press 'y' or 'n')");
+
+					answer = in.readLine().trim();
+
+					if (answer.equals("y")) {
+						Tool newNestedTool = null;
+						// create new nestedTool to tools
+
+						while (true) {
+							System.out.println("enter number of words before '" + currentToolLemma + "'");
+							answer = in.readLine().trim();
+							try {
+								int before = Integer.parseInt(answer);
+								String startOfTool = normalizeLemma(
+										currentCompUnit.getTokenObjects().get(toolTokenIndex - before).getLemma());
+								newNestedTool = new Tool(normalizeLemma(startOfTool), false);
+								List<String> context = new ArrayList<String>();
+								for (int b = before; b >= 0; b--) {
+									context.add(currentCompUnit.getTokenObjects().get(toolTokenIndex - b).getLemma());
+								}
+								newNestedTool.setContext(context);
+								break;
+							} catch (Exception e) {
+								System.out.println("invalid answer! Try again...");
+							}
+						}
+						while (true) {
+							System.out.println("enter number of words after '" + currentToolLemma + "'");
+							answer = in.readLine().trim();
+							try {
+								int after = Integer.parseInt(answer);
+								for (int a = 1; a <= after; a++) {
+									newNestedTool.addToContext(
+											currentCompUnit.getTokenObjects().get(toolTokenIndex + a).getLemma());
+								}
+								break;
+							} catch (Exception e) {
+								System.out.println("invalid answer! Try again...");
+							}
+						}
+						// set lastNestedTool to newNestedTool
+						lastNestedTool = newNestedTool;
+
+						// add nestedTool to tools
+						Set<Tool> toolsForLemma = tools.get(newNestedTool.getWord());
+						if (toolsForLemma == null) {
+							toolsForLemma = new HashSet<Tool>();
+						}
+						toolsForLemma.add(newNestedTool);
+						tools.put(newNestedTool.getWord(), toolsForLemma);
+						System.out.println("added: " + newNestedTool);
+
+						// continue
+						answered = true;
+						listIndex++;
+						continue;
+					}
+					if (answer.equals("n")) {
+						// set lastNestedTool to null
+						lastNestedTool = null;
+						// continue with next ToolToken
+						answered = true;
+						listIndex++;
+						continue;
+					} 
+					else {
+						System.out.println("\n invalid answer! Please try again...\n");
+					}
+				}		
+			}
+			compUnitIndex++;
+			if(compUnitIndex == compUnits.size()){
+				System.out.println("End of list. Press 'b' to edit last tool or 'enter' to save annotated tools");
+				answer = in.readLine();
+				if(answer.equals("b")){
+					System.out.println("jiodvjboise");
+					compUnitIndex--;
+					continueLastIteration = true;
+					// remove last noTool
+					if (lastNoTool != null) {
+						noTools.remove(lastNoTool);
+						lastNoTool = null;
+					}
+					// remove last singleTool
+					if (lastSingleTool != null) {
+						Set<Tool> toolSet = tools.get(lastSingleTool.getWord());
+						toolSet.remove(lastSingleTool);
+						if (toolSet.isEmpty()) {
+							tools.remove(lastSingleTool.getWord());
+						} else {
+							tools.put(lastSingleTool.getWord(), toolSet);
+						}
+						lastSingleTool = null;
+					}
+					// remove last nestedTool
+					if (lastNestedTool != null) {
+						Set<Tool> toolSet = tools.get(lastNestedTool.getWord());
+						toolSet.remove(lastNestedTool);
+						if (toolSet.isEmpty()) {
+							tools.remove(lastNestedTool.getWord());
+						} else {
+							tools.put(lastNestedTool.getWord(), toolSet);
+						}
+						lastNestedTool = null;
+					}
+				}
+			}
+		}
+		
+		if (currentIteration < maxNumberOfIterations) {
+			in.close();
+			writeToolFiles(toolsFile, noToolsFile);
+			return true;
+		} else {
+			in.close();
+			writeToolFiles(toolsFile, noToolsFile);
+			return false;
+		}
+	}
+
 	public boolean annotateDetectedAMs(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
 			File noToolsFile, int currentIteration, int maxNumberOfIterations) throws IOException {
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String answer;
 
-		System.out.println("n" + "annotate potential Tools: ");
+		System.out.println("\n" + "annotate potential Tools: ");
 		boolean lastWasTool = false;
 		boolean lastWasNoTool = false;
 		Tool lastTool = null;
 		String lastNoTool = null;
 		List<CompetenceUnit> compList = new ArrayList<CompetenceUnit>(detected.keySet());
 		int c = 0;
-		while(c < compList.size()) {
+		while (c < compList.size()) {
 			CompetenceUnit cu = compList.get(c);
-			System.out.println("\n"+cu + "\n");
-
+			System.out.println("\n" + cu + "\n");
 			List<Integer> tokenIndices = new ArrayList<Integer>(detected.get(cu).keySet());
 			int i = 0;
 
 			while (i < tokenIndices.size()) {
-				if(i< 0){
+				if (i < 0) {
 					c--;
 					c--;
 					break;
@@ -644,8 +901,9 @@ public class IEJobs {
 				int toolTokenIndex = tokenIndices.get(i);
 				Token toolToken = cu.getTokenObjects().get(toolTokenIndex);
 				String potentialToolLemma = normalizeLemma(toolToken.getLemma());
-				if (toolToken.getPotentialStartOfTool() > 0) {
-					for (int cc = 1; cc <= toolToken.getPotentialStartOfTool(); cc++) {
+
+				if (toolToken.getPotentialContextCount() > 0) {
+					for (int cc = 1; cc <= toolToken.getPotentialContextCount(); cc++) {
 						try {
 
 							potentialToolLemma = potentialToolLemma.concat(
@@ -655,6 +913,7 @@ public class IEJobs {
 						}
 					}
 				}
+
 				System.out.println("--> " + potentialToolLemma);
 
 				answer = in.readLine().toLowerCase().trim();
@@ -780,7 +1039,6 @@ public class IEJobs {
 					i--;
 				} else {
 					System.out.println("invalid answer...");
-					i--;
 				}
 			}
 			c++;

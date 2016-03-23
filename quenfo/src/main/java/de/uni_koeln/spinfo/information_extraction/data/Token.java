@@ -114,15 +114,15 @@ public class Token {
 	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
-		sb.append(string+"\t"+lemma+"\t"+posTag+"\t"+isTool+"\t"+isStartOfTool+"\t"+required);
+		sb.append(string+"\t"+lemma+"\t"+posTag+"\t"+isTool+"\t"+isStartOfTool+"\t"+isNoTool+"\t"+required);
 		return sb.toString();
 	}
 
-	public int getPotentialStartOfTool() {
+	public int getPotentialContextCount() {
 		return potentialContextCount;
 	}
 
-	public void setPotentialStartOfTool(int potentialStartOfTool) {
+	public void setPotentialContextCount(int potentialStartOfTool) {
 		this.potentialContextCount = potentialStartOfTool;
 	}
 
