@@ -210,31 +210,6 @@ public class ZoneJobs {
 		return toReturn;
 	}
 
-	private int getActualClassID(boolean[] classIDs) {
-		List<Integer> classIdsAsList = new ArrayList<Integer>();
-		int classNum = 0;
-		int classId = 0;
-		for (int i = 0; i < classIDs.length; i++) {
-			if (classIDs[i]) {
-				classIdsAsList.add(i + 1);
-				classId = i + 1;
-				classNum++;
-			}
-		}
-		if (classNum > 1) {
-			for (Integer i : stmc.getTranslations().keySet()) {
-				if (stmc.getTranslations().get(i).containsAll(classIdsAsList)) {
-					return i;
-				}
-			}
-			System.out.println("ZoneJobs - getParasFromDB:  Achtung - Translationfehler! ");
-			return -1;
-		}
-
-		return classId;
-
-	}
-
 	private boolean parseIntToBool(int toParse) {
 		if (toParse == 0) {
 			return false;
