@@ -14,14 +14,15 @@ import java.util.Map;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
-import de.uni_koeln.spinfo.classification.jasc.dbIO.DbConnector;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 
-public class AddTrainingDataToTestDB {
+//  writes trainingClassifyUnits into the DB for classified Paragraphs. (Is needed to use/test the TrainWithDB-mode in ClassifyDatabaseApplication)
+public class AddDBTrainingData {
 
-	static String trainingDataFileName = "classification/data/newTrainingData2016.csv";
+	static String trainingDataFileName = "classification/data/testSets/verified_for_IE_TrainingData_Jan2016.csv";
 	static String outputDBPath = "C:/sqlite/";
 	static String outputDBFileName = "ClassifiedParagraphs.db";
 

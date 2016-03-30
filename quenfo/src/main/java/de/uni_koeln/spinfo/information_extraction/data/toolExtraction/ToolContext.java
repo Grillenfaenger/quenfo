@@ -1,8 +1,9 @@
-package de.uni_koeln.spinfo.information_extraction.data;
+package de.uni_koeln.spinfo.information_extraction.data.toolExtraction;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.uni_koeln.spinfo.information_extraction.data.Token;
 import javafx.scene.AmbientLight;
 
 public class ToolContext {

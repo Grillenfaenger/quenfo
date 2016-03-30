@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.uni_koeln.spinfo.classification.jasc.dbIO.DbConnector;
 import de.uni_koeln.spinfo.classification.jasc.workflow.ConfigurableDatabaseClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 
 /**
  * 
@@ -39,7 +39,7 @@ public class ClassifyDatabaseApplication {
 	static boolean trainWithDB = true;
 
 	// Path to input database
-	static String dbInputPath = /*"C:/sqlite/SteA.db3";*/"classification/data/input.db";  
+	static String dbInputPath = /*"C:/sqlite/SteA.db3";*/"classification/data/bibbDB.db";  
 	// Path to output database
 	static String stdOutputPath = "C:/sqlite/";
 	// name of output database
@@ -85,7 +85,7 @@ public class ClassifyDatabaseApplication {
 				String answer = in.readLine();
 				if (answer.toLowerCase().trim().equals("o")) {
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createParagraphOutputTables(outputConnection, executeAtBIBB);
+					DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
 					answered = true;
 				} else if (answer.toLowerCase().trim().equals("u")) {
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
@@ -96,7 +96,7 @@ public class ClassifyDatabaseApplication {
 					BufferedReader ndIn = new BufferedReader(new InputStreamReader(System.in));
 					dbFileName = ndIn.readLine();
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createParagraphOutputTables(outputConnection, executeAtBIBB);
+					DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
 					answered = true;
 				} else {
 					System.out.println("C: invalid answer! please try again...");
@@ -105,7 +105,7 @@ public class ClassifyDatabaseApplication {
 			}
 		} else {
 			outputConnection = DbConnector.connect(stdOutputPath + dbFileName); 
-			DbConnector.createParagraphOutputTables(outputConnection, executeAtBIBB);
+			DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
 		}
 
 		// create output-directory if not exists

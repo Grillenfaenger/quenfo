@@ -23,10 +23,10 @@ import org.apache.lucene.analysis.synonym.WordnetSynonymParser;
 import com.maxgarfinkel.suffixTree.Word;
 import com.sun.media.jfxmedia.track.SubtitleTrack;
 
-import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.data.DependencyTree;
 import de.uni_koeln.spinfo.information_extraction.data.WordNode;
+import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
 
 public class CompetenceDetector {
 	BufferedReader in;

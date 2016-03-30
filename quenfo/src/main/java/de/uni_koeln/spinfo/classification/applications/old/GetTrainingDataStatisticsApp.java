@@ -1,4 +1,4 @@
-package de.uni_koeln.spinfo.classification.applications;
+package de.uni_koeln.spinfo.classification.applications.old;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClas
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 
+//prints out the number of paragraphs for each class for the given trainingdata-set
 public class GetTrainingDataStatisticsApp {
 
 	private static String tdFile = "classification/data/newTrainingData2016.csv";

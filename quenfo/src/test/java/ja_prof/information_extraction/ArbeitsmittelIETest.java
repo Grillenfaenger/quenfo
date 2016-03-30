@@ -6,22 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.mahout.cf.taste.hadoop.preparation.ToItemVectorsReducer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
-import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.applications.ReadAndMatchWorkingMaterialList;
-import de.uni_koeln.spinfo.information_extraction.data.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
-import de.uni_koeln.spinfo.information_extraction.data.Token;
-import de.uni_koeln.spinfo.information_extraction.data.Tool;
+import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class ArbeitsmittelIETest {
@@ -78,13 +72,11 @@ public class ArbeitsmittelIETest {
 		for (File file : trainingDataFiles) {
 			cus.addAll(jobs.getCategorizedParagraphsFromFile(file));
 		}
-		cus = cus.subList(4200, 4250);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
 		competenceCUs = ieJobs.treatEncoding(competenceCUs);
 		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, null);
 		ieJobs.readToolLists(toolsFile, noToolsFile);
-		int iteration = 0;
 		boolean goOn = true;
 		while (goOn) {
 			ieJobs.matchWithToolLists(compUnits);
@@ -92,8 +84,7 @@ public class ArbeitsmittelIETest {
 			if (matches.isEmpty()) {
 				break;
 			}
-			goOn = ieJobs.annotatePotentialTools(matches, toolsFile, noToolsFile, iteration, maxNumberOfIterations);
-			iteration++;
+			goOn = ieJobs.annotatePotentialTools(matches, toolsFile, noToolsFile);
 		}
 		;
 		ieJobs.countTools(compUnits, toolCountsFile);

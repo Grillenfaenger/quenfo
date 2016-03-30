@@ -1,4 +1,4 @@
-package de.uni_koeln.spinfo.information_extraction.data;
+package de.uni_koeln.spinfo.information_extraction.data.toolExtraction;
 
 import java.util.ArrayList;
 import java.util.List;

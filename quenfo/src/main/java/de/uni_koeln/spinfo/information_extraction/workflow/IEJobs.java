@@ -23,13 +23,13 @@ import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.information_extraction.CompetenceDetector;
-import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 import de.uni_koeln.spinfo.information_extraction.data.DependencyTree;
 import de.uni_koeln.spinfo.information_extraction.data.Token;
-import de.uni_koeln.spinfo.information_extraction.data.Tool;
-import de.uni_koeln.spinfo.information_extraction.data.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.data.WordNode;
+import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
+import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.Tool;
+import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import is2.data.SentenceData09;
 import is2.io.CONLLWriter09;
@@ -150,6 +150,7 @@ public class IEJobs {
 	 * JobAdID(=parentID der ClassifyUnit) und ClassifyUnitID (= UUID der
 	 * ClassifyUnit)
 	 * 
+	 *
 	 * @param cus
 	 * @return
 	 */
@@ -179,6 +180,11 @@ public class IEJobs {
 		}
 		return true;
 	}
+	
+	
+	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName) throws IOException{
+		setSentenceData(compUnits, sdOutputFileName, false);
+	}
 
 	/**
 	 * 
@@ -189,15 +195,21 @@ public class IEJobs {
 	 *            outputFile for CONLLWriter09
 	 * @throws IOException
 	 */
-	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName) throws IOException {
+	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName, boolean onlyLemmata) throws IOException {
 		IETokenizer tokenizer = new IETokenizer();
 		is2.tools.Tool lemmatizer = new Lemmatizer(
-				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
-		is2.mtag.Tagger morphTagger = new is2.mtag.Tagger(
-				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/morphology-ger-3.6.model");
-		is2.tools.Tool tagger = new Tagger("models/ger-tagger+lemmatizer+morphology+graph-based-3.6/tag-ger-3.6.model");
-		is2.tools.Tool parser = new Parser(
-				"models/ger-tagger+lemmatizer+morphology+graph-based-3.6/parser-ger-3.6.model");
+				"information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
+		is2.mtag.Tagger morphTagger  = null;
+		is2.tools.Tool  tagger = null;
+		is2.tools.Tool  parser = null;
+		if(!onlyLemmata){
+			morphTagger = new is2.mtag.Tagger(
+					"information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/morphology-ger-3.6.model");
+			tagger = new Tagger("information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/tag-ger-3.6.model");
+			parser = new Parser(
+					"information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/parser-ger-3.6.model");
+		}
+		
 		CONLLWriter09 writer = null;
 		if (sdOutputFileName != null) {
 			File file = new File(sdOutputFileName + ".csv");
@@ -210,9 +222,11 @@ public class IEJobs {
 			SentenceData09 sd = new SentenceData09();
 			sd.init(tokenizer.tokenizeSentence("<root> " + compUnit.getSentence()));
 			lemmatizer.apply(sd);
-			morphTagger.apply(sd);
-			tagger.apply(sd);
-			sd = parser.apply(sd);
+			if(!onlyLemmata){
+				morphTagger.apply(sd);
+				tagger.apply(sd);
+				sd = parser.apply(sd);
+			}		
 			compUnit.setSentenceData(sd);
 			if (writer != null) {
 				writer.write(sd);
@@ -453,7 +467,6 @@ public class IEJobs {
 	}
 
 	public void readToolLists(File toolsFile, File noToolsFile) throws IOException {
-		System.out.println("(no-)Tools from files...");
 		tools = new TreeMap<String, Set<Tool>>();
 		noTools = new TreeSet<String>();
 		// read AMs from File
@@ -482,14 +495,14 @@ public class IEJobs {
 		}
 	}
 
-	public void matchWithToolLists(List<CompetenceUnit> compUnits) throws IOException {
-		System.out.println("match with (no-)Tools Lists");
+	public List<Tool> matchWithToolLists(List<CompetenceUnit> compUnits) throws IOException {
+		List<Tool> toReturn = new ArrayList<Tool>();
 		for (CompetenceUnit currentCU : compUnits) {
 			List<Token> tokens = currentCU.getTokenObjects();
 			for (int i = 0; i < tokens.size(); i++) {
 				Token token = tokens.get(i);
 				String lemma = normalizeLemma(token.getLemma());
-
+				
 				if (tools.keySet().contains(lemma)) {
 
 					// potential tool
@@ -497,6 +510,7 @@ public class IEJobs {
 						if (tool.isComplete()) {
 							// token is single AM
 							token.setTool(true);
+							toReturn.add(tool);
 							continue;
 						}
 						// token could be start of AM
@@ -516,6 +530,7 @@ public class IEJobs {
 						if (matches) {
 							token.setIsStartOfTool(true);
 							token.setRequired(tool.getContext().size() - 1);
+							toReturn.add(tool);
 						}
 					}
 				}
@@ -526,6 +541,7 @@ public class IEJobs {
 
 			}
 		}
+		return toReturn;
 	}
 
 	public List<ClassifyUnit> treatEncoding(List<ClassifyUnit> competenceCUs) {
@@ -587,7 +603,7 @@ public class IEJobs {
 					}
 					// if context window matches context:
 					if (match && (i + context.getToolPointer() + plus < tokens.size())) {
-						
+
 						Token toolToken = tokens.get(i + context.getToolPointer() + plus);
 						int toolTokenIndex = i + context.getToolPointer() + plus;
 						plus = plus + toolToken.getRequired();
@@ -628,8 +644,7 @@ public class IEJobs {
 	 * @throws IOException
 	 */
 	public boolean annotatePotentialTools(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
-			File noToolsFile, int currentIteration, int maxNumberOfIterations) throws IOException {
-		
+			File noToolsFile) throws IOException {
 
 		System.out.println("\n annotate potential Tools...");
 
@@ -649,14 +664,11 @@ public class IEJobs {
 				compUnitIndex = 0;
 			CompetenceUnit currentCompUnit = compUnits.get(compUnitIndex);
 			System.out.println("\n" + currentCompUnit.getSentence() + "\n");
-			for (Token token : currentCompUnit.getTokenObjects()) {
-				System.out.println(token);
-			}
 			// all potential toolTokenIndices
 			List<Integer> toolTokenIndices = new ArrayList<Integer>(detected.get(currentCompUnit).keySet());
 			listIndex = 0;
-			if(continueLastIteration){
-				listIndex = toolTokenIndices.size()-1;
+			if (continueLastIteration) {
+				listIndex = toolTokenIndices.size() - 1;
 			}
 			while (listIndex < toolTokenIndices.size()) {
 
@@ -817,18 +829,16 @@ public class IEJobs {
 						answered = true;
 						listIndex++;
 						continue;
-					} 
-					else {
+					} else {
 						System.out.println("\n invalid answer! Please try again...\n");
 					}
-				}		
+				}
 			}
 			compUnitIndex++;
-			if(compUnitIndex == compUnits.size()){
-				System.out.println("End of list. Press 'b' to edit last tool or 'enter' to save annotated tools");
+			if (compUnitIndex == compUnits.size()) {
+				System.out.println("\n End of list. Press 'b' to edit last tool or 'enter' to save annotated tools");
 				answer = in.readLine();
-				if(answer.equals("b")){
-					System.out.println("jiodvjboise");
+				if (answer.equals("b")) {
 					compUnitIndex--;
 					continueLastIteration = true;
 					// remove last noTool
@@ -861,195 +871,197 @@ public class IEJobs {
 				}
 			}
 		}
-		
-		if (currentIteration < maxNumberOfIterations) {
-			in.close();
-			writeToolFiles(toolsFile, noToolsFile);
-			return true;
-		} else {
-			in.close();
-			writeToolFiles(toolsFile, noToolsFile);
-			return false;
-		}
-	}
 
-	public boolean annotateDetectedAMs(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
-			File noToolsFile, int currentIteration, int maxNumberOfIterations) throws IOException {
-
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		String answer;
-
-		System.out.println("\n" + "annotate potential Tools: ");
-		boolean lastWasTool = false;
-		boolean lastWasNoTool = false;
-		Tool lastTool = null;
-		String lastNoTool = null;
-		List<CompetenceUnit> compList = new ArrayList<CompetenceUnit>(detected.keySet());
-		int c = 0;
-		while (c < compList.size()) {
-			CompetenceUnit cu = compList.get(c);
-			System.out.println("\n" + cu + "\n");
-			List<Integer> tokenIndices = new ArrayList<Integer>(detected.get(cu).keySet());
-			int i = 0;
-
-			while (i < tokenIndices.size()) {
-				if (i < 0) {
-					c--;
-					c--;
-					break;
-				}
-				int toolTokenIndex = tokenIndices.get(i);
-				Token toolToken = cu.getTokenObjects().get(toolTokenIndex);
-				String potentialToolLemma = normalizeLemma(toolToken.getLemma());
-
-				if (toolToken.getPotentialContextCount() > 0) {
-					for (int cc = 1; cc <= toolToken.getPotentialContextCount(); cc++) {
-						try {
-
-							potentialToolLemma = potentialToolLemma.concat(
-									" " + normalizeLemma(cu.getTokenObjects().get(toolTokenIndex + cc).getLemma()));
-						} catch (IndexOutOfBoundsException e) {
-
-						}
-					}
-				}
-
-				System.out.println("--> " + potentialToolLemma);
-
-				answer = in.readLine().toLowerCase().trim();
-
-				if (answer.equals("y")) {
-
-					System.out.println("\n" + "is complete?");
-					answer = in.readLine().toLowerCase();
-
-					if (answer.equals("y")) {
-						// tool is complete:
-						Tool newTool = new Tool(potentialToolLemma, true);
-						Set<Tool> list = tools.get(potentialToolLemma);
-						if (list == null)
-							list = new HashSet<Tool>();
-						list.add(newTool);
-						tools.put(potentialToolLemma, list);
-						lastTool = newTool;
-						lastWasTool = true;
-						lastWasNoTool = false;
-						System.out.println("\n" + "added new Tool: " + newTool);
-						i++;
-						continue;
-					}
-					if (answer.trim().toLowerCase().equals("n")) {
-
-						// tool is not complete:
-						Tool newTool = null;
-						boolean answered = false;
-						while (!answered) {
-							System.out.println("enter number of words before '" + potentialToolLemma + "'");
-							answer = in.readLine().toLowerCase();
-							try {
-								int required = Integer.parseInt(answer);
-								if (required == 0) {
-									break;
-								}
-								String startOfTool = normalizeLemma(
-										cu.getTokenObjects().get(toolTokenIndex - required).getLemma());
-								newTool = new Tool(normalizeLemma(startOfTool), false);
-								List<String> context = new ArrayList<String>();
-								for (int r = required; r >= 0; r--) {
-									context.add(cu.getTokenObjects().get(toolTokenIndex - r).getLemma());
-								}
-								newTool.setContext(context);
-								answered = true;
-							} catch (Exception e) {
-								System.out.println("invalid answer. Try again...");
-							}
-						}
-
-						answered = false;
-						while (!answered) {
-							System.out.println("enter number of words after '" + potentialToolLemma + "'");
-							answer = in.readLine();
-							try {
-								int required = Integer.parseInt(answer);
-								if (newTool == null) {
-									newTool = new Tool(potentialToolLemma, false);
-									List<String> context = new ArrayList<String>();
-									for (int r = 0; r <= required; r++) {
-										context.add(cu.getTokenObjects().get(toolTokenIndex + r).getLemma());
-									}
-									newTool.setContext(context);
-								} else {
-									for (int r = 1; r <= required; r++) {
-										newTool.getContext()
-												.add(cu.getTokenObjects().get(toolTokenIndex + r).getLemma());
-									}
-								}
-								Set<Tool> list = tools.get(newTool.getWord());
-								if (list == null) {
-									list = new HashSet<Tool>();
-								}
-								list.add(newTool);
-								tools.put(newTool.getWord(), list);
-								lastTool = newTool;
-								lastWasTool = true;
-								lastWasNoTool = false;
-								System.out.println("added new Tool: " + newTool);
-								answered = true;
-							} catch (Exception e) {
-								System.out.println("invalid answer. Try again...");
-							}
-						}
-						i++;
-						continue;
-					}
-					if (answer.equals("b")) {
-						continue;
-					} else {
-						System.out.println("invalid answer...");
-						continue;
-					}
-				}
-
-				if (answer.equals("n")) {
-					noTools.add(normalizeLemma(toolToken.getLemma()));
-					lastNoTool = toolToken.getLemma();
-					lastWasTool = false;
-					lastWasNoTool = true;
-					System.out.println("added to noTools: " + normalizeLemma(toolToken.getLemma()));
-					i++;
-					continue;
-				}
-				if (answer.equals("stop")) {
-					writeToolFiles(toolsFile, noToolsFile);
-					return false;
-				}
-				if (answer.equals("b")) {
-					if (lastWasNoTool) {
-						noTools.remove(lastNoTool);
-					}
-					if (lastWasTool) {
-						Set<Tool> toolList = tools.get(lastTool.getWord());
-						toolList.remove(lastTool);
-						tools.put(lastTool.getWord(), toolList);
-						if (toolList.size() == 0) {
-							tools.remove(lastTool.getWord(), toolList);
-						}
-					}
-					i--;
-					i--;
-				} else {
-					System.out.println("invalid answer...");
-				}
-			}
-			c++;
-		}
+		in.close();
 		writeToolFiles(toolsFile, noToolsFile);
-		if (currentIteration < maxNumberOfIterations) {
-			return true;
-		} else {
-			return false;
-		}
+		return true;
 	}
+
+	// public boolean annotateDetectedAMs(Map<CompetenceUnit, Map<Integer,
+	// List<ToolContext>>> detected, File toolsFile,
+	// File noToolsFile, int currentIteration, int maxNumberOfIterations) throws
+	// IOException {
+	//
+	// BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+	// String answer;
+	//
+	// System.out.println("\n" + "annotate potential Tools: ");
+	// boolean lastWasTool = false;
+	// boolean lastWasNoTool = false;
+	// Tool lastTool = null;
+	// String lastNoTool = null;
+	// List<CompetenceUnit> compList = new
+	// ArrayList<CompetenceUnit>(detected.keySet());
+	// int c = 0;
+	// while (c < compList.size()) {
+	// CompetenceUnit cu = compList.get(c);
+	// System.out.println("\n" + cu + "\n");
+	// List<Integer> tokenIndices = new
+	// ArrayList<Integer>(detected.get(cu).keySet());
+	// int i = 0;
+	//
+	// while (i < tokenIndices.size()) {
+	// if (i < 0) {
+	// c--;
+	// c--;
+	// break;
+	// }
+	// int toolTokenIndex = tokenIndices.get(i);
+	// Token toolToken = cu.getTokenObjects().get(toolTokenIndex);
+	// String potentialToolLemma = normalizeLemma(toolToken.getLemma());
+	//
+	// if (toolToken.getPotentialContextCount() > 0) {
+	// for (int cc = 1; cc <= toolToken.getPotentialContextCount(); cc++) {
+	// try {
+	//
+	// potentialToolLemma = potentialToolLemma.concat(
+	// " " + normalizeLemma(cu.getTokenObjects().get(toolTokenIndex +
+	// cc).getLemma()));
+	// } catch (IndexOutOfBoundsException e) {
+	//
+	// }
+	// }
+	// }
+	//
+	// System.out.println("--> " + potentialToolLemma);
+	//
+	// answer = in.readLine().toLowerCase().trim();
+	//
+	// if (answer.equals("y")) {
+	//
+	// System.out.println("\n" + "is complete?");
+	// answer = in.readLine().toLowerCase();
+	//
+	// if (answer.equals("y")) {
+	// // tool is complete:
+	// Tool newTool = new Tool(potentialToolLemma, true);
+	// Set<Tool> list = tools.get(potentialToolLemma);
+	// if (list == null)
+	// list = new HashSet<Tool>();
+	// list.add(newTool);
+	// tools.put(potentialToolLemma, list);
+	// lastTool = newTool;
+	// lastWasTool = true;
+	// lastWasNoTool = false;
+	// System.out.println("\n" + "added new Tool: " + newTool);
+	// i++;
+	// continue;
+	// }
+	// if (answer.trim().toLowerCase().equals("n")) {
+	//
+	// // tool is not complete:
+	// Tool newTool = null;
+	// boolean answered = false;
+	// while (!answered) {
+	// System.out.println("enter number of words before '" + potentialToolLemma
+	// + "'");
+	// answer = in.readLine().toLowerCase();
+	// try {
+	// int required = Integer.parseInt(answer);
+	// if (required == 0) {
+	// break;
+	// }
+	// String startOfTool = normalizeLemma(
+	// cu.getTokenObjects().get(toolTokenIndex - required).getLemma());
+	// newTool = new Tool(normalizeLemma(startOfTool), false);
+	// List<String> context = new ArrayList<String>();
+	// for (int r = required; r >= 0; r--) {
+	// context.add(cu.getTokenObjects().get(toolTokenIndex - r).getLemma());
+	// }
+	// newTool.setContext(context);
+	// answered = true;
+	// } catch (Exception e) {
+	// System.out.println("invalid answer. Try again...");
+	// }
+	// }
+	//
+	// answered = false;
+	// while (!answered) {
+	// System.out.println("enter number of words after '" + potentialToolLemma +
+	// "'");
+	// answer = in.readLine();
+	// try {
+	// int required = Integer.parseInt(answer);
+	// if (newTool == null) {
+	// newTool = new Tool(potentialToolLemma, false);
+	// List<String> context = new ArrayList<String>();
+	// for (int r = 0; r <= required; r++) {
+	// context.add(cu.getTokenObjects().get(toolTokenIndex + r).getLemma());
+	// }
+	// newTool.setContext(context);
+	// } else {
+	// for (int r = 1; r <= required; r++) {
+	// newTool.getContext()
+	// .add(cu.getTokenObjects().get(toolTokenIndex + r).getLemma());
+	// }
+	// }
+	// Set<Tool> list = tools.get(newTool.getWord());
+	// if (list == null) {
+	// list = new HashSet<Tool>();
+	// }
+	// list.add(newTool);
+	// tools.put(newTool.getWord(), list);
+	// lastTool = newTool;
+	// lastWasTool = true;
+	// lastWasNoTool = false;
+	// System.out.println("added new Tool: " + newTool);
+	// answered = true;
+	// } catch (Exception e) {
+	// System.out.println("invalid answer. Try again...");
+	// }
+	// }
+	// i++;
+	// continue;
+	// }
+	// if (answer.equals("b")) {
+	// continue;
+	// } else {
+	// System.out.println("invalid answer...");
+	// continue;
+	// }
+	// }
+	//
+	// if (answer.equals("n")) {
+	// noTools.add(normalizeLemma(toolToken.getLemma()));
+	// lastNoTool = toolToken.getLemma();
+	// lastWasTool = false;
+	// lastWasNoTool = true;
+	// System.out.println("added to noTools: " +
+	// normalizeLemma(toolToken.getLemma()));
+	// i++;
+	// continue;
+	// }
+	// if (answer.equals("stop")) {
+	// writeToolFiles(toolsFile, noToolsFile);
+	// return false;
+	// }
+	// if (answer.equals("b")) {
+	// if (lastWasNoTool) {
+	// noTools.remove(lastNoTool);
+	// }
+	// if (lastWasTool) {
+	// Set<Tool> toolList = tools.get(lastTool.getWord());
+	// toolList.remove(lastTool);
+	// tools.put(lastTool.getWord(), toolList);
+	// if (toolList.size() == 0) {
+	// tools.remove(lastTool.getWord(), toolList);
+	// }
+	// }
+	// i--;
+	// i--;
+	// } else {
+	// System.out.println("invalid answer...");
+	// }
+	// }
+	// c++;
+	// }
+	// writeToolFiles(toolsFile, noToolsFile);
+	// if (currentIteration < maxNumberOfIterations) {
+	// return true;
+	// } else {
+	// return false;
+	// }
+	// }
 
 	public Map<CompetenceUnit, List<Tool>> getToolsByCU(List<CompetenceUnit> comps) {
 		Map<CompetenceUnit, List<Tool>> toReturn = new HashMap<CompetenceUnit, List<Tool>>();

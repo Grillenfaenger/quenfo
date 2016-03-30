@@ -17,9 +17,7 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.data.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
-import de.uni_koeln.spinfo.information_extraction.preprocessing.ClassifiedCompetencesTrainingDataGenerator;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class CompetenceIETest {
@@ -39,7 +37,7 @@ public class CompetenceIETest {
 		classifyUnitsFile = new File(
 				// "src/test/resources/classification/cuTestData.csv");
 				// "classification/data/trainingDataScrambled.csv");
-				"classification/data/newTrainingData2016.csv");
+				"classification/data/trainingSets/verified_for_IE_TrainingData_Jan2016.csv");
 				//"src/test/resources/information_extraction/TestTrainingData2016.csv");
 		// Translations
 		Map<Integer, List<Integer>> translations = new HashMap<Integer, List<Integer>>();

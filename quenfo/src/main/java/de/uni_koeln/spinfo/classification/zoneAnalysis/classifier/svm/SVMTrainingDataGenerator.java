@@ -1,4 +1,4 @@
-package de.uni_koeln.spinfo.classification.core.helpers;
+package de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.svm;
 
 import java.io.File;
 import java.io.FileWriter;

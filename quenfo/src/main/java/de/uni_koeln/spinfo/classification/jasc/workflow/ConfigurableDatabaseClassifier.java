@@ -22,13 +22,13 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.core.helpers.EncodingProblemTreatment;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
-import de.uni_koeln.spinfo.classification.jasc.dbIO.DbConnector;
 import de.uni_koeln.spinfo.classification.jasc.preprocessing.ClassifyUnitSplitter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.RegexClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 
 public class ConfigurableDatabaseClassifier {
 
@@ -105,13 +105,13 @@ public class ConfigurableDatabaseClassifier {
 		String query = null;
 		int zeilenNr = 0, jahrgang = 0;
 		;
-		if (executeAtBIBB) {
+//		if (executeAtBIBB) {
 			// SteA-DB
-			query = "SELECT ID, ZEILENNR; Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL LIMIT ? OFFSET ?;";
-		} else {
-			// TrainingData-Db
-			query = "SELECT jobAd_ID, jobAdText FROM jobAds LIMIT ? OFFSET ?;";
-		}
+			query = "SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL LIMIT ? OFFSET ?;";
+//		} else {
+//			// TrainingData-Db
+//			query = "SELECT jobAd_ID, jobAdText FROM jobAds LIMIT ? OFFSET ?;";	
+//		}
 
 		PreparedStatement prepStmt = inputDb.prepareStatement(query);
 		prepStmt.setInt(1, queryLimit);
@@ -124,12 +124,12 @@ public class ConfigurableDatabaseClassifier {
 		if (queryLimit < 0) {
 			Statement stmt = inputDb.createStatement();
 			ResultSet rs = null;
-			if (executeAtBIBB) {
+//			if (executeAtBIBB) {
 				// TODO: Andreas fragen
-				rs = stmt.executeQuery("SELECT COALESCE(MAX(jobAd_ID)+1, 0) FROM DL_ALL;");
-			} else {
-				rs = stmt.executeQuery("SELECT COALESCE(MAX(jobAd_ID)+1, 0) FROM jobAds;");
-			}
+				rs = stmt.executeQuery("SELECT COALESCE(MAX(ID)+1, 0) FROM DL_ALL;");
+//			} else {
+//				rs = stmt.executeQuery("SELECT COALESCE(MAX(jobAd_ID)+1, 0) FROM jobAds;");
+//			}
 			queryLimit = rs.getInt(1);
 		}
 
@@ -139,18 +139,18 @@ public class ConfigurableDatabaseClassifier {
 
 		while (queryResult.next() && goOn) {
 			String jobAd = null;
-			if (executeAtBIBB) {
+//			if (executeAtBIBB) {
 				// SteA-DB
 				zeilenNr = queryResult.getInt("ZEILENNR");
 				jahrgang = queryResult.getInt("Jahrgang");
 				// TODO Andreas!!
 				 //int nextID = queryResult.getInt("ID");
 				jobAd = queryResult.getString("STELLENBESCHREIBUNG");
-			} else {
-				// TrainingData
-				jobAd = queryResult.getString("jobAdText");
-				currentId = queryResult.getInt("jobAd_ID");
-			}
+//			} else {
+//				// TrainingData
+//				jobAd = queryResult.getString("jobAdText");
+//				currentId = queryResult.getInt("jobAd_ID");
+//			}
 
 			// if there is an empty job description, classifying is of no use,
 			// so skip
@@ -172,14 +172,14 @@ public class ConfigurableDatabaseClassifier {
 			}
 			List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 			for (String string : paragraphs) {
-				if (executeAtBIBB) {
+			//	if (executeAtBIBB) {
 					// SteA-DB
 					// TODO
 					classifyUnits.add(new JASCClassifyUnit(string, jahrgang, zeilenNr));
-				} else {
-					// TrainingData.db
-					classifyUnits.add(new JASCClassifyUnit(string, currentId));
-				}
+//				} else {
+//					// TrainingData.db
+//					classifyUnits.add(new JASCClassifyUnit(string, currentId));
+//				}
 
 			}
 			// prepare ClassifyUnits
@@ -219,13 +219,13 @@ public class ConfigurableDatabaseClassifier {
 				results.add(cu);
 			}
 			// 3. Write ClassifyUnits with classes into database
-			if (executeAtBIBB) {
+	//		if (executeAtBIBB) {
 				// SteA
 				DbConnector.insertParagraphsInBIBBDB(outputDb, results, jahrgang, zeilenNr);
-			} else {
-				// TrainingData
-				DbConnector.insertParagraphsInTestDB(outputDb, results, currentId);
-			}
+//			} else {
+//				// TrainingData
+//				DbConnector.insertParagraphsInTestDB(outputDb, results, currentId);
+//			}
 
 			// progressbar
 			done++;

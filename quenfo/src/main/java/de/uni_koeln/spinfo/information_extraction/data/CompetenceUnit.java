@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
+
 
 public class CompetenceUnit {
 
@@ -86,7 +88,12 @@ public class CompetenceUnit {
 			String[] tokens = getTokens();
 			String[] lemmas = getLemmata();
 			String[] posTags = getPosTags();
-			token = new Token(tokens[i], lemmas[i], posTags[i]);
+			if(posTags == null){
+				token = new Token(tokens[i], lemmas[i], null);
+			}
+			else{
+				token = new Token(tokens[i], lemmas[i], posTags[i]);
+			}	
 			this.tokens.add(token);
 		}
 	}

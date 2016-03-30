@@ -10,9 +10,9 @@ import java.util.Map;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
-import de.uni_koeln.spinfo.classification.jasc.dbIO.DbConnector;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.RegexClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 
 public class ZoneSingleExperimentExecutor {
 	

@@ -1,4 +1,4 @@
-package de.uni_koeln.spinfo.information_extraction.data;
+package de.uni_koeln.spinfo.information_extraction.data.competenceExtraction;
 
 import com.sun.org.apache.regexp.internal.recompile;
 
@@ -14,7 +14,7 @@ public class Competence {
 	private String competence = null;
 	private String quality = null;
 	private String importance;
-	private TYPE type = null;
+//	private TYPE type = null;
 	private int jobAdID = -1;;
 	private int secondJobAdID = -1;
 	
@@ -44,13 +44,13 @@ public class Competence {
 		return secondJobAdID;
 	}
 
-	public void setType(TYPE type){
-		this.type = type;
-	}
-	
-	public TYPE getType(){
-		return type;
-	}
+//	public void setType(TYPE type){
+//		this.type = type;
+//	}
+//	
+//	public TYPE getType(){
+//		return type;
+//	}
 	
 	
 	
