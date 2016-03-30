@@ -17,7 +17,7 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
 public class CompetenceIETest {
@@ -25,11 +25,11 @@ public class CompetenceIETest {
 	static ZoneJobs jobs;
 	static IEJobs ieJobs;
 	static File classifyUnitsFile;
-	static File filteredUnitsFile;
-	static File sentencesFile;
+//	static File filteredUnitsFile;
+//	static File sentencesFile;
 	static Integer[] relevantClasses = new Integer[] {2,3,6};
 	static String sentenceDataFileName;
-	static File competenceDataOutputFile;
+//	static File competenceDataOutputFile;
 	static boolean innerSentenceSplitting = false;
 
 	@BeforeClass
@@ -61,13 +61,13 @@ public class CompetenceIETest {
 			}
 		}
 
-		filteredUnitsFile = new File(
-				"src/test/resources/information_extraction/output/filtered_" + sb.toString() + ".txt");
-		sentencesFile = new File(
-				"src/test/resources/information_extraction/output/sentences_" + sb.toString() + ".txt");
+//		filteredUnitsFile = new File(
+//				"src/test/resources/information_extraction/output/filtered_" + sb.toString() + ".txt");
+//		sentencesFile = new File(
+//				"src/test/resources/information_extraction/output/sentences_" + sb.toString() + ".txt");
 		sentenceDataFileName = "src/test/resources/information_extraction/output/sentenceData_" + sb.toString();
-		competenceDataOutputFile = new File(
-				"src/test/resources/information_extraction/competenceData_" + sb.toString() + ".txt");
+//		competenceDataOutputFile = new File(
+//				"src/test/resources/information_extraction/competenceData_" + sb.toString() + ".txt");
 	}
 
 	@Test
@@ -87,49 +87,49 @@ public class CompetenceIETest {
 		}
 	}
 
-	@Test
-	public void writeFilteredClassifyUnits() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> filteredCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		ieJobs.writeFilteredClassifyUnits(filteredCUs, filteredUnitsFile);
-	}
+//	@Test
+//	public void writeFilteredClassifyUnits() throws IOException {
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> filteredCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		ieJobs.writeFilteredClassifyUnits(filteredCUs, filteredUnitsFile);
+//	}
 
-	@Test
-	public void readFilteredClassifyUnitsFromFile() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> filteredCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		ieJobs.writeFilteredClassifyUnits(filteredCUs, filteredUnitsFile);
-		List<ClassifyUnit> filteredClassifyUnits = ieJobs.readFilteredClassifyUnitsFromFile(filteredUnitsFile);
-		Assert.assertTrue(filteredClassifyUnits.size() == filteredCUs.size());
-	}
+//	@Test
+//	public void readFilteredClassifyUnitsFromFile() throws IOException {
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> filteredCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		ieJobs.writeFilteredClassifyUnits(filteredCUs, filteredUnitsFile);
+//		List<ClassifyUnit> filteredClassifyUnits = ieJobs.readFilteredClassifyUnitsFromFile(filteredUnitsFile);
+//		Assert.assertTrue(filteredClassifyUnits.size() == filteredCUs.size());
+//	}
 
-	@Test
-	public void getSentencesTest() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		Map<ClassifyUnit, List<String>> sentences = ieJobs.getSentences(competenceCUs, innerSentenceSplitting);
-		Assert.assertTrue(sentences.size() > 0);
-		for (ClassifyUnit classifyUnit : sentences.keySet()) {
-			Assert.assertTrue(sentences.get(classifyUnit).size() > 0);
-		}
+//	@Test
+//	public void getSentencesTest() throws IOException {
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		Map<ClassifyUnit, List<String>> sentences = ieJobs.getSentences(competenceCUs, innerSentenceSplitting);
+//		Assert.assertTrue(sentences.size() > 0);
+//		for (ClassifyUnit classifyUnit : sentences.keySet()) {
+//			Assert.assertTrue(sentences.get(classifyUnit).size() > 0);
+//		}
+//
+//	}
 
-	}
-
-	@Test
-	public void writeSentencesTest() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		Map<ClassifyUnit, List<String>> sentences = ieJobs.getSentences(competenceCUs, innerSentenceSplitting);
-		ieJobs.writeSentencesFile(sentences, sentencesFile);
-	}
+//	@Test
+//	public void writeSentencesTest() throws IOException {
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		Map<ClassifyUnit, List<String>> sentences = ieJobs.getSentences(competenceCUs, innerSentenceSplitting);
+//		ieJobs.writeSentencesFile(sentences, sentencesFile);
+//	}
 
 	@Test
 	public void initializeCompetenceUnitsTest() throws IOException {
 		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		Assert.assertTrue(compUnits.size() > competenceCUs.size());
-		for (CompetenceUnit cu : compUnits) {
+		for (ExtractionUnit cu : compUnits) {
 			Assert.assertTrue(cu.getSentence() != null);
 			Assert.assertTrue(cu.getClassifyUnitID() != null);
 			Assert.assertTrue(cu.getJobAdID() != 0);
@@ -140,9 +140,9 @@ public class CompetenceIETest {
 	public void setSentenceDataTest() throws IOException {
 		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
-		for (CompetenceUnit compUnit : compUnits) {
+		for (ExtractionUnit compUnit : compUnits) {
 			if (compUnit.getTokens().length > 1) {
 				Assert.assertTrue(compUnit.getSentenceData().pheads.length >= 1);
 			}
@@ -158,10 +158,10 @@ public class CompetenceIETest {
 	public void buildDependencyTreeTest() throws IOException {
 		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
 		ieJobs.buildDependencyTrees(compUnits);
-		for (CompetenceUnit competenceUnit : compUnits) {
+		for (ExtractionUnit competenceUnit : compUnits) {
 			Assert.assertTrue(competenceUnit.getDependencyTree() != null);
 			ieJobs.buildDependencyTree(competenceUnit);
 			Assert.assertTrue(competenceUnit.getDependencyTree() != null);
@@ -175,11 +175,11 @@ public class CompetenceIETest {
 	public void extractionTest() throws IOException {
 		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
 		ieJobs.buildDependencyTrees(compUnits);
 		ieJobs.setCompetences(compUnits);
-		for (CompetenceUnit cu : compUnits) {
+		for (ExtractionUnit cu : compUnits) {
 			Assert.assertTrue(cu.getDependencyTree() != null);
 			if(cu.getCompetences() != null){
 				System.out.println(cu);
@@ -188,37 +188,37 @@ public class CompetenceIETest {
 		}
 	}
 
-	@Test
-	public void writeCompetenceFile() throws IOException {
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		competenceCUs = ieJobs.treatEncoding(competenceCUs);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
-		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
-		ieJobs.buildDependencyTrees(compUnits);
-		ieJobs.setCompetences(compUnits);
-		ieJobs.writeCompetenceData(compUnits, competenceDataOutputFile);
-	}
+//	@Test
+//	public void writeCompetenceFile() throws IOException {
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		competenceCUs = ieJobs.treatEncoding(competenceCUs);
+//		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+//		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
+//		ieJobs.buildDependencyTrees(compUnits);
+//		ieJobs.setCompetences(compUnits);
+//		ieJobs.writeCompetenceData(compUnits, competenceDataOutputFile);
+//	}
 	
-	@Test
-	public void readCompetenceUnitsFromFile() throws IOException{
-		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
-		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
-		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
-		ieJobs.buildDependencyTrees(compUnits);
-		ieJobs.setCompetences(compUnits);
-		ieJobs.writeCompetenceData(compUnits, competenceDataOutputFile);
-		List<CompetenceUnit> read = ieJobs.readCompetenceUnitsFromFile(competenceDataOutputFile);
-		Assert.assertTrue(read.size() > 0);
-		for (CompetenceUnit cu : read) {
-			
-			Assert.assertNotNull(cu.getSentence());
-			Assert.assertNotNull(cu.getClassifyUnitID());
-			Assert.assertNotNull(cu.getJobAdID());
-			Assert.assertNotNull(cu.getSecondJobAdID());
-		}
-	}
+//	@Test
+//	public void readCompetenceUnitsFromFile() throws IOException{
+//		List<ClassifyUnit> cus = jobs.getCategorizedParagraphsFromFile(classifyUnitsFile);
+//		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
+//		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+//		ieJobs.setSentenceData(compUnits, sentenceDataFileName);
+//		ieJobs.buildDependencyTrees(compUnits);
+//		ieJobs.setCompetences(compUnits);
+//		ieJobs.writeCompetenceData(compUnits, competenceDataOutputFile);
+//		List<ExtractionUnit> read = ieJobs.readCompetenceUnitsFromFile(competenceDataOutputFile);
+//		Assert.assertTrue(read.size() > 0);
+//		for (ExtractionUnit cu : read) {
+//			
+//			Assert.assertNotNull(cu.getSentence());
+//			Assert.assertNotNull(cu.getClassifyUnitID());
+//			Assert.assertNotNull(cu.getJobAdID());
+//			Assert.assertNotNull(cu.getSecondJobAdID());
+//		}
+//	}
 
 	 @AfterClass
 	 public static void deleteOutput(){

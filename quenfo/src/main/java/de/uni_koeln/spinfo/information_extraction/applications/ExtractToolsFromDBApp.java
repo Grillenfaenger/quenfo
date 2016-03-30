@@ -15,7 +15,7 @@ import weka.gui.beans.Startable;
 
 public class ExtractToolsFromDBApp {
 
-	static int startPos = 600;
+	static int startPos = 650;
 	static int maxCount = 50;
 	static boolean executeAtBIBB = false;
 	
@@ -43,41 +43,8 @@ public class ExtractToolsFromDBApp {
 		}
 
 		// Connect to output database
-		Connection outputConnection = null;
-		File dbFile = new File(stdOutputPath + dbFileName);
-		if (dbFile.exists()) {
-			System.out.println("\nOutput-Database " + stdOutputPath + dbFileName + " already exists. "
-					+ "\n - press 'o' to overwrite it (deletes all prior entries)"
-					+ "\n - press 'u' to use it (adds and replaces entries)"
-					+ "\n - press 'c' to create a new Output-Database");
-			boolean answered = false;
-			while (!answered) {
-				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-				String answer = in.readLine();
-				if (answer.toLowerCase().trim().equals("o")) {
-					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createToolOutputTables(outputConnection);
-					answered = true;
-				} else if (answer.toLowerCase().trim().equals("u")) {
-					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					answered = true;
-				} else if (answer.toLowerCase().trim().equals("c")) {
-					System.out.println(
-							"Please enter the name of the new Database. It will be stored in " + stdOutputPath);
-					BufferedReader ndIn = new BufferedReader(new InputStreamReader(System.in));
-					dbFileName = ndIn.readLine();
-					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createToolOutputTables(outputConnection);
-					answered = true;
-				} else {
-					System.out.println("C: invalid answer! please try again...");
-					System.out.println();
-				}
-			}
-		} else {
-			outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-			DbConnector.createToolOutputTables(outputConnection);
-		}
+		Connection outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
+
 		//check count and startPos 
 		String query = "SELECT COUNT(*) FROM Classes_Correctable;";
 		Statement stmt = inputConnection.createStatement();
@@ -94,7 +61,7 @@ public class ExtractToolsFromDBApp {
 		}
 		//start extraction
 		ConfigurableToolExtractor toolExtractor = new ConfigurableToolExtractor();
-		toolExtractor.extractTools(executeAtBIBB, startPos, maxCount, inputConnection, outputConnection, toolsFile, noToolsFile, contextFile);
+		toolExtractor.extractTools(executeAtBIBB, startPos, maxCount, tableSize, inputConnection, outputConnection, toolsFile, noToolsFile, contextFile);
 	}
 
 }

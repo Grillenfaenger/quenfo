@@ -23,7 +23,7 @@ import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.information_extraction.CompetenceDetector;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.DependencyTree;
 import de.uni_koeln.spinfo.information_extraction.data.Token;
 import de.uni_koeln.spinfo.information_extraction.data.WordNode;
@@ -52,6 +52,7 @@ public class IEJobs {
 
 	private Map<String, Set<Tool>> tools;
 	private Set<String> noTools;
+	private Map<String, Tool> newTools;
 
 	Map<String, Set<String>> sectorsFileTools = new HashMap<String, Set<String>>();
 	Map<String, String> sectors = new HashMap<String, String>();
@@ -77,73 +78,73 @@ public class IEJobs {
 		return filtered;
 	}
 
-	/**
-	 * schreibt alle gefilterten ClassifyUnits in eine Textdatei
-	 * 
-	 * @param toWrite
-	 * @param outputFile
-	 * @throws IOException
-	 */
-	public void writeFilteredClassifyUnits(List<ClassifyUnit> toWrite, File outputFile) throws IOException {
-		TrainingDataGenerator tdg = new TrainingDataGenerator(null);
-		tdg.writeTrainingDataFile(outputFile, toWrite);
-	}
+//	/**
+//	 * schreibt alle gefilterten ClassifyUnits in eine Textdatei
+//	 * 
+//	 * @param toWrite
+//	 * @param outputFile
+//	 * @throws IOException
+//	 */
+//	public void writeFilteredClassifyUnits(List<ClassifyUnit> toWrite, File outputFile) throws IOException {
+//		TrainingDataGenerator tdg = new TrainingDataGenerator(null);
+//		tdg.writeTrainingDataFile(outputFile, toWrite);
+//	}
 
-	/**
-	 * Methode zum Einlesen von (gefilterten) ClassifyUnits
-	 * 
-	 * @param inputFile
-	 * @return toReturn Liste von ClassifyUnits
-	 * @throws IOException
-	 */
-	public List<ClassifyUnit> readFilteredClassifyUnitsFromFile(File inputFile) throws IOException {
-		TrainingDataGenerator tdg = new TrainingDataGenerator(inputFile);
-		List<ClassifyUnit> toReturn = tdg.getTrainingData();
-		return toReturn;
-	}
+//	/**
+//	 * Methode zum Einlesen von (gefilterten) ClassifyUnits
+//	 * 
+//	 * @param inputFile
+//	 * @return toReturn Liste von ClassifyUnits
+//	 * @throws IOException
+//	 */
+//	public List<ClassifyUnit> readFilteredClassifyUnitsFromFile(File inputFile) throws IOException {
+//		TrainingDataGenerator tdg = new TrainingDataGenerator(inputFile);
+//		List<ClassifyUnit> toReturn = tdg.getTrainingData();
+//		return toReturn;
+//	}
 
-	/**
-	 * (nur zum Testen. Wird im Workflow nicht benötigt -->
-	 * initializeCompetenceUnits) Ordnet jeder ClassifyUnit eine Liste ihrer
-	 * Sätze zu (potentielle CompetenceUnits)
-	 * 
-	 * 
-	 * @param classifyUnits
-	 * @return toReturn Map von ClassifyUnits (key) und Liste ihrer Sentences
-	 *         (value)
-	 */
-	public Map<ClassifyUnit, List<String>> getSentences(List<ClassifyUnit> classifyUnits, boolean splitInSentence) {
-		Map<ClassifyUnit, List<String>> toReturn = new HashMap<ClassifyUnit, List<String>>();
-		IETokenizer tokenizer = new IETokenizer();
-		for (ClassifyUnit compCU : classifyUnits) {
-			List<String> currentSentences = tokenizer.splitIntoSentences(compCU.getContent(), splitInSentence);
-			toReturn.put(compCU, currentSentences);
-		}
-		return toReturn;
-	}
+//	/**
+//	 * (nur zum Testen. Wird im Workflow nicht benötigt -->
+//	 * initializeCompetenceUnits) Ordnet jeder ClassifyUnit eine Liste ihrer
+//	 * Sätze zu (potentielle CompetenceUnits)
+//	 * 
+//	 * 
+//	 * @param classifyUnits
+//	 * @return toReturn Map von ClassifyUnits (key) und Liste ihrer Sentences
+//	 *         (value)
+//	 */
+//	public Map<ClassifyUnit, List<String>> getSentences(List<ClassifyUnit> classifyUnits, boolean splitInSentence) {
+//		Map<ClassifyUnit, List<String>> toReturn = new HashMap<ClassifyUnit, List<String>>();
+//		IETokenizer tokenizer = new IETokenizer();
+//		for (ClassifyUnit compCU : classifyUnits) {
+//			List<String> currentSentences = tokenizer.splitIntoSentences(compCU.getContent(), splitInSentence);
+//			toReturn.put(compCU, currentSentences);
+//		}
+//		return toReturn;
+//	}
 
-	/**
-	 * Methode zum Herausschreiben von ClassifyUnits und ihren Sentences
-	 * 
-	 * @param toWrite
-	 * @param outputFile
-	 * @throws IOException
-	 */
-	public void writeSentencesFile(Map<ClassifyUnit, List<String>> sentences, File outputFile) throws IOException {
-		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
-		for (ClassifyUnit cu : sentences.keySet()) {
-			out.print(cu.getID() + "\t");
-			if (cu instanceof JASCClassifyUnit) {
-				out.print(((JASCClassifyUnit) cu).getParentID() + "\t");
-			}
-			out.print(((ZoneClassifyUnit) cu).getActualClassID() + "\n");
-			for (String sentence : sentences.get(cu)) {
-				out.println("SENTENCE: " + sentence + "\n");
-			}
-		}
-		out.flush();
-		out.close();
-	}
+//	/**
+//	 * Methode zum Herausschreiben von ClassifyUnits und ihren Sentences
+//	 * 
+//	 * @param toWrite
+//	 * @param outputFile
+//	 * @throws IOException
+//	 */
+//	public void writeSentencesFile(Map<ClassifyUnit, List<String>> sentences, File outputFile) throws IOException {
+//		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
+//		for (ClassifyUnit cu : sentences.keySet()) {
+//			out.print(cu.getID() + "\t");
+//			if (cu instanceof JASCClassifyUnit) {
+//				out.print(((JASCClassifyUnit) cu).getParentID() + "\t");
+//			}
+//			out.print(((ZoneClassifyUnit) cu).getActualClassID() + "\n");
+//			for (String sentence : sentences.get(cu)) {
+//				out.println("SENTENCE: " + sentence + "\n");
+//			}
+//		}
+//		out.flush();
+//		out.close();
+//	}
 
 	/**
 	 * erzeugt für jeden Satz ein CompetenceUnit-Object. Bestehend aus sentence,
@@ -154,14 +155,14 @@ public class IEJobs {
 	 * @param cus
 	 * @return
 	 */
-	public List<CompetenceUnit> initializeCompetenceUnits(List<ClassifyUnit> cus, boolean splitInSentence) {
-		List<CompetenceUnit> toReturn = new ArrayList<CompetenceUnit>();
+	public List<ExtractionUnit> initializeCompetenceUnits(List<ClassifyUnit> cus, boolean splitInSentence) {
+		List<ExtractionUnit> toReturn = new ArrayList<ExtractionUnit>();
 		IETokenizer tokenizer = new IETokenizer();
 		for (ClassifyUnit cu : cus) {
 			List<String> sentences = tokenizer.splitIntoSentences(cu.getContent(), splitInSentence);
 			for (String sentence : sentences) {
-				if (containsCompetences(sentence) && sentence.length() > 1) {
-					CompetenceUnit compUnit = new CompetenceUnit();
+				if (sentence.length() > 1) {
+					ExtractionUnit compUnit = new ExtractionUnit();
 					compUnit.setSentence(sentence);
 					compUnit.setJobAdID(((JASCClassifyUnit) cu).getParentID());
 					compUnit.setSecondJobAdID(((JASCClassifyUnit) cu).getSecondParentID());
@@ -174,15 +175,15 @@ public class IEJobs {
 		return toReturn;
 	}
 
-	private boolean containsCompetences(String sentence) {
-		if (sentence.endsWith(":")) {
-			return false;
-		}
-		return true;
-	}
+//	private boolean containsCompetences(String sentence) {
+//		if (sentence.endsWith(":")) {
+//			return false;
+//		}
+//		return true;
+//	}
 	
 	
-	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName) throws IOException{
+	public void setSentenceData(List<ExtractionUnit> compUnits, String sdOutputFileName) throws IOException{
 		setSentenceData(compUnits, sdOutputFileName, false);
 	}
 
@@ -195,7 +196,7 @@ public class IEJobs {
 	 *            outputFile for CONLLWriter09
 	 * @throws IOException
 	 */
-	public void setSentenceData(List<CompetenceUnit> compUnits, String sdOutputFileName, boolean onlyLemmata) throws IOException {
+	public void setSentenceData(List<ExtractionUnit> compUnits, String sdOutputFileName, boolean onlyLemmata) throws IOException {
 		IETokenizer tokenizer = new IETokenizer();
 		is2.tools.Tool lemmatizer = new Lemmatizer(
 				"information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
@@ -218,7 +219,7 @@ public class IEJobs {
 			}
 			writer = new is2.io.CONLLWriter09(sdOutputFileName + ".csv");
 		}
-		for (CompetenceUnit compUnit : compUnits) {
+		for (ExtractionUnit compUnit : compUnits) {
 			SentenceData09 sd = new SentenceData09();
 			sd.init(tokenizer.tokenizeSentence("<root> " + compUnit.getSentence()));
 			lemmatizer.apply(sd);
@@ -240,8 +241,8 @@ public class IEJobs {
 		tagger = null;
 	}
 
-	public void buildDependencyTrees(List<CompetenceUnit> cus) {
-		for (CompetenceUnit cu : cus) {
+	public void buildDependencyTrees(List<ExtractionUnit> cus) {
+		for (ExtractionUnit cu : cus) {
 			DependencyTree tree = new DependencyTree();
 			SentenceData09 sd = cu.getSentenceData();
 			Set<Integer> listed = new HashSet<Integer>();
@@ -285,7 +286,7 @@ public class IEJobs {
 
 	}
 
-	public void buildDependencyTree(CompetenceUnit cu) {
+	public void buildDependencyTree(ExtractionUnit cu) {
 		DependencyTree tree = new DependencyTree();
 		SentenceData09 sd = cu.getSentenceData();
 		Set<Integer> listed = new HashSet<Integer>();
@@ -327,82 +328,82 @@ public class IEJobs {
 		cu.setDependencyTree(tree);
 	}
 
-	public void setCompetences(List<CompetenceUnit> compUnits) throws IOException {
+	public void setCompetences(List<ExtractionUnit> compUnits) throws IOException {
 		CompetenceDetector detector = new CompetenceDetector();
 		detector.setCompetences(compUnits);
 	}
 
-	public List<CompetenceUnit> filterEmptyCompetenceUnits(List<CompetenceUnit> toFilter) {
-		List<CompetenceUnit> toReturn = new ArrayList<>();
-		for (CompetenceUnit cu : toFilter) {
-			if (cu.getCompetences() != null) {
-				toReturn.add(cu);
-			}
-		}
-		return toReturn;
-	}
+//	public List<ExtractionUnit> filterEmptyCompetenceUnits(List<ExtractionUnit> toFilter) {
+//		List<ExtractionUnit> toReturn = new ArrayList<>();
+//		for (ExtractionUnit cu : toFilter) {
+//			if (cu.getCompetences() != null) {
+//				toReturn.add(cu);
+//			}
+//		}
+//		return toReturn;
+//	}
 
-	public void writeCompetenceData(List<CompetenceUnit> toWrite, File outputFile) throws IOException {
-		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
-		for (CompetenceUnit compUnit : toWrite) {
-			out.write("ID: " + compUnit.getClassifyUnitID() + "\n");
-			out.write("JobAdID: " + compUnit.getJobAdID() + "-" + compUnit.getSecondJobAdID() + "\n");
+//	public void writeCompetenceData(List<ExtractionUnit> toWrite, File outputFile) throws IOException {
+//		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
+//		for (ExtractionUnit compUnit : toWrite) {
+//			out.write("ID: " + compUnit.getClassifyUnitID() + "\n");
+//			out.write("JobAdID: " + compUnit.getJobAdID() + "-" + compUnit.getSecondJobAdID() + "\n");
+//
+//			out.write("SENTENCE: " + compUnit.getSentence() + "\n");
+//			if (compUnit.getCompetences() != null) {
+//				for (Competence comp : compUnit.getCompetences()) {
+//					out.write("COMP: " + comp.getCompetence() + "\t" + comp.getQuality() + "\t" + comp.getImportance()
+//							+ "\n");
+//				}
+//			}
+//			out.write("\n");
+//		}
+//		out.close();
+//	}
 
-			out.write("SENTENCE: " + compUnit.getSentence() + "\n");
-			if (compUnit.getCompetences() != null) {
-				for (Competence comp : compUnit.getCompetences()) {
-					out.write("COMP: " + comp.getCompetence() + "\t" + comp.getQuality() + "\t" + comp.getImportance()
-							+ "\n");
-				}
-			}
-			out.write("\n");
-		}
-		out.close();
-	}
-
-	public List<CompetenceUnit> readCompetenceUnitsFromFile(File toRead) throws IOException {
-		List<CompetenceUnit> toReturn = new ArrayList<CompetenceUnit>();
-		BufferedReader in = new BufferedReader(new FileReader(toRead));
-		String line = in.readLine();
-		CompetenceUnit compUnit = null;
-		while (line != null) {
-			if (line.startsWith("ID:")) {
-				if (compUnit != null) {
-					toReturn.add(compUnit);
-				}
-				compUnit = new CompetenceUnit();
-				compUnit.setClassifyUnitID(UUID.fromString(line.split(":")[1].trim()));
-				line = in.readLine();
-				continue;
-			}
-			if (line.startsWith("JobAdID:")) {
-				int jobAdID = Integer.parseInt(line.split(":")[1].split("-")[0].trim());
-				int secondJobAdID = Integer.parseInt(line.split(":")[1].split("-")[1].trim());
-				compUnit.setJobAdID(jobAdID);
-				compUnit.setSecondJobAdID(secondJobAdID);
-				line = in.readLine();
-				continue;
-			}
-			if (line.startsWith("COMP:")) {
-				String[] split = line.split("COMP:")[1].split("\t");
-				Competence comp = new Competence(split[0], compUnit.getJobAdID(), compUnit.getSecondJobAdID());
-				comp.setQuality(split[1]);
-				comp.setImportance(split[2]);
-
-				compUnit.setCompetence(comp);
-				line = in.readLine();
-				continue;
-			}
-			if (line.startsWith("SENTENCE: ")) {
-				compUnit.setSentence(line.split("SENTENCE:")[1].trim());
-				line = in.readLine();
-				continue;
-			}
-			line = in.readLine();
-		}
-		in.close();
-		return toReturn;
-	}
+//	public List<ExtractionUnit> readCompetenceUnitsFromFile(File toRead) throws IOException {
+//		List<ExtractionUnit> toReturn = new ArrayList<ExtractionUnit>();
+//		BufferedReader in = new BufferedReader(new FileReader(toRead));
+//		String line = in.readLine();
+//		ExtractionUnit compUnit = null;
+//		while (line != null) {
+//			if (line.startsWith("ID:")) {
+//				if (compUnit != null) {
+//					toReturn.add(compUnit);
+//				}
+//				compUnit = new ExtractionUnit();
+//				compUnit.setClassifyUnitID(UUID.fromString(line.split(":")[1].trim()));
+//				line = in.readLine();
+//				continue;
+//			}
+//			if (line.startsWith("JobAdID:")) {
+//				int jobAdID = Integer.parseInt(line.split(":")[1].split("-")[0].trim());
+//				int secondJobAdID = Integer.parseInt(line.split(":")[1].split("-")[1].trim());
+//				compUnit.setJobAdID(jobAdID);
+//				compUnit.setSecondJobAdID(secondJobAdID);
+//				line = in.readLine();
+//				continue;
+//			}
+//			if (line.startsWith("COMP:")) {
+//				String[] split = line.split("COMP:")[1].split("\t");
+//				Competence comp = new Competence(split[0], compUnit.getJobAdID(), compUnit.getSecondJobAdID());
+//				comp.setQuality(split[1]);
+//				comp.setImportance(split[2]);
+//
+//				compUnit.setCompetence(comp);
+//				line = in.readLine();
+//				continue;
+//			}
+//			if (line.startsWith("SENTENCE: ")) {
+//				compUnit.setSentence(line.split("SENTENCE:")[1].trim());
+//				line = in.readLine();
+//				continue;
+//			}
+//			line = in.readLine();
+//		}
+//		in.close();
+//		return toReturn;
+//	}
 
 	private List<ToolContext> readToolContextFile(File file) throws IOException {
 		List<ToolContext> toReturn = new ArrayList<ToolContext>();
@@ -495,9 +496,9 @@ public class IEJobs {
 		}
 	}
 
-	public List<Tool> matchWithToolLists(List<CompetenceUnit> compUnits) throws IOException {
-		List<Tool> toReturn = new ArrayList<Tool>();
-		for (CompetenceUnit currentCU : compUnits) {
+	public Map<ExtractionUnit,List<Tool>> matchWithToolLists(List<ExtractionUnit> compUnits) throws IOException {
+		Map<ExtractionUnit, List<Tool>> toReturn = new HashMap<ExtractionUnit,List<Tool>>();
+		for (ExtractionUnit currentCU : compUnits) {
 			List<Token> tokens = currentCU.getTokenObjects();
 			for (int i = 0; i < tokens.size(); i++) {
 				Token token = tokens.get(i);
@@ -510,7 +511,10 @@ public class IEJobs {
 						if (tool.isComplete()) {
 							// token is single AM
 							token.setTool(true);
-							toReturn.add(tool);
+							List<Tool> toolsForUnit = toReturn.get(currentCU);
+							if(toolsForUnit == null) toolsForUnit = new ArrayList<Tool>();
+							toolsForUnit.add(tool);
+							toReturn.put(currentCU, toolsForUnit);
 							continue;
 						}
 						// token could be start of AM
@@ -530,7 +534,10 @@ public class IEJobs {
 						if (matches) {
 							token.setIsStartOfTool(true);
 							token.setRequired(tool.getContext().size() - 1);
-							toReturn.add(tool);
+							List<Tool> toolsForUnit = toReturn.get(currentCU);
+							if(toolsForUnit == null) toolsForUnit = new ArrayList<Tool>();
+							toolsForUnit.add(tool);
+							toReturn.put(currentCU, toolsForUnit);
 						}
 					}
 				}
@@ -568,14 +575,14 @@ public class IEJobs {
 		return toReturn;
 	}
 
-	public Map<CompetenceUnit, Map<Integer, List<ToolContext>>> extractNewTools(File contextFile,
-			List<CompetenceUnit> compUnits) throws IOException {
+	public Map<ExtractionUnit, Map<Integer, List<ToolContext>>> extractNewTools(File contextFile,
+			List<ExtractionUnit> compUnits) throws IOException {
 		// read contexts from file
 		List<ToolContext> contexts = readToolContextFile(contextFile);
 		// <cu, <Tokenindex, contexts>>
-		Map<CompetenceUnit, Map<Integer, List<ToolContext>>> toReturn = new HashMap<CompetenceUnit, Map<Integer, List<ToolContext>>>();
+		Map<ExtractionUnit, Map<Integer, List<ToolContext>>> toReturn = new HashMap<ExtractionUnit, Map<Integer, List<ToolContext>>>();
 
-		for (CompetenceUnit cu : compUnits) {
+		for (ExtractionUnit cu : compUnits) {
 			List<Token> tokens = cu.getTokenObjects();
 
 			for (ToolContext context : contexts) {
@@ -643,7 +650,7 @@ public class IEJobs {
 	 *         this was the last iteration
 	 * @throws IOException
 	 */
-	public boolean annotatePotentialTools(Map<CompetenceUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
+	public boolean annotatePotentialTools(Map<ExtractionUnit, Map<Integer, List<ToolContext>>> detected, File toolsFile,
 			File noToolsFile) throws IOException {
 
 		System.out.println("\n annotate potential Tools...");
@@ -654,7 +661,7 @@ public class IEJobs {
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String answer;
-		List<CompetenceUnit> compUnits = new ArrayList<CompetenceUnit>(detected.keySet());
+		List<ExtractionUnit> compUnits = new ArrayList<ExtractionUnit>(detected.keySet());
 
 		boolean continueLastIteration = false;
 		int compUnitIndex = 0;
@@ -662,7 +669,7 @@ public class IEJobs {
 		while (compUnitIndex < compUnits.size()) {
 			if (compUnitIndex < 0)
 				compUnitIndex = 0;
-			CompetenceUnit currentCompUnit = compUnits.get(compUnitIndex);
+			ExtractionUnit currentCompUnit = compUnits.get(compUnitIndex);
 			System.out.println("\n" + currentCompUnit.getSentence() + "\n");
 			// all potential toolTokenIndices
 			List<Integer> toolTokenIndices = new ArrayList<Integer>(detected.get(currentCompUnit).keySet());
@@ -697,7 +704,7 @@ public class IEJobs {
 						noTools.remove(lastNoTool);
 						lastNoTool = null;
 					}
-					// remove last singleTool
+					// remove last singleTool 
 					if (lastSingleTool != null) {
 						Set<Tool> toolSet = tools.get(lastSingleTool.getWord());
 						toolSet.remove(lastSingleTool);
@@ -1063,9 +1070,9 @@ public class IEJobs {
 	// }
 	// }
 
-	public Map<CompetenceUnit, List<Tool>> getToolsByCU(List<CompetenceUnit> comps) {
-		Map<CompetenceUnit, List<Tool>> toReturn = new HashMap<CompetenceUnit, List<Tool>>();
-		for (CompetenceUnit cu : comps) {
+	public Map<ExtractionUnit, List<Tool>> getToolsByCU(List<ExtractionUnit> comps) {
+		Map<ExtractionUnit, List<Tool>> toReturn = new HashMap<ExtractionUnit, List<Tool>>();
+		for (ExtractionUnit cu : comps) {
 			List<Token> tokens = cu.getTokenObjects();
 			for (int t = 0; t < tokens.size(); t++) {
 				Token token = tokens.get(t);
@@ -1121,10 +1128,10 @@ public class IEJobs {
 		out.close();
 	}
 
-	public Map<Integer, List<String>> countTools(List<CompetenceUnit> comps, File outputfile) throws IOException {
+	public Map<Integer, List<String>> countTools(List<ExtractionUnit> comps, File outputfile) throws IOException {
 		Map<Integer, List<String>> toReturn = new TreeMap<Integer, List<String>>();
 		Map<String, Integer> countMap = new TreeMap<String, Integer>();
-		for (CompetenceUnit cu : comps) {
+		for (ExtractionUnit cu : comps) {
 			for (int t = 0; t < cu.getTokenObjects().size(); t++) {
 				Token token = cu.getTokenObjects().get(t);
 				String lemma = normalizeLemma(token.getLemma());
@@ -1185,7 +1192,7 @@ public class IEJobs {
 		return lemma;
 	}
 
-	public Set<String> matchToolsWithSectors(List<CompetenceUnit> compUnits, File sectorsFile) throws IOException {
+	public Set<String> matchToolsWithSectors(List<ExtractionUnit> compUnits, File sectorsFile) throws IOException {
 		Set<String> matches = new TreeSet<String>();
 		readSectorsList(sectorsFile);
 		for (String s : sectorsFileTools.keySet()) {

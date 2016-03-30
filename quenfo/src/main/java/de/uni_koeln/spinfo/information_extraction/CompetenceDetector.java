@@ -23,7 +23,7 @@ import org.apache.lucene.analysis.synonym.WordnetSynonymParser;
 import com.maxgarfinkel.suffixTree.Word;
 import com.sun.media.jfxmedia.track.SubtitleTrack;
 
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.DependencyTree;
 import de.uni_koeln.spinfo.information_extraction.data.WordNode;
 import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
@@ -36,7 +36,7 @@ public class CompetenceDetector {
 	// Einlesen der Wortlisten
 	public CompetenceDetector() throws IOException {
 		in = new BufferedReader(new FileReader(new File(
-				"information_extraction/data/importance_terms.txt")));
+				"information_extraction/data/competences/importance_terms.txt")));
 		String line = in.readLine();
 		importanceTerms = new ArrayList<String>();
 		while (line != null) {
@@ -47,7 +47,7 @@ public class CompetenceDetector {
 		}
 		in.close();
 		in = new BufferedReader(new FileReader(new File(
-				"information_extraction/data/quality_terms.txt")));
+				"information_extraction/data/competences/quality_terms.txt")));
 		line = in.readLine();
 		qualityTerms = new ArrayList<String>();
 		while (line != null) {
@@ -59,8 +59,8 @@ public class CompetenceDetector {
 		in.close();
 	}
 
-	public void setCompetences(List<CompetenceUnit> cus) {
-		for (CompetenceUnit cu : cus) {
+	public void setCompetences(List<ExtractionUnit> cus) {
+		for (ExtractionUnit cu : cus) {
 			setVerbCompetences(cu);
 			setNounCompetences(cu);
 			if (cu.getCompetences() == null) {
@@ -70,7 +70,7 @@ public class CompetenceDetector {
 	}
 
 	
-	public void setAdjectiveCompetences(CompetenceUnit cu){
+	public void setAdjectiveCompetences(ExtractionUnit cu){
 		List<WordNode> adj = getAdj(cu.getDependencyTree().getRoot());
 		for (WordNode a : adj) {
 			String mod = "";
@@ -84,7 +84,7 @@ public class CompetenceDetector {
 		}
 	}
 
-	public void setVerbCompetences(CompetenceUnit cu) {
+	public void setVerbCompetences(ExtractionUnit cu) {
 		DependencyTree tree = cu.getDependencyTree();
 		if(tree.getRoot().getChilds()!= null){
 			if (tree.getRoot().getLemma().equals("sein")||(tree.getRoot().getLemma().equals("werden"))) {
@@ -110,7 +110,7 @@ public class CompetenceDetector {
 		}
 	}
 
-	public void setNounCompetences(CompetenceUnit cu) {
+	public void setNounCompetences(ExtractionUnit cu) {
 		List<Map<Integer, WordNode>> NNTrees = getNounTrees(cu);
 		for (int i = 0; i < NNTrees.size(); i++) {
 			//Map<Integer, WordNode> map = NNTrees.get(i);
@@ -199,7 +199,7 @@ public class CompetenceDetector {
 		comp.setCompetence(text.trim());
 	}
 
-	public List<Map<Integer, WordNode>> getNounTrees(CompetenceUnit cu) {
+	public List<Map<Integer, WordNode>> getNounTrees(ExtractionUnit cu) {
 		List<Map<Integer, WordNode>> NNTrees = new ArrayList<Map<Integer, WordNode>>();
 		List<WordNode> NNs = new ArrayList<WordNode>();
 		DependencyTree tree = cu.getDependencyTree();

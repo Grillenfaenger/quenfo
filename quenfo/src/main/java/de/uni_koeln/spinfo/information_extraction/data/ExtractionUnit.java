@@ -9,7 +9,7 @@ import java.util.UUID;
 import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
 
 
-public class CompetenceUnit {
+public class ExtractionUnit {
 
 	private String sentence;
 	private List<Competence> competences;
@@ -48,12 +48,12 @@ public class CompetenceUnit {
 		this.jobAdID = jobAdID;
 	}
 
-	public CompetenceUnit(String sentence) {
+	public ExtractionUnit(String sentence) {
 		this.sentence = sentence;
 		competences = new ArrayList<Competence>();
 	}
 
-	public CompetenceUnit() {
+	public ExtractionUnit() {
 
 	}
 
@@ -148,7 +148,7 @@ public class CompetenceUnit {
 
 	@Override
 	public boolean equals(Object o) {
-		CompetenceUnit cu = (CompetenceUnit) o;
+		ExtractionUnit cu = (ExtractionUnit) o;
 		return (this.getJobAdID() + this.getSecondJobAdID()+this.getClassifyUnitID().toString()+this.getSentence()).equals(cu.getJobAdID()+cu.getSecondJobAdID()+cu.getClassifyUnitID().toString()+cu.getSentence());
 	}
 

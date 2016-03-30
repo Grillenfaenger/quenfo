@@ -14,7 +14,7 @@ import java.util.List;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.Tool;
 
@@ -181,16 +181,16 @@ public class DbConnector {
 		conn.commit();
 	}
 
-	public static void writeToolsInDB(CompetenceUnit cu, List<Tool> tools, Connection outputConnection) throws SQLException {
-		//overrite old tool-table
-		createToolOutputTables(outputConnection);
+	public static void writeToolsInDB(ExtractionUnit cu, List<Tool> tools, Connection outputConnection) throws SQLException {
 		int jahrgang = cu.getJobAdID();
 		int zeilennr = cu.getSecondJobAdID();
 		String paraID = cu.getClassifyUnitID().toString();
-		PreparedStatement prepStmt = outputConnection.prepareStatement("INSERT INTO Tools (Jahrgang, Zeilennr, ParaID, Tool) VALUES("+jahrgang+", "+zeilennr+", '"+paraID+"','?')");
+		PreparedStatement prepStmt = outputConnection.prepareStatement("INSERT INTO Tools (Jahrgang, Zeilennr, ParaID, Tool) VALUES("+jahrgang+", "+zeilennr+", '"+paraID+"',?)");
 		for (Tool tool : tools) {
 			prepStmt.setString(1, tool.toString());
-			prepStmt.executeQuery();
+			prepStmt.executeUpdate();
+			System.out.println("write: "+ cu.getSentence());
+			System.out.println("--> "+ tool.toString());
 		}
 		prepStmt.close();
 		outputConnection.commit();

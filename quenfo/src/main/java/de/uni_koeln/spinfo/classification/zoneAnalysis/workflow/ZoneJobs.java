@@ -53,7 +53,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.evaluation.ZoneEvaluator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.dbIO.DbConnector;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 
 public class ZoneJobs {
 

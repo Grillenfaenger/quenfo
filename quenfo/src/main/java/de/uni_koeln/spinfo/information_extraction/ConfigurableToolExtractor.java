@@ -18,7 +18,7 @@ import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.dbIO.DbConnector;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.Tool;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
@@ -28,7 +28,7 @@ import is2.lemmatizer.Lemmatizer;
 
 public class ConfigurableToolExtractor {
 
-	public void extractTools(boolean executeAtBIBB, int startPos, int count, Connection inputConnection, Connection outputConnection, File toolsFile, File noToolsFile, File contextFile) throws SQLException, IOException {
+	public void extractTools(boolean executeAtBIBB, int startPos, int count, int tableSize, Connection inputConnection, Connection outputConnection, File toolsFile, File noToolsFile, File contextFile) throws SQLException, IOException {
 		
 		IEJobs jobs = new IEJobs();
 		
@@ -42,12 +42,14 @@ public class ConfigurableToolExtractor {
 		System.out.println("\n extracted classifyUnits for Tool-detection: "+classifyUnits.size()+"\n");
 		
 		//create CompetenceUnits
-		List<CompetenceUnit> compUnits = jobs.initializeCompetenceUnits(classifyUnits, false);
+		List<ExtractionUnit> compUnits = jobs.initializeCompetenceUnits(classifyUnits, false);
 		//set SentenceData
 		jobs.setSentenceData(compUnits, null);
 		
 		//read (no-)Tool-List
 		jobs.readToolLists(toolsFile, noToolsFile);
+		
+		
 		
 		boolean goOn = true;
 		boolean changed = false;
@@ -55,7 +57,7 @@ public class ConfigurableToolExtractor {
 			//match competenceUnits with current (no-)ToolList  (flags tokens as tool/noTool/startOfTool)
 			jobs.matchWithToolLists(compUnits);
 			//detect new Tools
-			Map<CompetenceUnit, Map<Integer, List<ToolContext>>> potentialTools = jobs.extractNewTools(contextFile, compUnits);
+			Map<ExtractionUnit, Map<Integer, List<ToolContext>>> potentialTools = jobs.extractNewTools(contextFile, compUnits);
 			if(potentialTools.isEmpty()){
 				System.out.println("\n no potential tools \n");
 				break;
@@ -65,34 +67,36 @@ public class ConfigurableToolExtractor {
 			changed = true;
 		}
 		
-	//TODO: write ToolsByJobAd in DB (for each ClassifyUnit in DB)
+	//write ToolsByJobAd in DB (for each ClassifyUnit in DB)
 		if(changed){
-			query = "SELECT TxtID, ClassTWO, ClassTHREE FROM Classes_Correctable WHERE(ClassTWO = '1' OR ClassTHREE = '1')";
-			List<ClassifyUnit> allUnits = getClassifyUnitsFromDB(query, -1, -1, inputConnection, jobs);
-			System.out.println("\n extracted ClassifyUnits for Tool-Matching: "+allUnits.size()+"\n");
-			List<CompetenceUnit> competenceUnits = jobs.initializeCompetenceUnits(allUnits, false);
-			jobs.setSentenceData(competenceUnits, null, true);
-			for (CompetenceUnit cu : competenceUnits) {
-				List<Tool> tools = jobs.matchWithToolLists(competenceUnits);
-				DbConnector.writeToolsInDB(cu, tools, outputConnection);
+			//TODO: ClassifyUnits in Abschnitten auslesen und verarbeiten
+			DbConnector.createToolOutputTables(outputConnection);
+			int offset = 0;
+			query = "SELECT TxtID, ClassTWO, ClassTHREE FROM Classes_Correctable WHERE(ClassTWO = '1' OR ClassTHREE = '1') LIMIT ? OFFSET ?";	
+			while(offset < tableSize){
+				List<ClassifyUnit> allUnits = getClassifyUnitsFromDB(query, 100, offset, inputConnection, jobs);
+				offset = offset+allUnits.size();
+				System.out.println("offset: " + offset);
+				System.out.println("\n extracted ClassifyUnits for Tool-Matching: "+allUnits.size()+"\n");
+				List<ExtractionUnit> competenceUnits = jobs.initializeCompetenceUnits(allUnits, false);
+				jobs.setSentenceData(competenceUnits, null, true);
+				Map<ExtractionUnit, List<Tool>> toolsByUnit = jobs.matchWithToolLists(competenceUnits);
+				for (ExtractionUnit extractionUnit : toolsByUnit.keySet()) {
+					DbConnector.writeToolsInDB(extractionUnit, toolsByUnit.get(extractionUnit), outputConnection);
+				}
 			}
+		
 		}
 
 	}
 
 	private List<ClassifyUnit> getClassifyUnitsFromDB(String query, int count, int startPos, Connection inputConnection, IEJobs jobs) throws SQLException {
 		ResultSet result;
-		if(count == -1 && startPos == -1){
-			Statement stmt = inputConnection.createStatement();
-			result = stmt.executeQuery(query);
-		}
-		else{
+
 			PreparedStatement prepStmt = inputConnection.prepareStatement(query);
 			prepStmt.setInt(1, count);
 			prepStmt.setInt(2, startPos);	
-			result = prepStmt.executeQuery();
-			
-		}	
+			result = prepStmt.executeQuery();	
 		List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 		String sql;
 		ClassifyUnit classifyUnit;

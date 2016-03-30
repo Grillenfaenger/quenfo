@@ -14,13 +14,12 @@ import org.junit.Test;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
+import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.ToolContext;
 import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
 
-public class ArbeitsmittelIETest {
+public class ToolIETest {
 
-	int maxNumberOfIterations = 5;
 
 	static ZoneJobs jobs;
 	static IEJobs ieJobs;
@@ -74,13 +73,13 @@ public class ArbeitsmittelIETest {
 		}
 		List<ClassifyUnit> competenceCUs = ieJobs.filterClassifyUnits(cus, relevantClasses);
 		competenceCUs = ieJobs.treatEncoding(competenceCUs);
-		List<CompetenceUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
+		List<ExtractionUnit> compUnits = ieJobs.initializeCompetenceUnits(competenceCUs, innerSentenceSplitting);
 		ieJobs.setSentenceData(compUnits, null);
 		ieJobs.readToolLists(toolsFile, noToolsFile);
 		boolean goOn = true;
 		while (goOn) {
 			ieJobs.matchWithToolLists(compUnits);
-			Map<CompetenceUnit, Map<Integer, List<ToolContext>>> matches = ieJobs.extractNewTools(contextFile, compUnits);
+			Map<ExtractionUnit, Map<Integer, List<ToolContext>>> matches = ieJobs.extractNewTools(contextFile, compUnits);
 			if (matches.isEmpty()) {
 				break;
 			}
