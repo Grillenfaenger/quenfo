@@ -41,7 +41,6 @@ import de.uni_koeln.spinfo.classification.core.helpers.EncodingProblemTreatment;
 import de.uni_koeln.spinfo.classification.core.helpers.crossvalidation.CrossvalidationGroupBuilder;
 import de.uni_koeln.spinfo.classification.core.helpers.crossvalidation.TrainingTestSets;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
-import de.uni_koeln.spinfo.classification.jasc.dbIO.DbConnector;
 import de.uni_koeln.spinfo.classification.jasc.preprocessing.ClassifyUnitSplitter;
 import de.uni_koeln.spinfo.classification.jasc.preprocessing.JASCReader;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractClassifier;
@@ -53,6 +52,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.evaluation.ResultComparat
 import de.uni_koeln.spinfo.classification.zoneAnalysis.evaluation.ZoneEvaluator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 import de.uni_koeln.spinfo.information_extraction.data.CompetenceUnit;
 
 public class ZoneJobs {
@@ -165,11 +165,7 @@ public class ZoneJobs {
 		ClassifyUnit cu;
 		while (result.next()) {
 			int txtID = result.getInt(1);
-			if (executeAtBIBB) {
-				sql = "SELECT STELLENBESCHREIBUNG FROM ClassifiedParaTexts WHERE ID = " + txtID + ";";
-			} else {
-				sql = "SELECT Text FROM ClassifiedParaTexts WHERE ID = " + txtID + ";";
-			}
+			sql = "SELECT STELLENBESCHREIBUNG FROM ClassifiedParaTexts WHERE ID = " + txtID + ";";
 			Statement stmt2 = inputConnection.createStatement();
 			ResultSet paraText = stmt2.executeQuery(sql);
 			String content = paraText.getString(1);
@@ -178,11 +174,10 @@ public class ZoneJobs {
 			for (int i = 0; i < stmc.getNumberOfCategories(); i++) {
 				classIDs[i] = parseIntToBool(result.getInt(2 + i));
 			}
-			int actualClassID = getActualClassID(classIDs);
 			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
 					stmc.getTranslations());
 			cu = new JASCClassifyUnit(content, parentID);
-			((ZoneClassifyUnit) cu).setActualClassID(actualClassID);
+			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
 		}
 		return toReturn;
@@ -197,11 +192,7 @@ public class ZoneJobs {
 		ClassifyUnit cu;
 		while (result.next()) {
 			int txtID = result.getInt(1);
-			if (executeAtBIBB) {
 				sql = "SELECT STELLENBESCHREIBUNG FROM ClassifiedParaTexts WHERE ID = " + txtID + ";";
-			} else {
-				sql = "SELECT Text FROM ClassifiedParaTexts WHERE ID = " + txtID + ";";
-			}
 			Statement stmt2 = inputConnection.createStatement();
 			ResultSet paraText = stmt2.executeQuery(sql);
 			String content = paraText.getString(1);
@@ -210,11 +201,10 @@ public class ZoneJobs {
 			for (int i = 0; i < stmc.getNumberOfCategories(); i++) {
 				classIDs[i] = parseIntToBool(result.getInt(2 + i));
 			}
-			int actualClassID = getActualClassID(classIDs);
 			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
 					stmc.getTranslations());
 			cu = new JASCClassifyUnit(EncodingProblemTreatment.normalizeEncoding(content), parentID);
-			((ZoneClassifyUnit) cu).setActualClassID(actualClassID);
+			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
 		}
 		return toReturn;
