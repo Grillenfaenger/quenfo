@@ -51,6 +51,19 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 
 	public void setClassIDs(boolean[] classIDs) {
 		this.classIDs = classIDs;
+		if(actualClassID == -1){
+			if(CONVERTER != null){
+				actualClassID = CONVERTER.getSingleClass(classIDs);
+			}
+			else{
+				for (int i = 0; i < classIDs.length; i++) {
+					if(classIDs[i]){
+						actualClassID = i+1;
+						return;
+					}
+				}
+			}
+		}
 	}
 	
 	public int getActualClassID() {
@@ -59,15 +72,18 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 
 	public void setActualClassID(int classID){
 		this.actualClassID = classID;
-		if(CONVERTER != null){
-			classIDs = CONVERTER.getMultiClasses(classID);
-		}
-		else {
-			classIDs = new boolean[NUMBEROFSINGLECLASSES];
-			if(classID >=0){
-				classIDs[classID-1] = true;
+		if(classIDs != null){
+			if(CONVERTER != null){
+				classIDs = CONVERTER.getMultiClasses(classID);
 			}
-		}	
+			else {
+				classIDs = new boolean[NUMBEROFSINGLECLASSES];
+				if(classID > 0){
+					classIDs[classID-1] = true;
+				}
+			}	
+		}
+		
 	}
 	
 
