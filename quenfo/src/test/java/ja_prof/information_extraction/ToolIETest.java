@@ -16,20 +16,19 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClas
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.ToolContext;
-import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
+import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs_Tools;
 
 public class ToolIETest {
 
 
 	static ZoneJobs jobs;
-	static IEJobs ieJobs;
+	static IEJobs_Tools ieJobs;
 	static List<File> trainingDataFiles = new ArrayList<File>();
-	static File filteredUnitsFile;
-	static File toolsFile = new File("information_extraction/data/tools.txt");
-	static File noToolsFile = new File("information_extraction/data/no_tools.txt");
-	static File contextFile = new File("information_extraction/data/toolContexts.txt");
-	static File sectorsFiles = new File("information_extraction/data/Liste_konsolidiert.xls");
-	static File toolCountsFile = new File("information_extraction/data/toolCounts.txt");
+	static File toolsFile = new File("information_extraction/data/tools/tools.txt");
+	static File noToolsFile = new File("information_extraction/data/tools/no_Tools.txt");
+	static File contextFile = new File("information_extraction/data/tools/toolContexts.txt");
+	static File sectorsFiles = new File("information_extraction/data/tools/ToolsBySector_List_BIBB.xls");
+	static File toolCountsFile = new File("information_extraction/data/tools/toolCounts.txt");
 	static Integer[] relevantClasses = new Integer[] { 2, 3, 6 };
 	static boolean innerSentenceSplitting = false;
 
@@ -49,20 +48,11 @@ public class ToolIETest {
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 
 		jobs = new ZoneJobs(stmc);
-		ieJobs = new IEJobs();
+		ieJobs = new IEJobs_Tools();
 
-//		trainingDataFiles.add(new File("classification/data/trainingDataScrambled.csv"));
-//		trainingDataFiles.add(new File("classification/data/newTrainingData2016.csv"));	
-		trainingDataFiles.add(new File("classification/data/notAnnotatedTrainingData_March2016.csv"));
-
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < relevantClasses.length; i++) {
-			sb.append(relevantClasses[i]);
-			if (i < relevantClasses.length - 1) {
-				sb.append("_");
-			}
-		}
-		
+		trainingDataFiles.add(new File("classification/data/trainingSets/verified_for_IE_TrainingData_jan2016.csv"));
+		trainingDataFiles.add(new File("classification/data/trainingSets/not_verified_TrainingData_March2016.csv"));	
+		trainingDataFiles.add(new File("classification/data/trainingSets/trainingDataScrambled.csv"));
 	}
 
 	@Test

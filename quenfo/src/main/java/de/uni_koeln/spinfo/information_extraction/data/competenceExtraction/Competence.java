@@ -1,6 +1,6 @@
 package de.uni_koeln.spinfo.information_extraction.data.competenceExtraction;
 
-import com.sun.org.apache.regexp.internal.recompile;
+
 
 /**
  * 

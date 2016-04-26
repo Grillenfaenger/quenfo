@@ -22,7 +22,7 @@ import de.uni_koeln.spinfo.dbIO.DbConnector;
 //  writes trainingClassifyUnits into the DB for classified Paragraphs. (Is needed to use/test the TrainWithDB-mode in ClassifyDatabaseApplication)
 public class AddDBTrainingData {
 
-	static String trainingDataFileName = "classification/data/testSets/verified_for_IE_TrainingData_Jan2016.csv";
+	static String trainingDataFileName = "classification/data/trainingSets/verified_for_IE_TrainingData_Jan2016.csv";
 	static String outputDBPath = "C:/sqlite/";
 	static String outputDBFileName = "ClassifiedParagraphs.db";
 
@@ -59,13 +59,14 @@ public class AddDBTrainingData {
 		Statement stmt = connection.createStatement();
 		PreparedStatement prepStmtClasses_Correctable = connection.prepareStatement("INSERT OR REPLACE INTO Classes_Correctable (TxtID, ClassONE, ClassTWO, ClassTHREE, ClassFOUR, UseForTraining) VALUES(?,?,?,?,?,?)");
 		PreparedStatement prepStmtClasses_Original = connection.prepareStatement("INSERT OR REPLACE INTO Classes_Original (TxtID, ClassONE, ClassTWO, ClassTHREE, ClassFOUR) Values(?,?,?,?,?)");
-		PreparedStatement prepStmtClassifiedParaTexts = connection.prepareStatement("INSERT OR REPLACE INTO ClassifiedParaTexts (ParaID,AdID,Text) VALUES(?,?,?)");
+		PreparedStatement prepStmtClassifiedParaTexts = connection.prepareStatement("INSERT OR REPLACE INTO ClassifiedParaTexts (ParaID,Jahrgang, ZEILENNR, STELLENBESCHREIBUNG) VALUES(?,?,?,?)");
 		int id;
 		for (ClassifyUnit cu : cus) {
 			//insert into ClassifiedParaTexts
 			prepStmtClassifiedParaTexts.setString(1, cu.getID().toString());
 			prepStmtClassifiedParaTexts.setInt(2, ((JASCClassifyUnit) cu).getParentID() );
-			prepStmtClassifiedParaTexts.setString(3, cu.getContent());
+			prepStmtClassifiedParaTexts.setInt(3, ((JASCClassifyUnit) cu).getSecondParentID());
+			prepStmtClassifiedParaTexts.setString(4, cu.getContent());
 			prepStmtClassifiedParaTexts.executeUpdate();
 			//insert into Classes_Original and Classes_Correctable
 			// get ID of last inserted row for use as a foreign key

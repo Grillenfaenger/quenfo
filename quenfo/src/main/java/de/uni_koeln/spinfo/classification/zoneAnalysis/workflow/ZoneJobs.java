@@ -231,6 +231,7 @@ public class ZoneJobs {
 			// System.out.println(((ZoneClassifyUnit)
 			// paragraph).getActualClassID());
 			ZoneClassifyUnit newParagraph = new ZoneClassifyUnit(paragraph.getContent(), paragraph.getID());
+		
 			newParagraph.setClassIDs(((ZoneClassifyUnit) paragraph).getClassIDs());
 			newParagraph.setActualClassID(((ZoneClassifyUnit) paragraph).getActualClassID());
 			newParagraph.setFeatureUnits(tokenizer.tokenize(newParagraph.getContent()));

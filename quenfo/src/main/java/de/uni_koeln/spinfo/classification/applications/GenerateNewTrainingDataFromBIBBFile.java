@@ -13,14 +13,14 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClas
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.DumpDataBaseTrainingDataGenerator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.preprocessing.TrainingDataGenerator;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs;
+import de.uni_koeln.spinfo.information_extraction.workflow.IEJobs_Tools;
 
 public class GenerateNewTrainingDataFromBIBBFile {
 	
 	private static String inBIBBClassifiedParagraphs = "classification/data/inBIBBClassifiedParagraphs_March2016.xls";
 	private static String newTrainingDataFile = "classification/data/notAnnotatedTrainingData_March2016.csv";
 	private static ZoneJobs jobs;
-	private static IEJobs ieJobs;
+	private static IEJobs_Tools ieJobs;
 	
 	
 	
@@ -36,7 +36,7 @@ public class GenerateNewTrainingDataFromBIBBFile {
 		translations.put(6, categories);
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 		jobs = new ZoneJobs(stmc);
-		ieJobs = new IEJobs();
+		ieJobs = new IEJobs_Tools();
 		DumpDataBaseTrainingDataGenerator ddtdg = new DumpDataBaseTrainingDataGenerator(jobs.getStmc(),new File(inBIBBClassifiedParagraphs), new File(newTrainingDataFile));
 		ddtdg.readInBIBBClassifiedParagraphsFromFile();
 		TrainingDataGenerator tdg = new TrainingDataGenerator(new File(newTrainingDataFile), 4, 6, translations);

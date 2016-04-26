@@ -35,13 +35,13 @@ public class DbConnector {
 		Statement stmt = connection.createStatement();
 		String sql = "DROP TABLE IF EXISTS DL_ALL";
 		stmt.executeUpdate(sql);
-		sql = "CREATE TABLE DL_ALL (ID  INTEGER PRIMARY KEY AUTOINCREMENT, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT)";
+		sql = "CREATE TABLE DL_ALL_Spinfo (ID  INTEGER PRIMARY KEY AUTOINCREMENT, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT)";
 		stmt.executeUpdate(sql);
 		stmt.close();
 		connection.commit();
 	}
 
-	public static void createClassificationOutputTables(Connection connection, boolean executeInBIBB)
+	public static void createClassificationOutputTables(Connection connection)
 			throws SQLException {
 
 		String sql;
@@ -170,7 +170,7 @@ public class DbConnector {
 	public static void writeInBIBBDB(List<ClassifyUnit> input, Connection conn) throws SQLException {
 		conn.setAutoCommit(false);
 		PreparedStatement prep = conn
-				.prepareStatement("INSERT INTO DL_ALL (ZEILENNR, Jahrgang, STELLENBESCHREIBUNG) VALUES(?,?,?)");
+				.prepareStatement("INSERT INTO DL_ALL_Spinfo (ZEILENNR, Jahrgang, STELLENBESCHREIBUNG) VALUES(?,?,?)");
 		for (ClassifyUnit classifyUnit : input) {
 			prep.setInt(1, ((JASCClassifyUnit) classifyUnit).getSecondParentID());
 			prep.setInt(2, ((JASCClassifyUnit) classifyUnit).getParentID());
@@ -189,8 +189,6 @@ public class DbConnector {
 		for (Tool tool : tools) {
 			prepStmt.setString(1, tool.toString());
 			prepStmt.executeUpdate();
-			System.out.println("write: "+ cu.getSentence());
-			System.out.println("--> "+ tool.toString());
 		}
 		prepStmt.close();
 		outputConnection.commit();

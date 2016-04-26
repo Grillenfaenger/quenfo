@@ -20,7 +20,7 @@ public class createBIBBDB {
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 
-		Connection conn = DbConnector.connect("classification/data/db/bibbDB.db");
+		Connection conn = DbConnector.connect("classification/db/bibbDB.db");
 		DbConnector.createBIBBDB(conn);
 
 		// Translations
@@ -36,7 +36,7 @@ public class createBIBBDB {
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 
 		ZoneJobs jobs = new ZoneJobs(stmc);
-		List<ClassifyUnit> input = jobs.getCategorizedParagraphsFromFile(new File("classification/data/notAnnotatedTrainingData_March2016.csv"));
+		List<ClassifyUnit> input = jobs.getCategorizedParagraphsFromFile(new File("classification/data/trainingSets/trainingDataScrambled.csv"));
 		DbConnector.writeInBIBBDB(input, conn);
 	}
 }

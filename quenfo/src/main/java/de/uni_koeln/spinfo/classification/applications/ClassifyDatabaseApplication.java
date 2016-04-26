@@ -26,8 +26,8 @@ import de.uni_koeln.spinfo.dbIO.DbConnector;
  */
 public class ClassifyDatabaseApplication {
 	
-	static boolean executeAtBIBB = false;
-	static String trainingDataFileName = "classification/data/trainingDataScrambled.csv";
+
+	static String trainingDataFileName = "classification/data/trainingSets/trainingDataScrambled.csv";
 
 	
 	
@@ -39,9 +39,9 @@ public class ClassifyDatabaseApplication {
 	static boolean trainWithDB = true;
 
 	// Path to input database
-	static String dbInputPath = /*"C:/sqlite/SteA.db3";*/"classification/data/bibbDB.db";  
+	static String dbInputPath = /*"D:/Daten/sqlite/SteA.db3";*/"classification/db/bibbDB.db";  
 	// Path to output database
-	static String stdOutputPath = "C:/sqlite/";
+	static String stdOutputPath = /*D:/Daten/sqlite/*/"C:/sqlite/";
 	// name of output database
 	static String dbFileName = "ClassifiedParagraphs.db";
 	// overall results fetched from db, no Limit: -1
@@ -85,7 +85,7 @@ public class ClassifyDatabaseApplication {
 				String answer = in.readLine();
 				if (answer.toLowerCase().trim().equals("o")) {
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
+					DbConnector.createClassificationOutputTables(outputConnection);
 					answered = true;
 				} else if (answer.toLowerCase().trim().equals("u")) {
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
@@ -96,7 +96,7 @@ public class ClassifyDatabaseApplication {
 					BufferedReader ndIn = new BufferedReader(new InputStreamReader(System.in));
 					dbFileName = ndIn.readLine();
 					outputConnection = DbConnector.connect(stdOutputPath + dbFileName);
-					DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
+					DbConnector.createClassificationOutputTables(outputConnection);
 					answered = true;
 				} else {
 					System.out.println("C: invalid answer! please try again...");
@@ -105,7 +105,7 @@ public class ClassifyDatabaseApplication {
 			}
 		} else {
 			outputConnection = DbConnector.connect(stdOutputPath + dbFileName); 
-			DbConnector.createClassificationOutputTables(outputConnection, executeAtBIBB);
+			DbConnector.createClassificationOutputTables(outputConnection);
 		}
 
 		// create output-directory if not exists
@@ -114,7 +114,7 @@ public class ClassifyDatabaseApplication {
 		}
 		
 		//start classifying
-		ConfigurableDatabaseClassifier dbClassfy = new ConfigurableDatabaseClassifier(inputConnection, outputConnection, queryLimit, fetchSize, currentId, executeAtBIBB, trainWithDB, trainingDataFileName);
+		ConfigurableDatabaseClassifier dbClassfy = new ConfigurableDatabaseClassifier(inputConnection, outputConnection, queryLimit, fetchSize, currentId, trainWithDB, trainingDataFileName);
 		try {
 			dbClassfy.classify();
 		} catch (Exception e) {

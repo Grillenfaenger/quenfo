@@ -50,7 +50,9 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 	}	
 
 	public void setClassIDs(boolean[] classIDs) {
+		if(classIDs == null) return;
 		this.classIDs = classIDs;
+		
 		if(actualClassID == -1){
 			if(CONVERTER != null){
 				actualClassID = CONVERTER.getSingleClass(classIDs);
@@ -72,7 +74,7 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 
 	public void setActualClassID(int classID){
 		this.actualClassID = classID;
-		if(classIDs != null){
+		if(classIDs == null){
 			if(CONVERTER != null){
 				classIDs = CONVERTER.getMultiClasses(classID);
 			}
