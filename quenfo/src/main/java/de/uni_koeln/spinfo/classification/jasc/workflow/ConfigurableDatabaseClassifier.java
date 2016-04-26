@@ -39,14 +39,13 @@ public class ConfigurableDatabaseClassifier {
 	private String trainingDataFileName;
 
 	public ConfigurableDatabaseClassifier(Connection inputDb, Connection outputDb, int queryLimit, int fetchSize,
-			int currentId, boolean executeAtBIBB, boolean trainWithDB, String trainingDataFileName)
+			int currentId, boolean trainWithDB, String trainingDataFileName)
 					throws FileNotFoundException, UnsupportedEncodingException {
 		this.inputDb = inputDb;
 		this.outputDb = outputDb;
 		this.queryLimit = queryLimit;
 		this.fetchSize = fetchSize;
 		this.currentId = currentId;
-		this.executeAtBIBB = executeAtBIBB;
 		this.trainWithDB = trainWithDB;
 		this.trainingDataFileName = trainingDataFileName;
 	}
@@ -107,7 +106,7 @@ public class ConfigurableDatabaseClassifier {
 		;
 //		if (executeAtBIBB) {
 			// SteA-DB
-			query = "SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL LIMIT ? OFFSET ?;";
+			query = "SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo LIMIT ? OFFSET ?;";
 //		} else {
 //			// TrainingData-Db
 //			query = "SELECT jobAd_ID, jobAdText FROM jobAds LIMIT ? OFFSET ?;";	
@@ -122,11 +121,16 @@ public class ConfigurableDatabaseClassifier {
 
 		// total entries to process:
 		if (queryLimit < 0) {
+			
+			String countQuery = "SELECT COUNT(*) FROM Classes_Correctable;";
 			Statement stmt = inputDb.createStatement();
+			ResultSet countResult = stmt.executeQuery(countQuery);
+			int tableSize = countResult.getInt(1);
+			stmt.close();
+			stmt = inputDb.createStatement();
 			ResultSet rs = null;
 //			if (executeAtBIBB) {
-				// TODO: Andreas fragen
-				rs = stmt.executeQuery("SELECT COALESCE(MAX(ID)+1, 0) FROM DL_ALL;");
+				rs = stmt.executeQuery("SELECT COALESCE("+tableSize+"+1, 0) FROM DL_ALL_Spinfo;");
 //			} else {
 //				rs = stmt.executeQuery("SELECT COALESCE(MAX(jobAd_ID)+1, 0) FROM jobAds;");
 //			}

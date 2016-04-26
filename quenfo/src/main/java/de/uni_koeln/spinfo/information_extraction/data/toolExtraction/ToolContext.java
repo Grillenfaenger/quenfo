@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.uni_koeln.spinfo.information_extraction.data.Token;
-import javafx.scene.AmbientLight;
+
 
 public class ToolContext {
 	
@@ -12,7 +12,6 @@ public class ToolContext {
 	private int amPointer;
 	double conf = 0.0;
 
-	
 	public void setConf(double conf){
 		this.conf = conf;
 	}
