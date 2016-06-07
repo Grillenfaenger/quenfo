@@ -33,7 +33,7 @@ public class DbConnector {
 		System.out.println("create inputDB");
 		connection.setAutoCommit(false);
 		Statement stmt = connection.createStatement();
-		String sql = "DROP TABLE IF EXISTS DL_ALL";
+		String sql = "DROP TABLE IF EXISTS DL_ALL_Spinfo";
 		stmt.executeUpdate(sql);
 		sql = "CREATE TABLE DL_ALL_Spinfo (ID  INTEGER PRIMARY KEY AUTOINCREMENT, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT)";
 		stmt.executeUpdate(sql);

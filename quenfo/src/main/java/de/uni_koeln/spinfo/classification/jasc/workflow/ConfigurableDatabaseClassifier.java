@@ -99,6 +99,8 @@ public class ConfigurableDatabaseClassifier {
 		if (config.getModelFileName().contains("/myModels/")) {
 			jobs.exportModel(config.getModelFile(), model);
 		}
+		
+		
 		// get data from db
 		int done = 0;
 		String query = null;

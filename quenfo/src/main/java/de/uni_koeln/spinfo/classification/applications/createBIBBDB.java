@@ -36,7 +36,8 @@ public class createBIBBDB {
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 
 		ZoneJobs jobs = new ZoneJobs(stmc);
-		List<ClassifyUnit> input = jobs.getCategorizedParagraphsFromFile(new File("classification/data/trainingSets/trainingDataScrambled.csv"));
+		List<ClassifyUnit> input = jobs.getCategorizedParagraphsFromFile(new File("classification/data/trainingSets/not_verified_TrainingData_March2016.csv"));
+		input.addAll(jobs.getCategorizedParagraphsFromFile(new File("classification/data/trainingSets/verified_for_IE_TrainingData_Jan2016.csv")));
 		DbConnector.writeInBIBBDB(input, conn);
 	}
 }
