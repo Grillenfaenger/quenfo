@@ -5,3 +5,6 @@
 /diagrams
 
 /src/test/resources
+/output/
+/umlaute_db.db
+/Umlaute_db.db_Backup

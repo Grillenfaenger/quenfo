@@ -1,6 +1,7 @@
 package de.uni_koeln.spinfo.umlauts.dbio;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -68,12 +69,12 @@ public class DBConnector {
 	public static List<JobAd> getJobAds(Connection connection, int jahrgang) throws SQLException{
 		List<JobAd> toReturn = new ArrayList<JobAd>();
 		connection.setAutoCommit(false);
-		String sql ="SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE (Jahrgang = '"+jahrgang+"') ";
+		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE (Jahrgang = '"+jahrgang+"') ";
 		Statement stmt = connection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 		JobAd jobAd;
 		while(result.next()){
-			jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
+			jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
 			toReturn.add(jobAd);
 			
 		}
@@ -85,12 +86,12 @@ public class DBConnector {
 	public static List<JobAd> getJobAdsExcept(Connection connection, int notjahrgang) throws SQLException{
 		List<JobAd> toReturn = new ArrayList<JobAd>();
 		connection.setAutoCommit(false);
-		String sql ="SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+notjahrgang+"') ";
+		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+notjahrgang+"') ";
 		Statement stmt = connection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 		JobAd jobAd;
 		while(result.next()){
-			jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
+			jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
 			toReturn.add(jobAd);
 			
 		}
@@ -644,6 +645,40 @@ private static List<Integer> searchKeyword(List<String> text, String keyword, in
 		stmt.close();
 		connection.commit();
 		return toReturn;
+	}
+	
+	public static void removeUmlautsFromDB(Connection connection, List<JobAd> jobAds) throws SQLException{
+		
+		connection.setAutoCommit(true);
+		String sql ="UPDATE DL_ALL_Spinfo set STELLENBESCHREIBUNG = ? WHERE ID = ? ";
+		PreparedStatement preparedStmt = connection.prepareStatement(sql);
+		 
+		 for (JobAd jobAd : jobAds){
+			 String content = jobAd.getContent();
+//			 System.out.println(content);
+			 String replacement = replaceUmlaut(content);
+//			 System.out.println(content);
+			 preparedStmt.setString(1, replacement);
+			 preparedStmt.setInt(2, jobAd.getId());
+			
+			 
+			 preparedStmt.executeUpdate();
+		 }
+		 
+	
+		
+	}
+	
+	public static String replaceUmlaut(String umlautWord) {
+		String replacement = umlautWord;
+		replacement = replacement.replaceAll("Ä", "A");
+		replacement = replacement.replaceAll("ä", "a");
+		replacement = replacement.replaceAll("Ö", "O");
+		replacement = replacement.replaceAll("ö", "o");
+		replacement = replacement.replaceAll("Ü", "U");
+		replacement = replacement.replaceAll("ü", "u");
+		
+		return replacement;
 	}
 
 }
