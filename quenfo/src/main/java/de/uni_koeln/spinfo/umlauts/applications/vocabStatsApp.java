@@ -80,6 +80,9 @@ public class vocabStatsApp {
 		KeywordContexts keywordContexts5 = DBConnector.getKeywordContexts5(connection, transVoc.createAmbiguitySet(ambiguities));
 		keywordContexts5.printKeywordContexts("output//", "Kontexte5");
 		
+		KeywordContexts keywordContexts6 = DBConnector.getKeywordContexts6(connection, transVoc.createAmbiguitySet(ambiguities));
+		keywordContexts6.printKeywordContexts("output//", "Kontexte6");
+		
 	}
 
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.Contexts;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
@@ -404,6 +405,7 @@ public static KeywordContexts getKeywordContexts5(Connection connection, Set<Str
 
 	// für jede Anzeige
 	while(result.next()){
+		System.out.println("\n=========\nnächste Anzeige\n=========\n");
 		jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
 		tokenList = tokenizer.tokenize(jobAd.getContent());
 	
@@ -429,6 +431,86 @@ public static KeywordContexts getKeywordContexts5(Connection connection, Set<Str
 	connection.commit();
 			
 	System.out.println("getKeywordContexts5: " + occurences);
+	return kwCtxts;
+}
+
+/**
+ * Returns contexts of keywords within the sentence of occurence.
+ * @param connection
+ * @param keywords
+ * @return
+ * @throws SQLException
+ */
+public static KeywordContexts getKeywordContexts6(Connection connection, Set<String> keywords) throws SQLException{
+	
+	KeywordContexts kwCtxts = new KeywordContexts();
+	int occurences = 0;
+	SimpleTokenizer tokenizer = new SimpleTokenizer();
+	JobAd jobAd;
+	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
+	IETokenizer ietokenizer = new IETokenizer();
+	ArrayList<JobAd> candidates = new ArrayList<JobAd>();
+	
+	connection.setAutoCommit(false);
+	String sql ="SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo";
+	Statement stmt = connection.createStatement();
+	ResultSet result = stmt.executeQuery(sql);
+
+	// für jede Anzeige
+	while(result.next()){
+//		System.out.println("\n=========\nnächste Anzeige\n=========\n");
+		jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
+		
+//		for(String keyword : keywords){
+//			if(keyword.length()>1){
+//				if(jobAd.getContent().contains(keyword)){
+					candidates.add(jobAd);
+//				}
+//			}	
+//		}
+	}
+	System.out.println("Es bleiben " + candidates.size() + " Kandidaten");
+		
+		
+	for(JobAd cand : candidates){	
+//		System.out.println("Sätze teilen");
+		List<String> sentences = ietokenizer.splitIntoSentences(cand.getContent(), false);
+		List<String> tokenizedSentence = null;
+//		System.out.println("Sätze tokenisieren");
+		for (String sentence : sentences){
+			tokenizedSentence = tokenizer.tokenize(sentence);
+			tokenizedSentences.add(tokenizedSentence);
+		}
+	}	
+	
+	System.out.println("Sätze insgesamt: "+tokenizedSentences.size());	
+	
+	// In einem Satz können mehrere ambige Wörter ein- oder mehrmals vorkommen. Alle diese Vorkommen und ihre Kontexte sollen gefunden werden.	
+		// jedes Keyword
+	for(List<String> sentencetokens : tokenizedSentences){	
+		for(String keyword : keywords) {
+//			System.out.println("Suche nach " + keyword);
+			
+			
+			List<Integer> indexes = searchKeyword(sentencetokens,keyword);
+			if(indexes!=null){
+				List<List<String>> contexts = getContexts(sentencetokens, indexes);
+			
+				occurences += contexts.size();
+			
+//				System.out.println("----------\n\n");
+			
+				kwCtxts.addContexts(keyword, contexts);
+			}
+		}	
+	}	
+				
+	
+			
+	stmt.close();
+	connection.commit();
+			
+	System.out.println("getKeywordContexts6: " + occurences);
 	return kwCtxts;
 }
 
@@ -495,10 +577,10 @@ private static List<Integer> searchKeyword(List<String> text, String keyword, in
 		first = first+left+1;
 		int last = text.subList(left+1, right).lastIndexOf(keyword)+left+1;
 
-		System.out.println("left im ganzen Text: " + left + ": " + text.get(left));
-		System.out.println("first im ganzen Text:"+ first + ": " + text.get(first));
-		System.out.println("last im ganzen Text:"+ last + ": " + text.get(last));
-		System.out.println("right im ganzen Text:"+ right + ": " + text.get(right));
+//		System.out.println("left im ganzen Text: " + left + ": " + text.get(left));
+//		System.out.println("first im ganzen Text:"+ first + ": " + text.get(first));
+//		System.out.println("last im ganzen Text:"+ last + ": " + text.get(last));
+//		System.out.println("right im ganzen Text:"+ right + ": " + text.get(right));
 		
 		if(first==last){
 			indexes.add(first);
@@ -511,6 +593,8 @@ private static List<Integer> searchKeyword(List<String> text, String keyword, in
 	}
 	return indexes;
 }
+
+
 
 
 	public static List<JobAd> getJobAdsWithKeyword(Connection connection, Set<String> keywords) throws SQLException{
