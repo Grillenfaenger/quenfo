@@ -31,7 +31,7 @@ public class UmlautsTest {
 		jobAds = DBConnector.getJobAdsExcept(connection, 2012);
 	}
 
-	
+	@Ignore
 	@Test
 	public void testTokenizeWithIETokenizer() {
 		List<List<List<String>>> tokenizedParagraphs = new ArrayList<List<List<String>>>();
@@ -91,6 +91,15 @@ public class UmlautsTest {
 		for (List<String> list : tokenizedSentences) {
 			System.out.println(list);
 		}
+	}
+	
+	@Test
+	public void listIndexTest(){
+		List<String> list = new ArrayList<String>();
+		list.add("Eins");
+		list.add("Zwei");
+		list.add("Drei");
+		System.out.println(list.indexOf("Eins"));
 	}
 
 }
