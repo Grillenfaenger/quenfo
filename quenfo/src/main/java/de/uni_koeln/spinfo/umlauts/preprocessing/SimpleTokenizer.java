@@ -33,6 +33,19 @@ public class SimpleTokenizer {
 		return result;
 	}
 	
+	public List<String> tokenizeWithStartPosition(String text) {
+		List<String> tokens = Arrays
+				.asList((text.split(delimiter)));
+		List<String> result = new ArrayList<String>();
+		
+		for (String token : tokens) {
+			if (token.trim().length() > 0) {
+				result.add(token.trim());
+			}
+		}
+		return result;
+	}
+	
 	
 
 }

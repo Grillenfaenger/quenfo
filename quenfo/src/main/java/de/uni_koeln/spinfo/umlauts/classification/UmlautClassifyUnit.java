@@ -35,7 +35,7 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 	}
 	
 	public String getSense(){
-		return senses[actualClassID];
+		return senses[actualClassID-1];
 		
 	}
 	

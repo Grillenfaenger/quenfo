@@ -29,6 +29,21 @@ public class IEPreprocessingWrapper {
 		
 	}
 	
+	public static List<List<String>> tokenizeWithPositions(String string){
+		List<String> sentences = tokenizer.splitIntoSentences(string, false);
+		List<List<String>> tokenizedSentences = new ArrayList<List<String>>();
+		
+		for(String sentence : sentences) {
+			String[] tokens = tokenizer.tokenizeSentence(sentence);
+			List<String> tokenizedSentence = new ArrayList<String>(tokens.length);
+			tokenizedSentence.addAll(Arrays.asList(tokens));
+			tokenizedSentences.add(tokenizedSentence);
+		}
+		
+		return tokenizedSentences;
+		
+	}
+	
 	public static List<SentenceData09> completeLinguisticPreprocessing(String string, boolean onlyLemmata){
 		List<String> sentences = tokenizer.splitIntoSentences(string, false);
 		List<SentenceData09> sdList = new ArrayList<SentenceData09>();

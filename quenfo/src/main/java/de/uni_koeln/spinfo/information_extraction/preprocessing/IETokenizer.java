@@ -14,7 +14,10 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.jasc.preprocessing.ClassifyUnitSplitter;
+import de.uni_koeln.spinfo.umlauts.data.Sentence;
+
 
 public class IETokenizer {
 
@@ -82,9 +85,19 @@ public class IETokenizer {
 	
 	public List<String> splitIntoSentences(String text, boolean innerSentenceSplitting){
 		String[] sentences = null;
+		/*TEST*/ Span[] positions = null;
 
 		SentenceDetectorME detector = new SentenceDetectorME(sentenceModel);
 		sentences = detector.sentDetect(text);
+		/*TEST*/positions = detector.sentPosDetect(text);
+		
+		/*TEST start*/
+		for (int i = 0; i < positions.length; i++) {
+			System.out.println(positions[i].getStart() + " " + positions[i].getEnd());
+			System.out.println(text.substring(positions[i].getStart(), positions[i].getEnd()));
+		}
+		/*TEST end*/
+		
 		List<String> toReturn = new ArrayList<String>();
 		for (String string : sentences) {
 			List<String> splitted = splitListItems(string);
@@ -100,6 +113,31 @@ public class IETokenizer {
 			
 		}
 		return toReturn;
+	}
+	
+	public List<Sentence> tokenizeWithPositions(String text, boolean innerSentenceSplitting){
+		String[] sentences = null;
+		Span[] spans = null;
+		Tokenizer tokenizer = new TokenizerME(tokenizeModel);
+		
+		// Split into sentences, keep spans
+		SentenceDetectorME detector = new SentenceDetectorME(sentenceModel);
+		sentences = detector.sentDetect(text);
+		spans = detector.sentPosDetect(text);
+		
+		// Split sentence into tokens, keep Positions within sentence
+		
+		List<Sentence> sentenceTokens = new ArrayList<Sentence>(sentences.length);
+		for (int i = 0; i < sentences.length; i++) {
+			String sentence = sentences[i];
+			List<String> tokens = null;
+			Span[] tokenSpans = null;
+			tokens = Arrays.asList(tokenizer.tokenize(sentence));
+			tokenSpans = tokenizer.tokenizePos(sentence);
+			
+			sentenceTokens.add(new Sentence(spans[i],tokens, tokenSpans));
+		}
+		return sentenceTokens;
 	}
 	
 	/**

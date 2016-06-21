@@ -48,7 +48,7 @@ public class UmlautsTest {
 		}
 	}
 	
-	@Ignore
+//	@Ignore
 	@Test
 	public void testCompleteLinguisticProcessing() {
 		List<List<SentenceData09>> tokenizedParagraphs = new ArrayList<List<SentenceData09>>();
@@ -93,6 +93,7 @@ public class UmlautsTest {
 		}
 	}
 	
+	@Ignore
 	@Test
 	public void listIndexTest(){
 		List<String> list = new ArrayList<String>();
