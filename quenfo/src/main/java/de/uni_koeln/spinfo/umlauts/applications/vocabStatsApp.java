@@ -47,7 +47,7 @@ public class vocabStatsApp {
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}
-//		System.out.println(transVoc.vocabulary);
+		System.out.println(transVoc.vocabulary);
 		
 		Vocabulary darkVowelVoc = withUmlauts.getAllByRegex(".*([AaOoUu]).*");
 		darkVowelVoc.generateNumberOfTokens();

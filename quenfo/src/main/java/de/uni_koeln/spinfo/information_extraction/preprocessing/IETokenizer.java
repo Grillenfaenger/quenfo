@@ -85,18 +85,18 @@ public class IETokenizer {
 	
 	public List<String> splitIntoSentences(String text, boolean innerSentenceSplitting){
 		String[] sentences = null;
-		/*TEST*/ Span[] positions = null;
+//		/*TEST*/ Span[] positions = null;
 
 		SentenceDetectorME detector = new SentenceDetectorME(sentenceModel);
 		sentences = detector.sentDetect(text);
-		/*TEST*/positions = detector.sentPosDetect(text);
+//		/*TEST*/positions = detector.sentPosDetect(text);
 		
-		/*TEST start*/
-		for (int i = 0; i < positions.length; i++) {
-			System.out.println(positions[i].getStart() + " " + positions[i].getEnd());
-			System.out.println(text.substring(positions[i].getStart(), positions[i].getEnd()));
-		}
-		/*TEST end*/
+//		/*TEST start*/
+//		for (int i = 0; i < positions.length; i++) {
+//			System.out.println(positions[i].getStart() + " " + positions[i].getEnd());
+//			System.out.println(text.substring(positions[i].getStart(), positions[i].getEnd()));
+//		}
+//		/*TEST end*/
 		
 		List<String> toReturn = new ArrayList<String>();
 		for (String string : sentences) {

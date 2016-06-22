@@ -406,7 +406,7 @@ public static KeywordContexts getKeywordContexts5(Connection connection, Set<Str
 
 	// für jede Anzeige
 	while(result.next()){
-		System.out.println("\n=========\nnächste Anzeige\n=========\n");
+//		System.out.println("\n=========\nnächste Anzeige\n=========\n");
 		jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
 		tokenList = tokenizer.tokenize(jobAd.getContent());
 	

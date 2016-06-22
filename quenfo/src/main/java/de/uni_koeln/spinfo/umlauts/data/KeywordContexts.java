@@ -15,7 +15,7 @@ import java.util.TreeMap;
 
 public class KeywordContexts {
 	
-	public Map<String, List<List<String>>> keywordContextsMap;
+	private Map<String, List<List<String>>> keywordContextsMap;
 	
 
 	public KeywordContexts() {
@@ -31,6 +31,10 @@ public class KeywordContexts {
 			keywordContextsMap.put(keyword, newContexts);
 		}
 		
+	}
+	
+	public List<List<String>> getContext(String keyword){
+		return keywordContextsMap.get(keyword);
 	}
 	
 	public File printKeywordContexts(String destPath, String fileName) throws IOException {
