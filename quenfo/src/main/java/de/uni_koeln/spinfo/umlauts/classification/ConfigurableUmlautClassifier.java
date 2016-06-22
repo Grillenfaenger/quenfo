@@ -82,10 +82,9 @@ public class ConfigurableUmlautClassifier {
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 			for(String string : entry.getValue()){
 				List<List<String>> context = keywordContexts.getContext(string);
-				ClassifyUnit cu = new UmlautClassifyUnit(tokens, string, senses, true);
+				ZoneClassifyUnit cu = new UmlautClassifyUnit(tokens, string, senses, true);
 				trainingData.add(cu);
 			}
-			trainingData = jobs.initializeClassifyUnits(trainingData);
 			trainingData = jobs.setFeatures(trainingData, config.getFeatureConfiguration(), true);
 			trainingData = jobs.setFeatureVectors(trainingData, config.getFeatureQuantifier(), null);
 
@@ -94,7 +93,7 @@ public class ConfigurableUmlautClassifier {
 			models.put(entry.getKey(), model);
 			}
 			
-		}
+		
 	// Modelle den Gruppen zugeordnet vorhalten
 	
 	
@@ -102,15 +101,21 @@ public class ConfigurableUmlautClassifier {
 	//Klassifizieren
 	
 	// Im Jahrgang ohne Umlaute nach umlautambigen Wörtern suchen
+	
+	jobAds = DBConnector.getJobAds(connection, 2012);
+	
 	// Je eine Anzeige
 	// In Sätze splitten und deren Span festhalten
 	// Sätze tokenisieren und die Position der Tokens im Satz festhalten
+		// Eindeutige Token erkennen und korrigieren
+	
+	// mehrdeutige Vorkommen erkennen 
 	// für jeden Fund einzeln: 
 		// Kontext extrahieren
 		// Klassifizieren: cu erstellen, setFeatures(), setFeatureVectors, das entsprechende Modell auswählen und klassifizieren
 	//cu.getSense() mit cu.getContent() vergleichen. Falls identisch kein Handlungsbedarf
 	// ansonsten ersetzen
-	
+	}
 	
 
 }

@@ -6,14 +6,19 @@ import java.util.UUID;
 
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
-
+/**
+ * 
+ * @author gedulida
+ * @author avogt
+ *
+ */
 public class ZoneClassifyUnit extends ClassifyUnit{
 	
 	protected int actualClassID;
 	boolean[] classIDs;
-	private static int NUMBEROFSINGLECLASSES;
-	private static int NUMBEROFMULTICLASSES;
-	private static SingleToMultiClassConverter CONVERTER;	
+	private int NUMBEROFSINGLECLASSES;
+	private int NUMBEROFMULTICLASSES;
+	private SingleToMultiClassConverter CONVERTER;	
 	
 
 	
@@ -23,21 +28,29 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 		this.actualClassID = -1;
 	}
 	
-	public ZoneClassifyUnit(String content){
-		super(content, UUID.randomUUID());
+	public ZoneClassifyUnit(String content, UUID id, int numberOfCategories){
+		super(content,id);
+		this.setNumberOfCategories(numberOfCategories);
 		//this.classIDs = new boolean[8];
+		this.actualClassID = -1;
+	}
+	
+	public ZoneClassifyUnit(String content, int numberOfCategories){
+		super(content, UUID.randomUUID());
+		this.setNumberOfCategories(numberOfCategories);
+		
 		this.actualClassID = -1;
 	}
 	
 
 	
 	
-	public static void setNumberOfCategories(int categoriesNo){
+	public void setNumberOfCategories(int categoriesNo){
 		setNumberOfCategories(categoriesNo, categoriesNo, null);
 	}
 	
 
-	public static void setNumberOfCategories(int categoriesNo, int classesNo, Map<Integer, List<Integer>> translations){
+	public void setNumberOfCategories(int categoriesNo, int classesNo, Map<Integer, List<Integer>> translations){
 		NUMBEROFMULTICLASSES = categoriesNo;
 		NUMBEROFSINGLECLASSES = classesNo;
 		CONVERTER = new SingleToMultiClassConverter(NUMBEROFSINGLECLASSES, NUMBEROFMULTICLASSES, translations);

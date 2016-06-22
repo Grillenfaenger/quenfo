@@ -21,16 +21,13 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 	 * @param training inizialize training data or not (ie data to classify)
 	 */
 	public UmlautClassifyUnit(List<String> context, String word, String[] senses, boolean training) {
-		super(word);
+		super(word, senses.length);
 		context.remove(word);
 		super.setFeatureUnits(context);
 		this.senses = senses;
 		if(training){
 			setActualClassID(Arrays.asList(senses).indexOf(word)+1);
-		} else {
-			setActualClassID(-1);
 		}
-		setClassIDs(null);
 		
 	}
 	

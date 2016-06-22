@@ -36,7 +36,7 @@ public class vocabStatsApp {
 //		System.out.println(withUmlauts.vocabulary);
 		
 		
-		Vocabulary umlautVoc = withUmlauts.getAllByRegex(".*([ÄäÖöÜü]).*");
+		Vocabulary umlautVoc = withUmlauts.getAllByRegex(".*([ÄäÖöÜüß]).*");
 		umlautVoc.generateNumberOfTokens();
 		System.out.println("Wörter mit Umlaut: " + umlautVoc.getNumberOfTokens());
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());

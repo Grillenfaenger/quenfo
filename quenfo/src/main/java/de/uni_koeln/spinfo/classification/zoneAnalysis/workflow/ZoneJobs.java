@@ -174,8 +174,8 @@ public class ZoneJobs {
 			for (int i = 0; i < stmc.getNumberOfCategories(); i++) {
 				classIDs[i] = parseIntToBool(result.getInt(2 + i));
 			}
-			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
-					stmc.getTranslations());
+//			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
+//					stmc.getTranslations());
 			cu = new JASCClassifyUnit(content, parentID);
 			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
@@ -201,8 +201,8 @@ public class ZoneJobs {
 			for (int i = 0; i < stmc.getNumberOfCategories(); i++) {
 				classIDs[i] = parseIntToBool(result.getInt(2 + i));
 			}
-			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
-					stmc.getTranslations());
+//			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
+//					stmc.getTranslations());
 			cu = new JASCClassifyUnit(EncodingProblemTreatment.normalizeEncoding(content), parentID);
 			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
