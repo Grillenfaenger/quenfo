@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
+import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
@@ -104,6 +105,8 @@ public class ConfigurableUmlautClassifier {
 	// Im Jahrgang ohne Umlaute nach umlautambigen Wörtern suchen
 	
 	jobAds = DBConnector.getJobAds(connection, 2012);
+	StringBuffer buf = null;
+	
 	
 	// Je eine Anzeige
 	for (JobAd jobAd : jobAds){
@@ -111,16 +114,56 @@ public class ConfigurableUmlautClassifier {
 		// Sätze tokenisieren und die Position der Tokens im Satz festhalten
 		List<Sentence> tokenizedSentences = tokenizer.tokenizeWithPositions(jobAd.getContent(), false);
 		
-		//TODO Eindeutige Token erkennen und korrigieren
 		
-		// mehrdeutige Vorkommen erkennen 
-		// für jeden Fund einzeln: 
-			// Kontext extrahieren
+		Map<String,String> simpleReplacements = transVoc.createSimpleReplacementMap(ambiguities.keySet());
+		for(Sentence s : tokenizedSentences){
+			Map<String,List<Span>> simpleTokens = s.getTokenPos();
+			
+			// Eindeutige Token erkennen 
+			simpleTokens.keySet().retainAll(simpleReplacements.keySet());
+			
+			//und korrigieren
+			for(Entry<String, List<Span>> occurence : simpleTokens.entrySet()){
+				for(Span span : occurence.getValue()){
+					 buf = new StringBuffer(jobAd.getContent());
+
+				        int start = span.getStart();
+				        int end = span.getEnd();
+				        String replacement = simpleReplacements.get(occurence.getKey());
+				        buf.replace(start, end, replacement);
+				      
+				        //Kontrolle:
+				        System.out.println(buf);
+				        
+				}
+			}
+			
+			// mehrdeutige Vorkommen erkennen
+			Map<String,List<Span>> ambiguousTokens = s.getTokenPos();
+			ambiguousTokens.keySet().retainAll(ambiguities.keySet());
+			
+			// für jeden Fund
+			for(Entry<String, List<Span>> occurence : simpleTokens.entrySet()){
+				for(Span span : occurence.getValue()){
+					// Kontext extrahieren
+					
+				}
+			}
+						
+			
+		}
+		
+		
+		
+		
+		
+		
 			// Klassifizieren: cu erstellen, setFeatures(), setFeatureVectors, das entsprechende Modell auswählen und klassifizieren
 		//cu.getSense() mit cu.getContent() vergleichen. Falls identisch kein Handlungsbedarf
 		// ansonsten ersetzen
 		
-		
+		String newContent = buf.toString();
+		// TODO In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
 	}
 	
 		

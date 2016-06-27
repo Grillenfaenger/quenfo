@@ -102,5 +102,13 @@ public class TranslationVocabulary {
 		System.out.println(ambiguitySet);
 		return ambiguitySet;
 	}
+	
+	public TreeMap<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
+		TreeMap<String, String> simpleReplacements = vocabulary;
+		for(String word : ambiguousWords){
+			simpleReplacements.remove(word);
+		}
+		return simpleReplacements;
+	}
 
 }
