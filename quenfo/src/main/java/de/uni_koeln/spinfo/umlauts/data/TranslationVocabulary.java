@@ -16,7 +16,7 @@ public class TranslationVocabulary {
 	}
 	
 	public void addEntry(String umlautWord) {
-		vocabulary.put(umlautWord, replaceUmlaut(umlautWord));
+		vocabulary.put(replaceUmlaut(umlautWord), umlautWord);
 	}
 	
 	public String replaceUmlaut(String umlautWord) {
@@ -42,10 +42,10 @@ public class TranslationVocabulary {
 		
 		// Liste ambiger umlautbefreiter Wörter erzeugen
 		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if (!valueList.contains(entry.getValue())) {
-				valueList.add(entry.getValue());
+			if (!valueList.contains(entry.getKey())) {
+				valueList.add(entry.getKey());
 			} else {
-				ambige.add(entry.getValue());
+				ambige.add(entry.getKey());
 			}
 		}
 		
@@ -54,13 +54,13 @@ public class TranslationVocabulary {
 		
 		// Die jeweiligen Lesweisen sichern
 		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if(ambige.contains(entry.getValue())) {
-				if (ambiguities.containsKey(entry.getValue())){
-					ambiguities.get(entry.getValue()).add(entry.getKey());
+			if(ambige.contains(entry.getKey())) {
+				if (ambiguities.containsKey(entry.getKey())){
+					ambiguities.get(entry.getKey()).add(entry.getValue());
 				} else {
 					TreeSet<String> value = new TreeSet<String>();
-					value.add(entry.getKey());
-					ambiguities.put(entry.getValue(), value);
+					value.add(entry.getValue());
+					ambiguities.put(entry.getKey(), value);
 				}
 			}
 		}
@@ -69,15 +69,15 @@ public class TranslationVocabulary {
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
 		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if(referenceVoc.vocabulary.containsKey(entry.getValue())) {
-				if (ambiguities.containsKey(entry.getValue())){
-					ambiguities.get(entry.getValue()).add(entry.getKey());
-					ambiguities.get(entry.getValue()).add(entry.getValue());
+			if(referenceVoc.vocabulary.containsKey(entry.getKey())) {
+				if (ambiguities.containsKey(entry.getKey())){
+					ambiguities.get(entry.getKey()).add(entry.getKey());
+					ambiguities.get(entry.getKey()).add(entry.getValue());
 				} else {
 					TreeSet<String> value = new TreeSet<String>();
 					value.add(entry.getKey());
 					value.add(entry.getValue());
-					ambiguities.put(entry.getValue(), value);
+					ambiguities.put(entry.getKey(), value);
 				}
 			}
 		}

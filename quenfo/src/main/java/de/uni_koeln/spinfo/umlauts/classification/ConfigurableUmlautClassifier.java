@@ -19,6 +19,7 @@ import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
+import de.uni_koeln.spinfo.umlauts.data.Sentence;
 import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
@@ -105,16 +106,26 @@ public class ConfigurableUmlautClassifier {
 	jobAds = DBConnector.getJobAds(connection, 2012);
 	
 	// Je eine Anzeige
-	// In Sätze splitten und deren Span festhalten
-	// Sätze tokenisieren und die Position der Tokens im Satz festhalten
-		// Eindeutige Token erkennen und korrigieren
+	for (JobAd jobAd : jobAds){
+		// In Sätze splitten und deren Span festhalten
+		// Sätze tokenisieren und die Position der Tokens im Satz festhalten
+		List<Sentence> tokenizedSentences = tokenizer.tokenizeWithPositions(jobAd.getContent(), false);
+		
+		//TODO Eindeutige Token erkennen und korrigieren
+		
+		// mehrdeutige Vorkommen erkennen 
+		// für jeden Fund einzeln: 
+			// Kontext extrahieren
+			// Klassifizieren: cu erstellen, setFeatures(), setFeatureVectors, das entsprechende Modell auswählen und klassifizieren
+		//cu.getSense() mit cu.getContent() vergleichen. Falls identisch kein Handlungsbedarf
+		// ansonsten ersetzen
+		
+		
+	}
 	
-	// mehrdeutige Vorkommen erkennen 
-	// für jeden Fund einzeln: 
-		// Kontext extrahieren
-		// Klassifizieren: cu erstellen, setFeatures(), setFeatureVectors, das entsprechende Modell auswählen und klassifizieren
-	//cu.getSense() mit cu.getContent() vergleichen. Falls identisch kein Handlungsbedarf
-	// ansonsten ersetzen
+		
+	
+	
 	}
 	
 
