@@ -298,6 +298,7 @@ public class ZoneJobs {
 		List<ClassifyUnit> filtered = ClassifyUnitFilter.filterByFUs(paragraphs, 1);
 		return filtered;
 	}
+	
 
 	/**
 	 * Initializes the feature vectors of the classify units.

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class KeywordContexts {
 		System.out.println(file.getAbsolutePath());
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
 
-		for (Entry<String, List<List<String>>> entry: keywordContextsMap.entrySet()) {
+		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
 			out.append("\n===========\n"+entry.getKey()+":\n"+entry.getValue().size()+" contexts=\n");
 			for(List<String> context : entry.getValue()){
 				out.append(context.toString()+"\n");
@@ -56,6 +57,8 @@ public class KeywordContexts {
 
 		return file;
 	}
+	
+
 	
 	
 	

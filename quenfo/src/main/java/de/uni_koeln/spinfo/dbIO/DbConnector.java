@@ -17,6 +17,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.Tool;
+import de.uni_koeln.spinfo.umlauts.data.JobAd;
 
 public class DbConnector {
 
@@ -180,6 +181,39 @@ public class DbConnector {
 		prep.close();
 		conn.commit();
 	}
+	
+	public static boolean insertJobAdsInBIBBDB(Connection outputConnection, List<JobAd> jobAds) throws SQLException {
+
+		try {
+			outputConnection.setAutoCommit(false);
+
+			Statement stmt = outputConnection.createStatement();
+			PreparedStatement prepTxtTbl = outputConnection.prepareStatement(
+					"INSERT INTO ClassifiedParaTexts (ID,jahrgang,ZEILENNR,STELLENBESCHREIBUNG) VALUES(?,?,?,?)");
+			
+
+			for (JobAd jobAd : jobAds) {
+				prepTxtTbl.setInt(1, jobAd.getId());
+				prepTxtTbl.setInt(2, jobAd.getJahrgang());
+				prepTxtTbl.setInt(3, jobAd.getZeilennummer());
+				prepTxtTbl.setString(4, jobAd.getContent());
+				prepTxtTbl.executeUpdate();
+			}
+
+			prepTxtTbl.close();
+			stmt.close();
+			outputConnection.commit();
+
+			return true;
+
+		} catch (SQLException e) {
+			outputConnection.rollback();
+			e.printStackTrace();
+			return false;
+		}
+
+	}
+
 
 	public static void writeToolsInDB(ExtractionUnit cu, List<Tool> tools, Connection outputConnection) throws SQLException {
 		int jahrgang = cu.getJobAdID();

@@ -42,12 +42,18 @@ public class JobAd {
 	public int getId() {
 		return id;
 	}
+	
+	public void replaceContent(String corrected) {
+		this.content = corrected;
+	}
 
 	@Override
 	public String toString() {
 		return "JobAd\n[id=" + id + "\njahrgang=" + jahrgang
 				+ "\nzeilennummer=" + zeilennummer + "\ncontent=" + content +  "]";
 	}
+
+	
 	
 	
 

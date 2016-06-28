@@ -16,6 +16,7 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
+import de.uni_koeln.spinfo.dbIO.DbConnector;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
@@ -29,7 +30,8 @@ import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class ConfigurableUmlautClassifier {
 	
-	static String dbPath = "umlaute_db.db";
+	static String inputDbPath = "umlaute_db.db";
+	static String outputDbPath = "umlauteCORRECTED_db.db";
 	
 	public void classify(ExperimentConfiguration config) throws ClassNotFoundException, SQLException, IOException {
 
@@ -44,7 +46,7 @@ public class ConfigurableUmlautClassifier {
 		IETokenizer tokenizer = new IETokenizer();
 		ArrayList<String> tokens = new ArrayList<String>();
 		
-		Connection connection = DBConnector.connect(dbPath);
+		Connection connection = DBConnector.connect(inputDbPath);
 		List<JobAd> jobAds = DBConnector.getJobAdsExcept(connection, 2012);
 		for (JobAd jobAd : jobAds) {
 			tokens.addAll(Arrays.asList(tokenizer.tokenizeSentence(jobAd.getContent())));	
@@ -130,6 +132,7 @@ public class ConfigurableUmlautClassifier {
 				        int start = span.getStart();
 				        int end = span.getEnd();
 				        String replacement = simpleReplacements.get(occurence.getKey());
+				        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
 				        buf.replace(start, end, replacement);
 				      
 				        //Kontrolle:
@@ -138,37 +141,77 @@ public class ConfigurableUmlautClassifier {
 				}
 			}
 			
-			// mehrdeutige Vorkommen erkennen
-			Map<String,List<Span>> ambiguousTokens = s.getTokenPos();
-			ambiguousTokens.keySet().retainAll(ambiguities.keySet());
 			
-			// für jeden Fund
-			for(Entry<String, List<Span>> occurence : simpleTokens.entrySet()){
-				for(Span span : occurence.getValue()){
+			// mehrdeutige Vorkommen erkennen
+			
+			// TODO leider funktioniert dies hier nicht
+//			Map<String,List<Span>> ambiguousTokens = s.getTokenPos();
+//			ambiguousTokens.keySet().retainAll(ambiguities.keySet());
+			
+			// statt dessen:
+			
+			List<String> tokens2 = s.getTokens();
+			for (int i = 0; i < tokens.size(); i++) {
+				String word = tokens2.get(i);
+				if(ambiguities.containsKey(word)){
 					// Kontext extrahieren
+					List<String> context = extractContext(tokens2, i, 2,2);
+					// cu erstellen
+					List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
+					ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[0]), false);
+					cus.add(zcu);
+					cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
+					cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), null);
 					
+					// classify
+					Map<ClassifyUnit, boolean[]> classified = jobs.classify(cus, config, models.get(word));
+					
+					for (ClassifyUnit cu : classified.keySet()) {
+						((ZoneClassifyUnit) cu).setClassIDs(classified.get(cu));
+					}
+					List<ClassifyUnit> cuList = new ArrayList<ClassifyUnit>(classified.keySet());
+					UmlautClassifyUnit result = (UmlautClassifyUnit) cuList.get(0);
+					String wordAsClassified = result.getSense();
+					System.out.println("Im Text: "+ word + "\nKlassifiziert: "+ wordAsClassified);
+					
+					// Falls hier ein Umlaut rekonstruiert werden muss 
+					if(!wordAsClassified.equals(word)){
+						// Korrektur
+						Span span = s.getAbsoluteSpanOfToken(i);
+						int start = span.getStart();
+					    int end = span.getEnd();
+					    buf.replace(start, end, wordAsClassified);
+					      
+					        //Kontrolle:
+					        System.out.println(buf);
+					}		
 				}
 			}
-						
-			
 		}
+		String corrected = buf.toString();
+		jobAd.replaceContent(corrected);
 		
-		
-		
-		
-		
-		
-			// Klassifizieren: cu erstellen, setFeatures(), setFeatureVectors, das entsprechende Modell auswählen und klassifizieren
-		//cu.getSense() mit cu.getContent() vergleichen. Falls identisch kein Handlungsbedarf
-		// ansonsten ersetzen
-		
-		String newContent = buf.toString();
-		// TODO In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
+	}
+	// In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
+	// Dies muss für eine kleine Evaluation nicht gemacht werden.
+			Connection outputConnection = DbConnector.connect(outputDbPath);
+			DbConnector.createBIBBDB(outputConnection);
+			DbConnector.insertJobAdsInBIBBDB(outputConnection, jobAds);
+	
 	}
 	
+	private List<String> extractContext(List<String> text, int index, int left, int right){
 		
-	
-	
+			int fromIndex = index-left;
+			int toIndex = index+right;
+					
+			if(fromIndex<0){
+				fromIndex = 0;
+			}
+			if(toIndex>text.size()){
+				toIndex = text.size();
+			}
+		return text.subList(fromIndex,toIndex);
 	}
 	
 

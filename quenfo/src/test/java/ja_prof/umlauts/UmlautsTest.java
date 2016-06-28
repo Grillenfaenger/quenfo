@@ -48,7 +48,7 @@ public class UmlautsTest {
 		}
 	}
 	
-//	@Ignore
+	@Ignore
 	@Test
 	public void testCompleteLinguisticProcessing() {
 		List<List<SentenceData09>> tokenizedParagraphs = new ArrayList<List<SentenceData09>>();
@@ -102,5 +102,15 @@ public class UmlautsTest {
 		list.add("Drei");
 		System.out.println(list.indexOf("Eins"));
 	}
+	
+	@Test
+	public void listIndexTest2(){
+		List<String> list = new ArrayList<String>();
+		list.add("Eins");
+		list.add("Zwei");
+		list.add("Drei");
+		System.out.println(list.get(0));
+	}
+
 
 }
