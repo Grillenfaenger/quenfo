@@ -1,5 +1,6 @@
 package de.uni_koeln.spinfo.umlauts.classification;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,15 +23,20 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 	 */
 	public UmlautClassifyUnit(List<String> context, String word, String[] senses, boolean training) {
 		super(word, senses.length);
-		context.remove(word);
-		super.setFeatureUnits(context);
+		List<String> cuContext = new ArrayList<String>();
+		cuContext.addAll(context);
+		cuContext.remove(word);
+		super.setFeatureUnits(cuContext);
 		this.senses = senses;
 		if(training){
 			setActualClassID(Arrays.asList(senses).indexOf(word)+1);
+		} else {
+			setActualClassID(-1);
 		}
 		
 	}
 	
+
 	public String getSense(){
 		return senses[actualClassID-1];
 		

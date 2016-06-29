@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +16,7 @@ import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.dbIO.DbConnector;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
@@ -33,12 +35,20 @@ public class ConfigurableUmlautClassifier {
 	static String inputDbPath = "umlaute_db.db";
 	static String outputDbPath = "umlauteCORRECTED_db.db";
 	
+//	public void classify(){
+//		// get ExperimentConfiguration
+//		ExperimentSetupUI ui = new ExperimentSetupUI();
+//		ExperimentConfiguration expConfig = ui.getExperimentConfiguration(trainingDataFileName);
+//		classify(expConfig);
+//	}
+	
+	
 	public void classify(ExperimentConfiguration config) throws ClassNotFoundException, SQLException, IOException {
 
 		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
 		// Trainieren
 		Map<String, TreeSet<String>> ambiguities = null;
-		Map<String, Model> models= null;
+		Map<String, Model> models= new HashMap<String, Model>();
 		
 		// Gruppierte Lesarten + deren Kontexte holen (Dafür reicht der einfache Tokenisierer)
 		KeywordContexts keywordContexts = null;
@@ -67,16 +77,23 @@ public class ConfigurableUmlautClassifier {
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}
+		System.out.println("Wörterbuch erstellt");
 
 		// Suche nach Ambiguitäten
+		/*TEST*/String test = "Farb-";
+		
 		ambiguities = transVoc.findAmbiguities(voc);
+		/*TEST*/System.out.println(ambiguities.get(test));
 		FileUtils.printMap(ambiguities, "output//classification//", "ambigeWörter");
+		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
 		
 		// Kontexte der ambigen Wörter holen und ausgeben
-		keywordContexts = DBConnector.getKeywordContexts6(connection, transVoc.createAmbiguitySet(ambiguities));
-		keywordContexts.printKeywordContexts("output//classification//", "Kontexte6");
-	
+		System.out.println("Kontexte suchen...");
+		keywordContexts = DBConnector.getKeywordContexts(jobAds, transVoc.createAmbiguitySet(ambiguities));
+		keywordContexts.printKeywordContexts("output//classification//", "Kontexte");
 		
+	
+		System.out.println("training");
 	//Für jede Lesartengruppe Trainingsmodelle erstellen
 		List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
 		ZoneJobs jobs = new ZoneJobs();
@@ -85,17 +102,25 @@ public class ConfigurableUmlautClassifier {
 		for (Entry<String,TreeSet<String>> entry : ambiguities.entrySet()) {
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 			for(String string : entry.getValue()){
-				List<List<String>> context = keywordContexts.getContext(string);
-				ZoneClassifyUnit cu = new UmlautClassifyUnit(tokens, string, senses, true);
-				trainingData.add(cu);
+				System.out.println("build model for " + entry.getKey());
+				System.out.println(entry.getValue());
+				List<List<String>> contexts = keywordContexts.getContext(string);
+				System.out.println(contexts.size() + " Kontexte mit " + string);
+				for (List<String> context : contexts){
+					
+					ZoneClassifyUnit cu = new UmlautClassifyUnit(context, string, senses, true);
+					trainingData.add(cu);
+				}
+				
 			}
 			trainingData = jobs.setFeatures(trainingData, config.getFeatureConfiguration(), true);
 			trainingData = jobs.setFeatureVectors(trainingData, config.getFeatureQuantifier(), null);
 
 			// build model for each group
+			System.out.println("build models");
 			Model model = jobs.getNewModelForClassifier(trainingData, config);
 			models.put(entry.getKey(), model);
-			}
+		}
 			
 		
 	// Modelle den Gruppen zugeordnet vorhalten
@@ -107,11 +132,14 @@ public class ConfigurableUmlautClassifier {
 	// Im Jahrgang ohne Umlaute nach umlautambigen Wörtern suchen
 	
 	jobAds = DBConnector.getJobAds(connection, 2012);
-	StringBuffer buf = null;
+	System.out.println(jobAds.size() +  " zu korrigierende Anzeigen");
+	StringBuffer buf = new StringBuffer();
 	
+	System.out.println("Umlaute rekonstruieren");
 	
 	// Je eine Anzeige
 	for (JobAd jobAd : jobAds){
+		buf.append(jobAd.getContent());
 		// In Sätze splitten und deren Span festhalten
 		// Sätze tokenisieren und die Position der Tokens im Satz festhalten
 		List<Sentence> tokenizedSentences = tokenizer.tokenizeWithPositions(jobAd.getContent(), false);
@@ -124,19 +152,19 @@ public class ConfigurableUmlautClassifier {
 			// Eindeutige Token erkennen 
 			simpleTokens.keySet().retainAll(simpleReplacements.keySet());
 			
+//			System.out.println("Es müssen " + simpleTokens.size() + " Vorkommen korrigiert werden.");
+			
 			//und korrigieren
 			for(Entry<String, List<Span>> occurence : simpleTokens.entrySet()){
 				for(Span span : occurence.getValue()){
-					 buf = new StringBuffer(jobAd.getContent());
-
+					
 				        int start = span.getStart();
 				        int end = span.getEnd();
 				        String replacement = simpleReplacements.get(occurence.getKey());
-				        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
+				        
 				        buf.replace(start, end, replacement);
-				      
-				        //Kontrolle:
-				        System.out.println(buf);
+				        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
+				    
 				        
 				}
 			}
@@ -151,7 +179,7 @@ public class ConfigurableUmlautClassifier {
 			// statt dessen:
 			
 			List<String> tokens2 = s.getTokens();
-			for (int i = 0; i < tokens.size(); i++) {
+			for (int i = 0; i < tokens2.size(); i++) {
 				String word = tokens2.get(i);
 				if(ambiguities.containsKey(word)){
 					// Kontext extrahieren
@@ -172,7 +200,7 @@ public class ConfigurableUmlautClassifier {
 					List<ClassifyUnit> cuList = new ArrayList<ClassifyUnit>(classified.keySet());
 					UmlautClassifyUnit result = (UmlautClassifyUnit) cuList.get(0);
 					String wordAsClassified = result.getSense();
-					System.out.println("Im Text: "+ word + "\nKlassifiziert: "+ wordAsClassified);
+					System.out.println("CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
 					
 					// Falls hier ein Umlaut rekonstruiert werden muss 
 					if(!wordAsClassified.equals(word)){
@@ -182,8 +210,6 @@ public class ConfigurableUmlautClassifier {
 					    int end = span.getEnd();
 					    buf.replace(start, end, wordAsClassified);
 					      
-					        //Kontrolle:
-					        System.out.println(buf);
 					}		
 				}
 			}

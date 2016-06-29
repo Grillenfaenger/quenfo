@@ -99,7 +99,7 @@ public class TranslationVocabulary {
 //		ambiguitySet.remove("A");
 //		ambiguitySet.remove("Ä");
 //		ambiguitySet.remove("ä");
-		System.out.println(ambiguitySet);
+//		System.out.println(ambiguitySet);
 		return ambiguitySet;
 	}
 	

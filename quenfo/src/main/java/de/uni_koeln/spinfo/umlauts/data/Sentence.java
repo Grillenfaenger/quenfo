@@ -1,6 +1,7 @@
 package de.uni_koeln.spinfo.umlauts.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class Sentence {
 		this.sentenceSpan = sentenceSpan;
 		this.tokens = tokens;
 		this.tokenSpans = tokenSpans;
+		tokenPos = new HashMap<String,List<Span>>();
 		createTokenPos();
 	}
 
@@ -39,7 +41,7 @@ public class Sentence {
 	}
 	
 	public Span getAbsoluteSpanOfToken(int tokenIndex) {
-		return new Span(tokenSpans[tokenIndex].getStart()+sentenceSpan.getStart(),tokenSpans[tokenIndex].getEnd()+sentenceSpan.getEnd());
+		return new Span(tokenSpans[tokenIndex].getStart()+sentenceSpan.getStart(),tokenSpans[tokenIndex].getEnd()+sentenceSpan.getStart());
 	}
 	
 	private void createTokenPos(){

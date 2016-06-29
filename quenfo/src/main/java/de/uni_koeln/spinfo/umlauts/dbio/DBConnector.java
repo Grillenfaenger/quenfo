@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -446,7 +447,6 @@ public static KeywordContexts getKeywordContexts6(Connection connection, Set<Str
 	
 	KeywordContexts kwCtxts = new KeywordContexts();
 	int occurences = 0;
-	SimpleTokenizer tokenizer = new SimpleTokenizer();
 	JobAd jobAd;
 	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
 	IETokenizer ietokenizer = new IETokenizer();
@@ -479,7 +479,7 @@ public static KeywordContexts getKeywordContexts6(Connection connection, Set<Str
 		List<String> tokenizedSentence = null;
 //		System.out.println("Sätze tokenisieren");
 		for (String sentence : sentences){
-			tokenizedSentence = tokenizer.tokenize(sentence);
+			tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
 			tokenizedSentences.add(tokenizedSentence);
 		}
 	}	
@@ -512,6 +512,57 @@ public static KeywordContexts getKeywordContexts6(Connection connection, Set<Str
 	connection.commit();
 			
 	System.out.println("getKeywordContexts6: " + occurences);
+	return kwCtxts;
+}
+
+/**
+ * Returns contexts of keywords within the sentence of occurence.
+ * @param connection
+ * @param keywords
+ * @return
+ * @throws SQLException
+ */
+public static KeywordContexts getKeywordContexts(List<JobAd> jobAds, Set<String> keywords) throws SQLException{
+	
+	KeywordContexts kwCtxts = new KeywordContexts();
+	int occurences = 0;
+	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
+	IETokenizer ietokenizer = new IETokenizer();
+	
+	for(JobAd cand : jobAds){	
+//		System.out.println("Sätze teilen");
+		List<String> sentences = ietokenizer.splitIntoSentences(cand.getContent(), false);
+		List<String> tokenizedSentence = null;
+//		System.out.println("Sätze tokenisieren");
+		for (String sentence : sentences){
+			tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
+			tokenizedSentences.add(tokenizedSentence);
+		}
+	}	
+	
+	System.out.println("Sätze insgesamt: "+tokenizedSentences.size());	
+	
+	// In einem Satz können mehrere ambige Wörter ein- oder mehrmals vorkommen. Alle diese Vorkommen und ihre Kontexte sollen gefunden werden.	
+		// jedes Keyword
+	for(List<String> sentencetokens : tokenizedSentences){	
+		for(String keyword : keywords) {
+//			System.out.println("Suche nach " + keyword);
+			
+			
+			List<Integer> indexes = searchKeyword(sentencetokens,keyword);
+			if(indexes!=null){
+				List<List<String>> contexts = getContexts(sentencetokens, indexes);
+			
+				occurences += contexts.size();
+			
+//				System.out.println("----------\n\n");
+			
+				kwCtxts.addContexts(keyword, contexts);
+			}
+		}	
+	}	
+			
+	System.out.println("getKeywordContexts: " + occurences);
 	return kwCtxts;
 }
 
