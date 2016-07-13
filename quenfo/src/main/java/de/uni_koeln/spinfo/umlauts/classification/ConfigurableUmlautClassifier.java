@@ -15,6 +15,7 @@ import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
@@ -130,6 +131,8 @@ public class ConfigurableUmlautClassifier {
 	//Klassifizieren
 	
 	// Im Jahrgang ohne Umlaute nach umlautambigen Wörtern suchen
+		
+	Map<ClassifyUnit, boolean[]> allClassified = new HashMap<ClassifyUnit, boolean[]>();
 	
 	jobAds = DBConnector.getJobAds(connection, 2012);
 	System.out.println(jobAds.size() +  " zu korrigierende Anzeigen");
@@ -186,7 +189,7 @@ public class ConfigurableUmlautClassifier {
 					List<String> context = extractContext(tokens2, i, 2,2);
 					// cu erstellen
 					List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
-					ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[0]), false);
+					ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[0]), true);
 					cus.add(zcu);
 					cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
 					cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), null);
@@ -194,12 +197,14 @@ public class ConfigurableUmlautClassifier {
 					// classify
 					Map<ClassifyUnit, boolean[]> classified = jobs.classify(cus, config, models.get(word));
 					
-					for (ClassifyUnit cu : classified.keySet()) {
-						((ZoneClassifyUnit) cu).setClassIDs(classified.get(cu));
+					for (Entry<ClassifyUnit,boolean[]> classiEntry : classified.entrySet()) {
+						allClassified.put(classiEntry.getKey(), classiEntry.getValue());
 					}
+					
+					
 					List<ClassifyUnit> cuList = new ArrayList<ClassifyUnit>(classified.keySet());
 					UmlautClassifyUnit result = (UmlautClassifyUnit) cuList.get(0);
-					String wordAsClassified = result.getSense();
+					String wordAsClassified = result.getSense(classified.get(result));
 					System.out.println("CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
 					
 					// Falls hier ein Umlaut rekonstruiert werden muss 
@@ -218,11 +223,29 @@ public class ConfigurableUmlautClassifier {
 		jobAd.replaceContent(corrected);
 		
 	}
-	// In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
-	// Dies muss für eine kleine Evaluation nicht gemacht werden.
-			Connection outputConnection = DbConnector.connect(outputDbPath);
-			DbConnector.createBIBBDB(outputConnection);
-			DbConnector.insertJobAdsInBIBBDB(outputConnection, jobAds);
+	
+	// evaluate
+	List<Integer> evaluationCategories = new ArrayList<Integer>();
+	evaluationCategories.add(1);
+	evaluationCategories.add(2);
+	System.out.println("Es wurden " + allClassified.size() + " Wörter klassifiziert");
+	ExperimentResult result = jobs.evaluate(allClassified, evaluationCategories, config);
+	
+	System.out.println("F Measure: \t" + result.getF1Measure());
+	System.out.println("Precision: \t" + result.getPrecision());
+	System.out.println("Recall: \t" + result.getRecall());
+	System.out.println("Accuracy: \t" + result.getAccuracy());
+	
+	System.out.println("TP: \t" + result.getTP());
+	System.out.println("TN: \t" + result.getTN());
+	System.out.println("FP: \t" + result.getFP());
+	System.out.println("FN: \t" + result.getFN());
+	
+//	// In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
+//	// Dies muss für eine kleine Evaluation nicht gemacht werden.
+//			Connection outputConnection = DbConnector.connect(outputDbPath);
+//			DbConnector.createBIBBDB(outputConnection);
+//			DbConnector.insertJobAdsInBIBBDB_Umlauts(outputConnection, jobAds);
 	
 	}
 	

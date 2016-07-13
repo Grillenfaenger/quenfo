@@ -149,7 +149,11 @@ public class ExperimentConfiguration {
 		}
 		buff.append("_");
 		
-		buff.append(dataFile.getName());
+		if(dataFile!=null){
+			buff.append(dataFile.getName());
+		} else {
+			buff.append("No Data File");
+		}
 		
 		return buff.toString();
 	}

@@ -19,7 +19,7 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 	 * @param context - pre-tokenized context of the word
 	 * @param word
 	 * @param senses
-	 * @param training inizialize training data or not (ie data to classify)
+	 * @param training inizialize training data/ evaluation data or data to classify
 	 */
 	public UmlautClassifyUnit(List<String> context, String word, String[] senses, boolean training) {
 		super(word, senses.length);
@@ -39,6 +39,17 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 
 	public String getSense(){
 		return senses[actualClassID-1];
+		
+	}
+	
+	public String getSense(boolean[] classification){
+		int classID = 0;
+		for (int i = 0; i < classification.length; i++) {
+			if(classification[i]){
+				classID = i+1;
+			}
+		}
+		return senses[classID-1];
 		
 	}
 	

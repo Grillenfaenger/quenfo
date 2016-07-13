@@ -180,7 +180,7 @@ public class ExperimentResult implements Serializable {
 	}
 
 	/**
-	 * @return overall accuracz of experiment
+	 * @return overall accuracy of experiment
 	 */
 	public double getAccuracy() {
 		return accuracy;
