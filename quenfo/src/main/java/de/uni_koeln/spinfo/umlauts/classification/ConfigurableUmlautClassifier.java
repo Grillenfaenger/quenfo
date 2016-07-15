@@ -15,6 +15,7 @@ import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.data.CategoryResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
@@ -192,7 +193,7 @@ public class ConfigurableUmlautClassifier {
 					ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[0]), true);
 					cus.add(zcu);
 					cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
-					cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), null);
+					cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), models.get(word).getFUOrder());
 					
 					// classify
 					Map<ClassifyUnit, boolean[]> classified = jobs.classify(cus, config, models.get(word));
@@ -240,6 +241,11 @@ public class ConfigurableUmlautClassifier {
 	System.out.println("TN: \t" + result.getTN());
 	System.out.println("FP: \t" + result.getFP());
 	System.out.println("FN: \t" + result.getFN());
+	
+	System.out.println(result.getCategoryEvaluations());
+	
+	List<CategoryResult> categoryEvaluations = result.getCategoryEvaluations();
+	
 	
 //	// In neue Datenbank schreiben - egal ob eine Änderung vorgenommen wurde oder nicht.
 //	// Dies muss für eine kleine Evaluation nicht gemacht werden.

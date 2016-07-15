@@ -28,15 +28,15 @@ public class UmlautClassificationApp {
 		
 		boolean preClassify = false;
 		File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
-		//int knnValue = 3;
+		int knnValue = 3;
 		boolean ignoreStopwords = false;
 		boolean normalizeInput = false;
 		boolean useStemmer = false;
 		boolean suffixTrees = false;
 		int[] nGrams = null; //new int[]{3,4};
 		int miScoredFeaturesPerClass = 0;
-		Distance distance = Distance.COSINUS;
-		ZoneAbstractClassifier classifier = new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
+		Distance distance = Distance.EUKLID;
+		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
 		AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
 		
 		// ///////////////////////////////////////////////

@@ -40,7 +40,7 @@ public class SingleExperimentExecution {
 	public static void main(String[] args) throws ClassNotFoundException,
 			IOException {
 		
-	
+		File inputFile = null;
 
 		// /////////////////////////////////////////////
 		// /////experiment parameters
@@ -63,12 +63,14 @@ public class SingleExperimentExecution {
 		evaluationCategories.add(1);
 		evaluationCategories.add(2);
 		evaluationCategories.add(3);
+		
+		
 		// ///////////////////////////////////////////////
 		// ////////END///
 		// //////////////////////////////////////////////
 
 	
-		ZoneJobs jobs = new ZoneJobs();		
+		ZoneJobs jobs = new ZoneJobs();	
 		
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
 				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,
@@ -76,7 +78,7 @@ public class SingleExperimentExecution {
 		ExperimentConfiguration expConfig = new ExperimentConfiguration(fuc,
 				quantifier, classifier, inputFile, "umlauts/classification/output");	
 		ExperimentResult result = ZoneSingleExperimentExecutor.crossValidate(
-				expConfig, jobs, inputFile, 4, 6, null, preClassify, evaluationCategories);
+				expConfig, jobs, inputFile, 2, 2, null, preClassify, evaluationCategories);
 		
 		System.out.println("F Measure: \t" + result.getF1Measure());
 		System.out.println("Precision: \t" + result.getPrecision());

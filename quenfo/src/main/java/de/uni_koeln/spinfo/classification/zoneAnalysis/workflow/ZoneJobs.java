@@ -135,6 +135,17 @@ public class ZoneJobs {
 		List<ClassifyUnit> paragraphs = tdg.getTrainingData();
 		return paragraphs;
 	}
+	
+	/**
+	 * A method to generate trainingData from pre-extracted contexts of keywords
+	 * 
+	 * @param keywordContexts
+	 * @return
+	 */
+	public List<ClassifyUnit> getKeywordContextsFromFile(File keywordContexts){
+		// TODO Schreiben!!!
+		return null;
+	}
 
 	/**
 	 * A method to get pre-categorized paragraphs from the specified file
