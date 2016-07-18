@@ -1,12 +1,16 @@
 package de.uni_koeln.spinfo.umlauts.data;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +42,41 @@ public class KeywordContexts {
 		return keywordContextsMap.get(keyword);
 	}
 	
+	public KeywordContexts loadKeywordContextsFromFile(String path) throws IOException{
+		KeywordContexts keywordContexts = new KeywordContexts();
+		
+		FileReader input = new FileReader(path);
+		BufferedReader bufRead = new BufferedReader(input);
+		StringBuffer sb = new StringBuffer();
+		String line = null;
+
+		while ( (line = bufRead.readLine()) != null){
+			sb.append(line);
+			sb.append("\n");
+		}
+		System.out.println(sb.toString());
+		String[] keywords = sb.toString().split("\\$;\\n");
+		
+		for (int i = 0; i < keywords.length; i++) {
+			System.out.println(keywords[i]+"\n");
+			String[] contexts = keywords[i].split("\\n");
+			System.out.println(contexts[0]);
+			
+			List<List<String>> newContexts = new ArrayList<List<String>>();
+			for (int j = 1; j < contexts.length; j++) {
+				System.out.println("contexts["+j+"]= "+ contexts[j]);
+				String substring = contexts[j].substring(1,contexts[j].length()-1);
+				System.out.println(substring);
+				String[] split = substring.split(", ");
+				List<String> context = Arrays.asList(split);
+				System.out.println(Arrays.asList(split));
+				newContexts.add(context);
+			}
+			keywordContexts.addContexts(contexts[0], newContexts);	
+		}
+		return keywordContexts;
+	}
+	
 	public File printKeywordContexts(String destPath, String fileName) throws IOException {
 
 		File file = new File(destPath + fileName /*+ getISO8601StringForCurrentDate() */+ ".txt");
@@ -45,11 +84,16 @@ public class KeywordContexts {
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
 
 		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
-			out.append("\n===========\n"+entry.getKey()+":\n"+entry.getValue().size()+" contexts=\n");
+			out.append(entry.getKey());
+			System.out.println("Key: " + entry.getKey());
+			out.append("\n");
+			
 			for(List<String> context : entry.getValue()){
-				out.append(context.toString()+"\n");
+				out.append(context.toString());
+				System.out.println("Kontext: " + context.toString());
+				out.append("\n");
 			}
-			out.append("============\n");
+			out.append("$;\n");
 		}
 
 		out.flush();

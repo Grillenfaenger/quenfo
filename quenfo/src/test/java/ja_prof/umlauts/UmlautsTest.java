@@ -3,22 +3,31 @@ package ja_prof.umlauts;
 import static org.junit.Assert.*;
 import is2.data.SentenceData09;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
+import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
+import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
 import de.uni_koeln.spinfo.umlauts.preprocessing.IEPreprocessingWrapper;
 import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class UmlautsTest {
 	
@@ -103,6 +112,7 @@ public class UmlautsTest {
 		System.out.println(list.indexOf("Eins"));
 	}
 	
+	@Ignore
 	@Test
 	public void listIndexTest2(){
 		List<String> list = new ArrayList<String>();
@@ -110,6 +120,58 @@ public class UmlautsTest {
 		list.add("Zwei");
 		list.add("Drei");
 		System.out.println(list.get(0));
+	}
+	
+	@Test
+	public void keywordContextIOTest() throws IOException, SQLException{
+		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
+				// Trainieren
+				Map<String, TreeSet<String>> ambiguities = null;
+				KeywordContexts keywordContexts = null;
+				
+				IETokenizer tokenizer = new IETokenizer();
+				ArrayList<String> tokens = new ArrayList<String>();
+				
+				for (JobAd jobAd : jobAds) {
+					tokens.addAll(Arrays.asList(tokenizer.tokenizeSentence(jobAd.getContent())));	
+				}
+				
+				Vocabulary voc = new Vocabulary(tokens);
+				System.out.println("Tokens: " + voc.getNumberOfTokens());
+				System.out.println("Types: " + voc.vocabulary.size());
+				
+				
+				Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
+				umlautVoc.generateNumberOfTokens();
+				System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
+				System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
+				FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
+				
+				TranslationVocabulary transVoc = new TranslationVocabulary();
+				for (String key : umlautVoc.vocabulary.keySet()) {
+					transVoc.addEntry(key);
+				}
+				System.out.println("Wörterbuch erstellt");
+
+				// Suche nach Ambiguitäten
+				/*TEST*/String test = "Farb-";
+				
+				ambiguities = transVoc.findAmbiguities(voc);
+				/*TEST*/System.out.println(ambiguities.get(test));
+				FileUtils.printMap(ambiguities, "output//classification//", "ambigeWörter");
+				System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
+				
+				// Kontexte der ambigen Wörter holen und ausgeben
+				System.out.println("Kontexte suchen...");
+				keywordContexts = DBConnector.getKeywordContexts(jobAds, transVoc.createAmbiguitySet(ambiguities));
+				keywordContexts.printKeywordContexts("output//classification//", "KontexteTest");
+				
+				
+				
+				// read
+				KeywordContexts in = keywordContexts.loadKeywordContextsFromFile("output//classification//KontexteTest.txt");
+				System.out.println(in);
+				in.printKeywordContexts("output//classification//", "KontexteNachErneutemEinlesen");
 	}
 
 
