@@ -1,10 +1,14 @@
 package de.uni_koeln.spinfo.umlauts.data;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 
 public class TranslationVocabulary {
@@ -15,6 +19,10 @@ public class TranslationVocabulary {
 		vocabulary = new TreeMap<String, String>();
 	}
 	
+	public void setVocabulary(TreeMap<String, String> vocabulary) {
+		this.vocabulary = vocabulary;
+	}
+
 	public void addEntry(String umlautWord) {
 		vocabulary.put(replaceUmlaut(umlautWord), umlautWord);
 	}
@@ -31,7 +39,7 @@ public class TranslationVocabulary {
 		return replacement;
 	}
 	
-	public TreeMap<String, TreeSet<String>> findAmbiguities(Vocabulary referenceVoc) {
+	public Map<String, TreeSet<String>> findAmbiguities(Vocabulary referenceVoc) {
 		
 		TreeMap<String, TreeSet<String>>ambiguities = new TreeMap<String, TreeSet<String>>();
 		
@@ -109,6 +117,14 @@ public class TranslationVocabulary {
 			simpleReplacements.remove(word);
 		}
 		return simpleReplacements;
+	}
+	
+	public void printToFile(String destPath, String fileName) throws IOException{
+		FileUtils.printMap(vocabulary, destPath, fileName);
+	}
+	
+	public void loadTranslationVocabularyFromFile(String filePath) throws IOException{
+		setVocabulary(FileUtils.fileToMap(filePath));
 	}
 
 }

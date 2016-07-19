@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.commons.io.FileUtils;
+
 
 public class KeywordContexts {
 	
@@ -45,17 +47,9 @@ public class KeywordContexts {
 	public KeywordContexts loadKeywordContextsFromFile(String path) throws IOException{
 		KeywordContexts keywordContexts = new KeywordContexts();
 		
-		FileReader input = new FileReader(path);
-		BufferedReader bufRead = new BufferedReader(input);
-		StringBuffer sb = new StringBuffer();
-		String line = null;
-
-		while ( (line = bufRead.readLine()) != null){
-			sb.append(line);
-			sb.append("\n");
-		}
-		System.out.println(sb.toString());
-		String[] keywords = sb.toString().split("\\$;\\n");
+		String file = FileUtils.readFileToString(new File(path), "UTF-8");
+		
+		String[] keywords = file.split("\\$;\\n");
 		
 		for (int i = 0; i < keywords.length; i++) {
 			System.out.println(keywords[i]+"\n");

@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 public class FileUtils {
 
@@ -41,6 +42,20 @@ public class FileUtils {
 			normalized.add(s);
 		}
 		return normalized;
+	}
+	
+	public static TreeMap<String, String> fileToMap(String filePath) throws IOException {
+		
+		TreeMap<String, String> map = new TreeMap<String, String>();
+
+		ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+
+		for (String s : lines) {
+			s = Normalizer.normalize(s, Normalizer.Form.NFC);
+			String[] split = s.split(" : ");
+			map.put(split[0], split[1]);	
+		}
+		return map;
 	}
 
 	public static <T> void serializeList(List<T> list, String fileName) throws IOException {
@@ -143,5 +158,7 @@ public class FileUtils {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+1"));
 		return dateFormat.format(date);
 	}
+
+	
 
 }

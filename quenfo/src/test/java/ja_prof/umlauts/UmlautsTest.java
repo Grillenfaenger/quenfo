@@ -173,6 +173,39 @@ public class UmlautsTest {
 				System.out.println(in);
 				in.printKeywordContexts("output//classification//", "KontexteNachErneutemEinlesen");
 	}
+	
+	@Test
+	public void translationVocIOTest() throws IOException, SQLException{
+		Map<String, TreeSet<String>> ambiguities = null;
+		KeywordContexts keywordContexts = null;
+		
+		IETokenizer tokenizer = new IETokenizer();
+		ArrayList<String> tokens = new ArrayList<String>();
+		
+		for (JobAd jobAd : jobAds) {
+			tokens.addAll(Arrays.asList(tokenizer.tokenizeSentence(jobAd.getContent())));	
+		}
+		
+		Vocabulary voc = new Vocabulary(tokens);
+		System.out.println("Tokens: " + voc.getNumberOfTokens());
+		System.out.println("Types: " + voc.vocabulary.size());
+		
+		
+		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
+		umlautVoc.generateNumberOfTokens();
+		System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
+		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
+		FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
+		
+		TranslationVocabulary transVoc = new TranslationVocabulary();
+		for (String key : umlautVoc.vocabulary.keySet()) {
+			transVoc.addEntry(key);
+		}
+		
+		transVoc.printToFile("output//classification//", "Ersetzungen");
+		transVoc.loadTranslationVocabularyFromFile("output//classification//Ersetzungen.txt");
+		
+	}
 
 
 }

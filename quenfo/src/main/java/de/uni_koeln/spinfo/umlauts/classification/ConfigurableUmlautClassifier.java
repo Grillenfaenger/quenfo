@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -101,7 +102,7 @@ public class ConfigurableUmlautClassifier {
 		ZoneJobs jobs = new ZoneJobs();
 		
 		// Classification Units erstellen (diese sind dann schon initialisiert)
-		for (Entry<String,TreeSet<String>> entry : ambiguities.entrySet()) {
+		for (Entry<String, TreeSet<String>> entry : ambiguities.entrySet()) {
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 			for(String string : entry.getValue()){
 				System.out.println("build model for " + entry.getKey());
