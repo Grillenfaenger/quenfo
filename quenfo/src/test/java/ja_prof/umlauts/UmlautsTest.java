@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.junit.BeforeClass;
@@ -122,6 +123,7 @@ public class UmlautsTest {
 		System.out.println(list.get(0));
 	}
 	
+	@Ignore
 	@Test
 	public void keywordContextIOTest() throws IOException, SQLException{
 		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
@@ -174,6 +176,7 @@ public class UmlautsTest {
 				in.printKeywordContexts("output//classification//", "KontexteNachErneutemEinlesen");
 	}
 	
+	@Ignore
 	@Test
 	public void translationVocIOTest() throws IOException, SQLException{
 		Map<String, TreeSet<String>> ambiguities = null;
@@ -204,6 +207,48 @@ public class UmlautsTest {
 		
 		transVoc.printToFile("output//classification//", "Ersetzungen");
 		transVoc.loadTranslationVocabularyFromFile("output//classification//Ersetzungen.txt");
+		
+	}
+	
+	@Test
+	public void ambiguitiesIOTest() throws IOException, SQLException{
+		Map<String, TreeSet<String>> ambiguities = null;
+		KeywordContexts keywordContexts = null;
+		
+		IETokenizer tokenizer = new IETokenizer();
+		ArrayList<String> tokens = new ArrayList<String>();
+		
+		for (JobAd jobAd : jobAds) {
+			tokens.addAll(Arrays.asList(tokenizer.tokenizeSentence(jobAd.getContent())));	
+		}
+		
+		Vocabulary voc = new Vocabulary(tokens);
+		System.out.println("Tokens: " + voc.getNumberOfTokens());
+		System.out.println("Types: " + voc.vocabulary.size());
+		
+		
+		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
+		umlautVoc.generateNumberOfTokens();
+		System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
+		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
+		FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
+		
+		TranslationVocabulary transVoc = new TranslationVocabulary();
+		for (String key : umlautVoc.vocabulary.keySet()) {
+			transVoc.addEntry(key);
+		}
+		System.out.println("Wörterbuch erstellt");
+
+		// Suche nach Ambiguitäten
+		/*TEST*/String test = "Farb-";
+		
+		ambiguities = transVoc.findAmbiguities(voc);
+		/*TEST*/System.out.println(ambiguities.get(test));
+		FileUtils.printMap(ambiguities, "output//classification//", "ambigeWörter");
+		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
+		
+		TreeMap<String, TreeSet<String>> fileToAmbiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
+		FileUtils.printMap(fileToAmbiguities, "output//classification//", "ambigeWörter2");
 		
 	}
 

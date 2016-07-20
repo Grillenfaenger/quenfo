@@ -98,11 +98,12 @@ public class ConfigurableUmlautClassifier {
 	
 		System.out.println("training");
 	//Für jede Lesartengruppe Trainingsmodelle erstellen
-		List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
+		
 		ZoneJobs jobs = new ZoneJobs();
 		
 		// Classification Units erstellen (diese sind dann schon initialisiert)
 		for (Entry<String, TreeSet<String>> entry : ambiguities.entrySet()) {
+			List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 			for(String string : entry.getValue()){
 				System.out.println("build model for " + entry.getKey());

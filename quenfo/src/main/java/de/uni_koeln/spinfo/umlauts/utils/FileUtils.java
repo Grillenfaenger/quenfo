@@ -13,13 +13,17 @@ import java.text.DateFormat;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class FileUtils {
 
@@ -56,6 +60,23 @@ public class FileUtils {
 			map.put(split[0], split[1]);	
 		}
 		return map;
+	}
+	
+	public static TreeMap<String, TreeSet<String>> fileToAmbiguities(String filePath) throws IOException{
+		TreeMap<String, TreeSet<String>> ambiguities = new TreeMap<String, TreeSet<String>>();
+		TreeMap<String, String> map = fileToMap(filePath);
+		
+		for (Entry<String,String> entry : map.entrySet()) {
+			System.out.println("key: "+entry.getKey() +" value: "+entry.getValue());
+			String listString = entry.getValue();
+			listString = listString.substring(1, listString.length()-1);
+			TreeSet<String> ambige = new TreeSet<String>(Arrays.asList(listString.split(", ")));
+			System.out.println(ambige);
+			ambiguities.put(entry.getKey(), ambige);
+			
+		}
+		return ambiguities;
+		
 	}
 
 	public static <T> void serializeList(List<T> list, String fileName) throws IOException {

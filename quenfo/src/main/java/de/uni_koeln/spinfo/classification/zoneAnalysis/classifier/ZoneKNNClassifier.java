@@ -120,7 +120,7 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 		//find k nearest classIDs
 		List<boolean[]> KNNs = new ArrayList<boolean[]>();
 		Iterator<List<boolean[]>> iterator = classIDsByDistance.values().iterator();
-		while(KNNs.size()< knn){
+		while(KNNs.size()< knn && iterator.hasNext()){
 			KNNs.addAll(iterator.next());
 		}
 		//count classMembers of knn

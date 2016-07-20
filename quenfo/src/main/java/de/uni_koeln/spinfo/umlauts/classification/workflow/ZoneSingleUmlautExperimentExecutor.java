@@ -4,15 +4,27 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Map.Entry;
 
+import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.RegexClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.dbIO.DbConnector;
+import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
+import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class ZoneSingleUmlautExperimentExecutor {
 	
@@ -20,101 +32,65 @@ public class ZoneSingleUmlautExperimentExecutor {
 	
 	public static ExperimentResult crossValidate(ExperimentConfiguration expConfig, ZoneJobs jobs, File trainingDataFile, int numCategories, int numClasses, Map<Integer,List<Integer>> translations, boolean preClassify, List<Integer> evaluationCategories) throws IOException {
 		long before = System.nanoTime();
-		//prepare classifyUnits...
-		List<ClassifyUnit> paragraphs = null;
-		if(expConfig.getFeatureConfiguration().isTreatEncoding()){
-			paragraphs = jobs.getCategorizedASCIIParagraphsFromFile(expConfig.getDataFile());
-			
-//			try {
-//				Connection connection = DbConnector.connect("C:/sqlite/ClassifiedParagraphs.db");
-//				List<ClassifyUnit> dbParas = jobs.getCategorizedASCIIParagraphsFromDB(connection, false);
-//				paragraphs.addAll(dbParas);
-//				System.out.println("added "+ dbParas.size() + " paragraphs from db");
-//		
-//			} catch (ClassNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-		}
-		else{
-			// TODO Anderer Ablauf - Trainingsdaten liegen nicht in einem eigenen File - aber 
-			paragraphs =jobs.getCategorizedParagraphsFromFile(expConfig.getDataFile());
-			Connection connection;
-//			try {
-//				connection = DbConnector.connect("C:/sqlite/ClassifiedParagraphs.db");
-//				List<ClassifyUnit> dbParas = jobs.getCategorizedParagraphsFromDB(connection, false);
-//				paragraphs.addAll(dbParas);
-//				System.out.println("added "+ dbParas.size() + " paragraphs from db");
-//			} catch (ClassNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			
-
-		}
+		//load ambiguities
+		TreeMap<String, TreeSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
+		//load KeyWordContexts
+		KeywordContexts kwctxt = new KeywordContexts();
+		kwctxt.loadKeywordContextsFromFile("output//classification//KontexteTest.txt");
 		
 		long after = System.nanoTime();
-		//system.out.println("prepare CUs: " + (after - before)/1000000000d);
-		before = System.nanoTime();
-		paragraphs = jobs.initializeClassifyUnits(paragraphs);
-
-		after = System.nanoTime();
-		//system.out.println("initialize CUs: " + (after - before)/1000000000d);
-		before = System.nanoTime();
-		paragraphs = jobs.setFeatures(paragraphs, expConfig.getFeatureConfiguration(), true);
-
-		after = System.nanoTime();
-		//system.out.println("setFeatures: " + (after - before)/1000000000d);
-		before = System.nanoTime();
-		paragraphs = jobs.setFeatureVectors(paragraphs, expConfig.getFeatureQuantifier(), null);
-		after = System.nanoTime();
-		//system.out.println("set Vectors: " + (after - before)/1000000000d);		
-		//preclassify
+		System.out.println("load data: " + (after - before)/1000000000d);
 		
-		Map<ClassifyUnit, boolean[]> preClassified = new HashMap<ClassifyUnit, boolean[]>();
-		if(preClassify){
-			before = System.nanoTime();
-			RegexClassifier rc = new RegexClassifier("classification/data/regex.txt");			
-			for (ClassifyUnit cu : paragraphs) {
-				boolean[] classIDs = rc.classify(cu, null);
-				preClassified.put(cu, classIDs);
+		
+		// CU erstellen
+		before = System.nanoTime();
+		
+		// Classification Units erstellen (diese sind dann schon initialisiert)
+		
+		int textGroupRatio = 10;
+		List<ClassifyUnit> testData = new ArrayList<ClassifyUnit>();
+		Map<String, Model> models= new HashMap<String, Model>();
+		
+			for (Entry<String, TreeSet<String>> entry : ambiguities.entrySet()) {
+				List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
+				String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
+				
+				for(String string : entry.getValue()){
+					System.out.println("build model for " + entry.getKey());
+					System.out.println(entry.getValue());
+					List<List<String>> contexts = kwctxt.getContext(string);
+					// durchmischen
+					Collections.shuffle(contexts, new Random(0));
+					System.out.println(contexts.size() + " Kontexte mit " + string);
+					for (int i = 0; i < contexts.size(); i++) {
+						ZoneClassifyUnit cu = new UmlautClassifyUnit(contexts.get(i), string, senses, true);
+						if((i % textGroupRatio) == 0){
+							testData.add(cu);
+						} else {
+							trainingData.add(cu);
+						}
+					}
+					trainingData = jobs.setFeatures(trainingData, expConfig.getFeatureConfiguration(), true);	
+					trainingData = jobs.setFeatureVectors(trainingData, expConfig.getFeatureQuantifier(), null);
+				}
+				Model model = jobs.getNewModelForClassifier(trainingData, expConfig);
+				models.put(entry.getKey(), model);
 			}
-			after = System.nanoTime();
-			//system.out.println("preClassify: " + (after - before)/1000000000d);
-		}
+		after = System.nanoTime();
+		System.out.println("build and initialize CU, set Features, set FeatureVectors and build models: " + (after - before)/1000000000d);
+		
+		
+		
+
 		
 		
 		//classify
 		before = System.nanoTime();
-		Map<ClassifyUnit, boolean[]> classified = jobs.crossvalidate(paragraphs, expConfig);
+		
 		after = System.nanoTime();
 		//system.out.println("crossvalidate: " + (after - before)/1000000000d);
 	    
 		
-	    //merge results
-	    if(preClassify){
-	    	before = System.nanoTime();
-	    	classified = jobs.mergeResults(classified, preClassified);
-	    	after = System.nanoTime();
-	    	//system.out.println("merge: " + (after - before)/1000000000d);
-	    }
-	    
-	  //translate
-	    if(translations != null){
-	    	before = System.nanoTime();
-	    	classified = jobs.translateClasses(classified);
-	    	after = System.nanoTime();
-	    	//system.out.println("translate: " + (after - before)/1000000000d);
-	    }
-	    
-	    
 	    //evaluate
 	    before = System.nanoTime();
 		ExperimentResult result = jobs.evaluate(classified, evaluationCategories, expConfig);
@@ -125,3 +101,4 @@ public class ZoneSingleUmlautExperimentExecutor {
 
 	
 }
+
