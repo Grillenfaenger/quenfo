@@ -15,6 +15,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassif
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneRocchioClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.umlauts.classification.ConfigurableUmlautClassifier;
+import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 
 public class UmlautClassificationApp {
 	
@@ -46,8 +47,8 @@ public class UmlautClassificationApp {
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
 				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,
 				miScoredFeaturesPerClass, suffixTrees);
-		ExperimentConfiguration expConfig = new ExperimentConfiguration(fuc,
-				quantifier, classifier, null, "umlauts/classification/output");
+		UmlautExperimentConfiguration expConfig = new UmlautExperimentConfiguration(fuc,
+				quantifier, classifier, null, "umlauts/classification/output", false, 3,3);
 		
 		ConfigurableUmlautClassifier umlautClassify = new ConfigurableUmlautClassifier();
 		umlautClassify.classify(expConfig);

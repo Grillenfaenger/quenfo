@@ -64,6 +64,7 @@ public class ZoneSingleUmlautExperimentExecutor {
 					System.out.println(contexts.size() + " Kontexte mit " + string);
 					for (int i = 0; i < contexts.size(); i++) {
 						ZoneClassifyUnit cu = new UmlautClassifyUnit(contexts.get(i), string, senses, true);
+						// Crossvalidation????
 						if((i % textGroupRatio) == 0){
 							testData.add(cu);
 						} else {

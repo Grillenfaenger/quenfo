@@ -210,6 +210,7 @@ public class UmlautsTest {
 		
 	}
 	
+	@Ignore
 	@Test
 	public void ambiguitiesIOTest() throws IOException, SQLException{
 		Map<String, TreeSet<String>> ambiguities = null;

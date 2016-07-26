@@ -40,6 +40,19 @@ public class KeywordContexts {
 		
 	}
 	
+	public void addContext(String keyword, List<String> context) {
+		if(keywordContextsMap.containsKey(keyword)){
+			List<List<String>> contexts = keywordContextsMap.get(keyword);
+			contexts.add(context);
+			keywordContextsMap.put(keyword, contexts);
+		} else {
+			List<List<String>> contexts = new ArrayList<List<String>>();
+			contexts.add(context);
+			keywordContextsMap.put(keyword, contexts);
+		}
+		
+	}
+	
 	public List<List<String>> getContext(String keyword){
 		return keywordContextsMap.get(keyword);
 	}
@@ -95,6 +108,8 @@ public class KeywordContexts {
 
 		return file;
 	}
+
+	
 	
 
 	

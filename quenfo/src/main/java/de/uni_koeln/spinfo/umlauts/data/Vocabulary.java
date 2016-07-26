@@ -52,6 +52,16 @@ public class Vocabulary {
 		return regexVoc;	
 	}
 	
+	public void addTokens(List<String> tokens){
+		for (String token : tokens) {
+			if (!vocabulary.containsKey(token)) {
+				vocabulary.put(token, 1);
+			} else {
+				vocabulary.put(token, vocabulary.get(token)+1);
+			}
+		}
+	}
+	
 
 	
 	

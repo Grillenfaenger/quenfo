@@ -14,10 +14,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.Contexts;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
+import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
 
 public class DBConnector {
@@ -565,6 +567,54 @@ public static KeywordContexts getKeywordContexts(List<JobAd> jobAds, Set<String>
 	System.out.println("getKeywordContexts: " + occurences);
 	return kwCtxts;
 }
+
+public static KeywordContexts getKeywordContexts_new(List<JobAd> jobAds, Set<String> keywords, UmlautExperimentConfiguration config) throws SQLException{
+	
+	KeywordContexts kwCtxts = new KeywordContexts();
+	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
+	IETokenizer ietokenizer = new IETokenizer();
+	
+	for(JobAd cand : jobAds){	
+		List<String> sentences = ietokenizer.splitIntoSentences(cand.getContent(), false);
+		List<String> tokenizedSentence = null;
+		for (String sentence : sentences){
+			tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
+			tokenizedSentences.add(tokenizedSentence);
+		}
+	}	
+	
+	for(List<String> sentencetokens : tokenizedSentences){	
+		for (int i = 0; i < sentencetokens.size(); i++) {
+			String token = sentencetokens.get(i);
+			if(keywords.contains(token)){
+				if(config.getStoreFullSentences() == false){
+					List<String> context = getContext(i, sentencetokens, config);
+					kwCtxts.addContext(token, context);
+				}
+			}
+		}
+	}	
+	return kwCtxts;
+}
+
+private static List<String> getContext(int i, List<String> text,
+		UmlautExperimentConfiguration config) {
+	
+	int fromIndex = i-config.getContextBefore();
+	int toIndex = i+config.getContextAfter()+1;
+			
+	if(fromIndex<0){
+		fromIndex = 0;
+	}
+	if(toIndex>text.size()){
+		toIndex = text.size();
+	}
+	
+	List<String> context = new ArrayList<String>(config.getContextAfter()+config.getContextBefore()+1);
+	context = text.subList(fromIndex,toIndex);
+	return context;
+}
+
 
 private static List<List<String>> getContexts(List<String> text, List<Integer> indexes){
 	ArrayList<List<String>> contexts = new ArrayList<List<String>>();

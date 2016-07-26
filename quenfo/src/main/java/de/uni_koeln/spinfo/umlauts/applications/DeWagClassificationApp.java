@@ -1,0 +1,67 @@
+package de.uni_koeln.spinfo.umlauts.applications;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
+import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
+import de.uni_koeln.spinfo.umlauts.dewag.DewacSplitter;
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
+
+public class DeWagClassificationApp {
+	
+	/* Ziele
+	 * 1. mehr Kontexte zu bekannten ambigen Wörtern
+	 * 2. mehr ambige Wörter
+	 */
+	
+	public static void main(String[] args) throws IOException{
+		
+		DewacSplitter dewag = new DewacSplitter("output//dewac//");
+		
+//		for(int i = 1000; i <=2000; i++){
+//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
+//		}
+		
+		Vocabulary voc = new Vocabulary();
+		
+//		for(int i = 1000; i <=2000; i++){
+//			List<List<String>> tokenizedSentences = dewag.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+//			for (List<String> list : tokenizedSentences) {
+//				voc.addTokens(list);
+//			}
+//		}
+		
+		List<List<String>> tokenizedSentences = dewag.getTokenizedSentences(new File("output//dewac//ofInterest1033.txt"));
+		for (List<String> list : tokenizedSentences) {
+			voc.addTokens(list);
+		}
+		
+		System.out.println("Tokens: " + voc.getNumberOfTokens());
+		System.out.println("Types: " + voc.vocabulary.size());
+		
+		
+		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
+		umlautVoc.generateNumberOfTokens();
+		System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
+		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
+	
+		TranslationVocabulary transVoc = new TranslationVocabulary();
+		for (String key : umlautVoc.vocabulary.keySet()) {
+			transVoc.addEntry(key);
+		}
+		
+		Map<String, TreeSet<String>> ambiguities = null;
+		
+		ambiguities = transVoc.findAmbiguities(voc);
+		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter");
+		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
+	
+	
+	}
+
+}

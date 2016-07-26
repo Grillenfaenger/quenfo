@@ -28,6 +28,7 @@ import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.data.Sentence;
 import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
 import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
@@ -46,7 +47,7 @@ public class ConfigurableUmlautClassifier {
 //	}
 	
 	
-	public void classify(ExperimentConfiguration config) throws ClassNotFoundException, SQLException, IOException {
+	public void classify(UmlautExperimentConfiguration config) throws ClassNotFoundException, SQLException, IOException {
 
 		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
 		// Trainieren
@@ -92,8 +93,8 @@ public class ConfigurableUmlautClassifier {
 		
 		// Kontexte der ambigen Wörter holen und ausgeben
 		System.out.println("Kontexte suchen...");
-		keywordContexts = DBConnector.getKeywordContexts(jobAds, transVoc.createAmbiguitySet(ambiguities));
-		keywordContexts.printKeywordContexts("output//classification//", "Kontexte");
+		keywordContexts = DBConnector.getKeywordContexts_new(jobAds, transVoc.createAmbiguitySet(ambiguities), config);
+		keywordContexts.printKeywordContexts("output//classification//", "Kontexte_new");
 		
 	
 		System.out.println("training");
