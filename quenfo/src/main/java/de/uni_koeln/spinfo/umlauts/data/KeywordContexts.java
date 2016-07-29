@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -27,6 +28,41 @@ public class KeywordContexts {
 
 	public KeywordContexts() {
 		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+	}
+	
+	public KeywordContexts(List<List<String>> tokenizedSentences, Set<String> keywords, UmlautExperimentConfiguration config) {
+		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		
+		for(List<String> sentencetokens : tokenizedSentences){	
+			for (int i = 0; i < sentencetokens.size(); i++) {
+				String token = sentencetokens.get(i);
+				if(keywords.contains(token)){
+					List<String> context = null;
+					if(config.getStoreFullSentences() == false){
+						context = extractContext(i, sentencetokens, config);
+					}
+					addContext(token, context);
+				}
+			}
+		}	
+	}
+	
+	private List<String> extractContext(int i, List<String> text,
+			UmlautExperimentConfiguration config) {
+		
+		int fromIndex = i-config.getContextBefore();
+		int toIndex = i+config.getContextAfter()+1;
+				
+		if(fromIndex<0){
+			fromIndex = 0;
+		}
+		if(toIndex>text.size()){
+			toIndex = text.size();
+		}
+		
+		List<String> context = new ArrayList<String>(config.getContextAfter()+config.getContextBefore()+1);
+		context = text.subList(fromIndex,toIndex);
+		return context;
 	}
 
 	public void addContexts(String keyword, List<List<String>> newContexts){
@@ -108,6 +144,13 @@ public class KeywordContexts {
 
 		return file;
 	}
+	
+	public void printStats(){
+		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
+			System.out.println(entry.getKey() + ": " + entry.getValue().size() + " Kontexte");
+		}
+	}
+	
 
 	
 	

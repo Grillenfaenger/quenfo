@@ -28,7 +28,10 @@ public class Vocabulary {
 		vocabulary = new TreeMap<String,Integer>();
 	}
 	
-	public int getNumberOfTokens() { return numberOfTokens;}
+	public int getNumberOfTokens() {
+		generateNumberOfTokens();
+		return numberOfTokens;
+	}
 	
 	public void generateNumberOfTokens() {
 		

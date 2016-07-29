@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,11 +135,14 @@ public class DewacSplitter {
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String nextLine = in.readLine();
 		StringBuffer toWrite = new StringBuffer();
-		PrintWriter out = new PrintWriter(new FileWriter(new File(destinationDir + "//ofInterest.txt")));
+		File outputFile = new File(destinationDir + "//byWord//ofInterest"+soi.getStringsOfInterest().get(0)+".txt");
+		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
 		boolean ofInterest = false;
 		int found = 0;
 		int notOfInterest = 0;
 		while(nextLine!= null){
+//			System.out.println(inputFile.getAbsolutePath());
+//			System.out.println(nextLine);
 			if(nextLine.startsWith("<")){
 				if(nextLine.trim().equals("<s>")){					
 					toWrite.append(nextLine + '\n');					
@@ -157,6 +162,10 @@ public class DewacSplitter {
 						ofInterest = false;											
 					}
 				}				
+			}	
+			else if(nextLine.trim().equals("")){
+				nextLine = in.readLine();
+				continue;
 			}
 			else{
 				String[] splits = nextLine.split("\\s");
@@ -176,6 +185,12 @@ public class DewacSplitter {
 		System.out.println("Sentences not of interest: " + notOfInterest);
 		System.out.println();
 		soi.printMap();
+		
+		out.close();
+		
+		if(found == 0){
+			Files.deleteIfExists(outputFile.toPath());
+		}
 	}
 	
 	public List<List<String>> getTokenizedSentences(File inputFile) throws IOException {
@@ -186,6 +201,7 @@ public class DewacSplitter {
 		List<String> sentence = null;
 		
 		System.out.println(inputFile.getName());
+		int i = 0;
 		while(nextLine!= null){
 			if(nextLine.startsWith("<")){
 				if(nextLine.trim().equals("<s>")){					
@@ -194,9 +210,11 @@ public class DewacSplitter {
 				else if(nextLine.trim().equals("</s>")){
 					toReturn.add(sentence);
 					nextLine = in.readLine();
+					continue;
 				}				
 			} 
 			else if(nextLine.trim().equals("")){
+				nextLine = in.readLine();
 				continue;
 			}
 			else{

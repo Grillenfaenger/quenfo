@@ -57,7 +57,7 @@ public class TranslationVocabulary {
 			}
 		}
 		
-		System.out.println(valueList);
+//		System.out.println(valueList);
 		System.out.println(ambige.size() + " Ambiguitäten zwischen umlautbefreiten Wörtern: " + ambige);
 		
 		// Die jeweiligen Lesweisen sichern
