@@ -186,6 +186,7 @@ public class DewacSplitter {
 		System.out.println();
 		soi.printMap();
 		
+		in.close();
 		out.close();
 		
 		if(found == 0){
@@ -224,6 +225,8 @@ public class DewacSplitter {
 			}
 			nextLine = in.readLine();		
 		}
+		
+		in.close();
 		return toReturn;
 	}
 	
@@ -274,6 +277,9 @@ public class DewacSplitter {
 		System.out.println("Sentences of interest: " + found);
 		System.out.println("Sentences not of interest: " + notOfInterest);
 		System.out.println();
+		
+		in.close();
+		out.close();
 
 	}
 	
@@ -393,7 +399,7 @@ public class DewacSplitter {
 		StringBuffer toWrite = new StringBuffer();
 		int sentenceCounter = 0;
 		int fileCounter = nFiles;
-		PrintWriter out;
+		PrintWriter out = null;
 		
 		while(nextLine!= null){
 			if(nextLine.startsWith("<")){

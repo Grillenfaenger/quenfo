@@ -1,6 +1,7 @@
 package de.uni_koeln.spinfo.umlauts.data;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -13,14 +14,14 @@ import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class TranslationVocabulary {
 	
-	public TreeMap<String,String> vocabulary;
+	public HashMap<String,String> vocabulary;
 	
 	public TranslationVocabulary() {
-		vocabulary = new TreeMap<String, String>();
+		vocabulary = new HashMap<String, String>();
 	}
 	
-	public void setVocabulary(TreeMap<String, String> vocabulary) {
-		this.vocabulary = vocabulary;
+	public void setVocabulary(Map<String, String> vocabulary) {
+		this.vocabulary = (HashMap<String,String>)vocabulary;
 	}
 
 	public void addEntry(String umlautWord) {
@@ -39,9 +40,9 @@ public class TranslationVocabulary {
 		return replacement;
 	}
 	
-	public Map<String, TreeSet<String>> findAmbiguities(Vocabulary referenceVoc) {
+	public Map<String, HashSet<String>> findAmbiguities(Vocabulary referenceVoc) {
 		
-		TreeMap<String, TreeSet<String>>ambiguities = new TreeMap<String, TreeSet<String>>();
+		HashMap<String, HashSet<String>>ambiguities = new HashMap<String, HashSet<String>>();
 		
 		// Ambiguitäten zwichen umlautbefreiten Wörtern
 		
@@ -66,7 +67,7 @@ public class TranslationVocabulary {
 				if (ambiguities.containsKey(entry.getKey())){
 					ambiguities.get(entry.getKey()).add(entry.getValue());
 				} else {
-					TreeSet<String> value = new TreeSet<String>();
+					HashSet<String> value = new HashSet<String>();
 					value.add(entry.getValue());
 					ambiguities.put(entry.getKey(), value);
 				}
@@ -82,7 +83,7 @@ public class TranslationVocabulary {
 					ambiguities.get(entry.getKey()).add(entry.getKey());
 					ambiguities.get(entry.getKey()).add(entry.getValue());
 				} else {
-					TreeSet<String> value = new TreeSet<String>();
+					HashSet<String> value = new HashSet<String>();
 					value.add(entry.getKey());
 					value.add(entry.getValue());
 					ambiguities.put(entry.getKey(), value);
@@ -91,14 +92,14 @@ public class TranslationVocabulary {
 		}
 		
 		System.out.println("Es gibt " + ambiguities.size() + " Fälle mit Ambiguitäten.");
-		System.out.println(ambiguities);
+//		System.out.println(ambiguities);
 		
 		return ambiguities;
 		
 	}
 	
-	public Set<String> createAmbiguitySet(Map<String, TreeSet<String>> ambiguities) {
-		Set<String> ambiguitySet = new TreeSet<String>();
+	public Set<String> createAmbiguitySet(Map<String, Set<String>> ambiguities) {
+		Set<String> ambiguitySet = new HashSet<String>();
 		
 		for (TreeSet<String> ambigueSet : ambiguities.values()) {
 			ambiguitySet.addAll(ambigueSet);
@@ -111,8 +112,8 @@ public class TranslationVocabulary {
 		return ambiguitySet;
 	}
 	
-	public TreeMap<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
-		TreeMap<String, String> simpleReplacements = vocabulary;
+	public Map<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
+		HashMap<String, String> simpleReplacements = vocabulary;
 		for(String word : ambiguousWords){
 			simpleReplacements.remove(word);
 		}
@@ -120,7 +121,8 @@ public class TranslationVocabulary {
 	}
 	
 	public void printToFile(String destPath, String fileName) throws IOException{
-		FileUtils.printMap(vocabulary, destPath, fileName);
+		TreeMap<String, String> sortedVocabulary = new TreeMap<String,String>(vocabulary);
+		FileUtils.printMap(sortedVocabulary, destPath, fileName);
 	}
 	
 	public void loadTranslationVocabularyFromFile(String filePath) throws IOException{

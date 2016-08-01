@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -57,7 +58,7 @@ public class vocabStatsApp {
 		
 		
 		// ToDo: Stats die Zweite: suche nach ambiguitäten
-		Map<String, TreeSet<String>> ambiguities = transVoc.findAmbiguities(withUmlauts);
+		Map<String, HashSet<String>> ambiguities = transVoc.findAmbiguities(withUmlauts);
 		FileUtils.printMap(ambiguities, "output//", "ambigeWörter");
 		
 		// Kontexte der ambigen Wörter ausgeben

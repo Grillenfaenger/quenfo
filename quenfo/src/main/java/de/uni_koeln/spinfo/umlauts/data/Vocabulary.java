@@ -1,4 +1,5 @@
 package de.uni_koeln.spinfo.umlauts.data;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -6,14 +7,14 @@ import java.util.TreeMap;
 
 public class Vocabulary {
 	
-	public TreeMap<String,Integer> vocabulary;
+	public HashMap<String,Integer> vocabulary;
 	private int numberOfTokens;
 	
 	
 	public Vocabulary(List<String> tokens) {
 		
 		numberOfTokens = tokens.size();
-		vocabulary = new TreeMap<String,Integer>();
+		vocabulary = new HashMap<String,Integer>();
 		
 		for (String token : tokens) {
 			if (!vocabulary.containsKey(token)) {
@@ -25,7 +26,7 @@ public class Vocabulary {
 	}
 	
 	public Vocabulary() {
-		vocabulary = new TreeMap<String,Integer>();
+		vocabulary = new HashMap<String,Integer>();
 	}
 	
 	public int getNumberOfTokens() {

@@ -24,10 +24,18 @@ import org.apache.commons.io.FileUtils;
 public class KeywordContexts {
 	
 	private Map<String, List<List<String>>> keywordContextsMap;
+	UmlautExperimentConfiguration config;
 	
 
 	public KeywordContexts() {
 		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		this.config = new UmlautExperimentConfiguration(null, null, null, null, null, true, 3, 3);
+	}
+	
+	private KeywordContexts(
+			UmlautExperimentConfiguration config) {
+		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		this.config = config;
 	}
 	
 	public KeywordContexts(List<List<String>> tokenizedSentences, Set<String> keywords, UmlautExperimentConfiguration config) {
@@ -146,9 +154,12 @@ public class KeywordContexts {
 	}
 	
 	public void printStats(){
+		int count = 0;
 		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
 			System.out.println(entry.getKey() + ": " + entry.getValue().size() + " Kontexte");
+			count += entry.getValue().size();
 		}
+		System.out.println("Mehrdeutige Fälle insgesamt: " + count);
 	}
 	
 
