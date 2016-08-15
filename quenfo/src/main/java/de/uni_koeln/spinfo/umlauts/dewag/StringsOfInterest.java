@@ -73,6 +73,10 @@ public class StringsOfInterest {
 		return stringsOfInterest;
 	}
 	
+	public int getStringsFoundOf(String string){
+		return stringsFound.get(string);
+	}
+	
 	public String hasConstraint(String string){
 		return stringsWithParticleConstraint.get(string);
 	}

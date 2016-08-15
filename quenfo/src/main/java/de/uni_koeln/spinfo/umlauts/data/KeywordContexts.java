@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class KeywordContexts {
 	}
 	
 	public KeywordContexts(List<List<String>> tokenizedSentences, Set<String> keywords, UmlautExperimentConfiguration config) {
-		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		this.keywordContextsMap = new HashMap<String, List<List<String>>>();
 		
 		for(List<String> sentencetokens : tokenizedSentences){	
 			for (int i = 0; i < sentencetokens.size(); i++) {
@@ -131,17 +132,14 @@ public class KeywordContexts {
 	public File printKeywordContexts(String destPath, String fileName) throws IOException {
 
 		File file = new File(destPath + fileName /*+ getISO8601StringForCurrentDate() */+ ".txt");
-		System.out.println(file.getAbsolutePath());
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
 
 		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
 			out.append(entry.getKey());
-			System.out.println("Key: " + entry.getKey());
 			out.append("\n");
 			
 			for(List<String> context : entry.getValue()){
 				out.append(context.toString());
-				System.out.println("Kontext: " + context.toString());
 				out.append("\n");
 			}
 			out.append("$;\n");

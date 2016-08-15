@@ -50,26 +50,26 @@ public class TranslationVocabulary {
 		ArrayList<String> valueList = new ArrayList<String>();
 		
 		// Liste ambiger umlautbefreiter Wörter erzeugen
-		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if (!valueList.contains(entry.getKey())) {
-				valueList.add(entry.getKey());
+		for(String key : vocabulary.keySet()){
+			if (!valueList.contains(key)) {
+				valueList.add(key);
 			} else {
-				ambige.add(entry.getKey());
+				ambige.add(key);
 			}
 		}
 		
 //		System.out.println(valueList);
-		System.out.println(ambige.size() + " Ambiguitäten zwischen umlautbefreiten Wörtern: " + ambige);
+//		System.out.println(ambige.size() + " Ambiguitäten zwischen umlautbefreiten Wörtern: " + ambige);
 		
 		// Die jeweiligen Lesweisen sichern
-		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if(ambige.contains(entry.getKey())) {
-				if (ambiguities.containsKey(entry.getKey())){
-					ambiguities.get(entry.getKey()).add(entry.getValue());
+		for(String key : vocabulary.keySet()){
+			if(ambige.contains(key)) {
+				if (ambiguities.containsKey(key)){
+					ambiguities.get(key).add(vocabulary.get(key));
 				} else {
 					HashSet<String> value = new HashSet<String>();
-					value.add(entry.getValue());
-					ambiguities.put(entry.getKey(), value);
+					value.add(vocabulary.get(key));
+					ambiguities.put(key, value);
 				}
 			}
 		}
@@ -77,16 +77,16 @@ public class TranslationVocabulary {
 		
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
-		for(Entry<String, String> entry : vocabulary.entrySet()){
-			if(referenceVoc.vocabulary.containsKey(entry.getKey())) {
-				if (ambiguities.containsKey(entry.getKey())){
-					ambiguities.get(entry.getKey()).add(entry.getKey());
-					ambiguities.get(entry.getKey()).add(entry.getValue());
+		for(String key : vocabulary.keySet()){
+			if(referenceVoc.vocabulary.containsKey(key)) {
+				if (ambiguities.containsKey(key)){
+					ambiguities.get(key).add(key);
+					ambiguities.get(key).add(vocabulary.get(key));
 				} else {
 					HashSet<String> value = new HashSet<String>();
-					value.add(entry.getKey());
-					value.add(entry.getValue());
-					ambiguities.put(entry.getKey(), value);
+					value.add(key);
+					value.add(vocabulary.get(key));
+					ambiguities.put(key, value);
 				}
 			}
 		}
@@ -98,10 +98,10 @@ public class TranslationVocabulary {
 		
 	}
 	
-	public Set<String> createAmbiguitySet(Map<String, Set<String>> ambiguities) {
+	public Set<String> createAmbiguitySet(Map<String, HashSet<String>> ambiguities) {
 		Set<String> ambiguitySet = new HashSet<String>();
 		
-		for (TreeSet<String> ambigueSet : ambiguities.values()) {
+		for (Set<String> ambigueSet : ambiguities.values()) {
 			ambiguitySet.addAll(ambigueSet);
 		}
 //		ambiguitySet.remove("a");

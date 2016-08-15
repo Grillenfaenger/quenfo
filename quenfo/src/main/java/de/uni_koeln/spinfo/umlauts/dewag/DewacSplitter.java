@@ -135,7 +135,7 @@ public class DewacSplitter {
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String nextLine = in.readLine();
 		StringBuffer toWrite = new StringBuffer();
-		File outputFile = new File(destinationDir + "//byWord//ofInterest"+soi.getStringsOfInterest().get(0)+".txt");
+		File outputFile = new File(destinationDir + "//byWord//ofInterest.txt");
 		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
 		boolean ofInterest = false;
 		int found = 0;
@@ -177,8 +177,11 @@ public class DewacSplitter {
 			}
 			//System.out.println(nextLine);
 			nextLine = in.readLine();		
-			if(found>maxSentences){
-				break;
+//			if(found>maxSentences){
+//				break;
+//			}
+			if(found%10000 == 0){
+				System.out.println(found);
 			}
 		}	
 		System.out.println("Sentences of interest: " + found);

@@ -15,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -48,9 +50,28 @@ public class FileUtils {
 		return normalized;
 	}
 	
-	public static TreeMap<String, String> fileToMap(String filePath) throws IOException {
+	public static List<List<String>> fileToListOfLists(String filePath) throws IOException {
+
+		List<List<String>> toReturn = new ArrayList<List<String>>();
+		ArrayList<String> normalized = new ArrayList<String>();
+
+		ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+
+		for (String s : lines) {
+
+			s = Normalizer.normalize(s, Normalizer.Form.NFC);
+			normalized.add(s);
+		}
+		for (String string : normalized) {
+			string = string.substring(1, string.length()-1);
+			toReturn.add(Arrays.asList(string.split(", ")));
+		}			
+		return toReturn;
+	}
+	
+	public static HashMap<String, String> fileToMap(String filePath) throws IOException {
 		
-		TreeMap<String, String> map = new TreeMap<String, String>();
+		HashMap<String, String> map = new HashMap<String, String>();
 
 		ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
 
@@ -62,16 +83,14 @@ public class FileUtils {
 		return map;
 	}
 	
-	public static TreeMap<String, TreeSet<String>> fileToAmbiguities(String filePath) throws IOException{
-		TreeMap<String, TreeSet<String>> ambiguities = new TreeMap<String, TreeSet<String>>();
-		TreeMap<String, String> map = fileToMap(filePath);
+	public static HashMap<String, HashSet<String>> fileToAmbiguities(String filePath) throws IOException{
+		HashMap<String, HashSet<String>> ambiguities = new HashMap<String, HashSet<String>>();
+		HashMap<String, String> map = fileToMap(filePath);
 		
 		for (Entry<String,String> entry : map.entrySet()) {
-			System.out.println("key: "+entry.getKey() +" value: "+entry.getValue());
 			String listString = entry.getValue();
 			listString = listString.substring(1, listString.length()-1);
-			TreeSet<String> ambige = new TreeSet<String>(Arrays.asList(listString.split(", ")));
-			System.out.println(ambige);
+			HashSet<String> ambige = new HashSet<String>(Arrays.asList(listString.split(", ")));
 			ambiguities.put(entry.getKey(), ambige);
 			
 		}
@@ -178,6 +197,23 @@ public class FileUtils {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.GERMANY);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+1"));
 		return dateFormat.format(date);
+	}
+	
+	public static List<String> snowballStopwordReader(String filePath) throws IOException{
+		List<String> stopwords = new ArrayList<String>();
+		List<String> lines = fileToList(filePath);
+		for(String line : lines){
+			if(line.contains("|")){
+				String[] splits = line.split("\\|");
+				line = splits[0];
+			}
+			line = line.trim();
+			
+			if (!line.isEmpty()){
+				stopwords.add(line);
+			}
+		}
+		return stopwords;
 	}
 
 	
