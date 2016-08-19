@@ -109,5 +109,9 @@ public class StringsOfInterest {
 	public String toString(){
 		return stringsOfInterest.toString();
 	}
+	
+	public boolean removeStringOfInterest(String string){
+		return stringsOfInterest.remove(string);
+	}
 
 }

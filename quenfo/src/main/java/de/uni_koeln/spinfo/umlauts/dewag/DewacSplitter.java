@@ -197,6 +197,86 @@ public class DewacSplitter {
 		}
 	}
 	
+	/**
+	 * Searches the input files for the specified strings of interest 
+	 * and generates an output file for all string containing the specified 
+	 * maximum count of sentences with this string
+	 * @param inputFile The input file
+	 * @param soi strings of interest  
+	 * @param maxSentencesPerFile Max count of sentences per output file
+	 * @throws IOException 
+	 */
+	public void sentencesOfInterestToFile2(File inputFile, StringsOfInterest soi, int maxSentences) throws IOException{
+		BufferedReader in = new BufferedReader(new FileReader(inputFile));
+		String nextLine = in.readLine();
+		StringBuffer toWrite = new StringBuffer();
+		File outputFile = new File(destinationDir + "//byWord//ofInterest.txt");
+		PrintWriter out = new PrintWriter(new FileWriter(outputFile));
+		boolean ofInterest = false;
+		int found = 0;
+		int notOfInterest = 0;
+		while(nextLine!= null){
+//			System.out.println(inputFile.getAbsolutePath());
+//			System.out.println(nextLine);
+			if(nextLine.startsWith("<")){
+				if(nextLine.trim().equals("<s>")){					
+					toWrite.append(nextLine + '\n');					
+				}
+				else{
+					if(nextLine.trim().equals("</s>")){
+						toWrite.append(nextLine + "\n\n");
+						if(ofInterest){
+							out.println(toWrite.toString());
+							found++;
+						}
+						else{
+							notOfInterest++;
+						}
+						
+						toWrite = new StringBuffer();
+						ofInterest = false;											
+					}
+				}				
+			}	
+			else if(nextLine.trim().equals("")){
+				nextLine = in.readLine();
+				continue;
+			}
+			else{
+				String[] splits = nextLine.split("\\s");
+				String lemma = splits[2].trim();
+				if(soi.isOfInterest(lemma)){
+					ofInterest = true;
+					if(soi.getStringsFoundOf(lemma)<maxSentences){
+						soi.removeStringOfInterest(lemma);
+					}
+				}
+				toWrite.append(nextLine + '\n');
+			}
+			//System.out.println(nextLine);
+			nextLine = in.readLine();		
+//			if(found>maxSentences){
+//				break;
+//			}
+			if(found%100 == 0){
+				System.out.println(found);
+				System.out.println(soi.getStringsOfInterest().size());
+			}
+		}	
+		System.out.println("Sentences of interest: " + found);
+		System.out.println("Sentences not of interest: " + notOfInterest);
+		System.out.println();
+		soi.printMap();
+		
+		
+		in.close();
+		out.close();
+		
+		if(found == 0){
+			Files.deleteIfExists(outputFile.toPath());
+		}
+	}
+	
 	public List<List<String>> getTokenizedSentences(File inputFile) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String nextLine = in.readLine();

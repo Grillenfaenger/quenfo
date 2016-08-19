@@ -9,9 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -128,7 +130,7 @@ public class UmlautsTest {
 	public void keywordContextIOTest() throws IOException, SQLException{
 		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
 				// Trainieren
-				Map<String, TreeSet<String>> ambiguities = null;
+				Map<String, HashSet<String>> ambiguities = null;
 				KeywordContexts keywordContexts = null;
 				
 				IETokenizer tokenizer = new IETokenizer();
@@ -213,7 +215,7 @@ public class UmlautsTest {
 	@Ignore
 	@Test
 	public void ambiguitiesIOTest() throws IOException, SQLException{
-		Map<String, TreeSet<String>> ambiguities = null;
+		Map<String, HashSet<String>> ambiguities = null;
 		KeywordContexts keywordContexts = null;
 		
 		IETokenizer tokenizer = new IETokenizer();
@@ -248,9 +250,15 @@ public class UmlautsTest {
 		FileUtils.printMap(ambiguities, "output//classification//", "ambigeWörter");
 		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
 		
-		TreeMap<String, TreeSet<String>> fileToAmbiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
+		HashMap<String, HashSet<String>> fileToAmbiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
 		FileUtils.printMap(fileToAmbiguities, "output//classification//", "ambigeWörter2");
 		
+	}
+	
+	@Test
+	public void stopwordReaderTest() throws IOException{
+		List<String> stopwords = FileUtils.snowballStopwordReader("input//stop.txt");
+		System.out.println(stopwords);
 	}
 
 
