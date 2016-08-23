@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
+
 
 /**
  * Splitter for large sDewac files.
@@ -203,10 +205,11 @@ public class DewacSplitter {
 	 * maximum count of sentences with this string
 	 * @param inputFile The input file
 	 * @param soi strings of interest  
+	 * @param overallMaxSentences 
 	 * @param maxSentencesPerFile Max count of sentences per output file
 	 * @throws IOException 
 	 */
-	public void sentencesOfInterestToFile2(File inputFile, StringsOfInterest soi, int maxSentences) throws IOException{
+	public void sentencesOfInterestToFile2(File inputFile, StringsOfInterest soi, int maxSentences, int overallMaxSentences) throws IOException{
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String nextLine = in.readLine();
 		StringBuffer toWrite = new StringBuffer();
@@ -255,9 +258,9 @@ public class DewacSplitter {
 			}
 			//System.out.println(nextLine);
 			nextLine = in.readLine();		
-//			if(found>maxSentences){
-//				break;
-//			}
+			if(found>overallMaxSentences){
+				break;
+			}
 			if(found%100 == 0){
 				System.out.println(found);
 				System.out.println(soi.getStringsOfInterest().size());
@@ -267,6 +270,7 @@ public class DewacSplitter {
 		System.out.println("Sentences not of interest: " + notOfInterest);
 		System.out.println();
 		soi.printMap();
+		FileUtils.printString(soi.stringsFoundToString(), "output//classification//", "DewacStingsFound", ".txt");
 		
 		
 		in.close();

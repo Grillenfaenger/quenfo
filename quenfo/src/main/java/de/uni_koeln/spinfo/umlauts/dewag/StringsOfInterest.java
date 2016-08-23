@@ -106,6 +106,15 @@ public class StringsOfInterest {
 		}
 	}
 	
+	public String stringsFoundToString(){
+		StringBuffer sb = new StringBuffer();
+		Set<String> keySet = stringsFound.keySet();
+		for (String string : keySet) {
+			sb.append(string + ": " + stringsFound.get(string));
+		}
+		return sb.toString();
+	}
+	
 	public String toString(){
 		return stringsOfInterest.toString();
 	}

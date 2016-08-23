@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -33,7 +34,7 @@ public class ZoneSingleUmlautExperimentExecutor {
 	public static ExperimentResult crossValidate(ExperimentConfiguration expConfig, ZoneJobs jobs, File trainingDataFile, int numCategories, int numClasses, Map<Integer,List<Integer>> translations, boolean preClassify, List<Integer> evaluationCategories) throws IOException {
 		long before = System.nanoTime();
 		//load ambiguities
-		TreeMap<String, TreeSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//ambigeWörter.txt");
 		//load KeyWordContexts
 		KeywordContexts kwctxt = new KeywordContexts();
 		kwctxt.loadKeywordContextsFromFile("output//classification//KontexteTest.txt");
@@ -51,7 +52,7 @@ public class ZoneSingleUmlautExperimentExecutor {
 		List<ClassifyUnit> testData = new ArrayList<ClassifyUnit>();
 		Map<String, Model> models= new HashMap<String, Model>();
 		
-			for (Entry<String, TreeSet<String>> entry : ambiguities.entrySet()) {
+			for (Entry<String, HashSet<String>> entry : ambiguities.entrySet()) {
 				List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
 				String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 				

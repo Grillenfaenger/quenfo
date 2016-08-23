@@ -33,7 +33,8 @@ public class DeWacClassificationApp {
 	 */
 	
 	public static void main(String[] args) throws IOException{
-		sentenceExtraction();
+		vocExtraction();
+//		sentenceExtraction();
 //		dataExtraction();
 //		createContexts();
 //		ambiguitiesFilter();
@@ -48,10 +49,11 @@ public class DeWacClassificationApp {
 //		for(int i = 1000; i <=2000; i++){
 //			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
 //		}
-		
+		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){
 			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+			allSentences.addAll(tokenizedSentences);
 			for (List<String> list : tokenizedSentences) {
 				voc.addTokens(list);
 			}
@@ -62,6 +64,8 @@ public class DeWacClassificationApp {
 //		for (List<String> list : tokenizedSentences) {
 //			voc.addTokens(list);
 //		}
+		
+
 		
 		System.out.println("Tokens: " + voc.getNumberOfTokens());
 		System.out.println("Types: " + voc.vocabulary.size());
@@ -86,9 +90,41 @@ public class DeWacClassificationApp {
 		
 		ambiguities = transVoc.findAmbiguities(voc);
 		
+		List<String> ofInterest = new ArrayList<String>();
+		for(HashSet<String> set : ambiguities.values()){
+			for(String word : set){
+				ofInterest.add(word);
+			}
+		}
+		KeywordContexts contexts = new KeywordContexts();
+//		List<List<String>> ambigSentences = new ArrayList<List<String>>();
+		for(List<String> sentence : allSentences){
+			for(String word : sentence){
+				if(ofInterest.contains(word)){
+//					ambigSentences.add(sentence);
+					contexts.addContext(word, sentence);
+				}
+			}
+		}
+		contexts.printKeywordContexts("output//classification//", "DewacAmbigSentences");
+//		FileUtils.printListOfList(ambigSentences, "output//classification//", "DewacAmbigSentences");
+		
+//		// find Ambiguities which are rare
+//		int numberOfMinOccurences = 10;
+//		Map<String, Integer> lowFrequencyAmbig = new TreeMap<String, Integer>();
+//		for(String key : ambiguities.keySet()){
+//			for(String value : ambiguities.get(key)){
+//				if(voc.vocabulary.get(value)<=numberOfMinOccurences){
+//					lowFrequencyAmbig.put(value, voc.vocabulary.get(value));
+//				}
+//			}
+//		}
+//		FileUtils.printMap(lowFrequencyAmbig, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
+//		System.out.println("Ambiguities which occur less than" + " times: " + lowFrequencyAmbig.size());
+		
 		
 		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
-		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter2");
+//		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
 		
 		
 		
@@ -96,7 +132,7 @@ public class DeWacClassificationApp {
 	
 	public static void sentenceExtraction() throws IOException{
 		
-		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter3.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter2.txt");
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
 		
 		// Kontexte suchen
@@ -110,7 +146,8 @@ public class DeWacClassificationApp {
 		}
 		StringsOfInterest soi = new StringsOfInterest();
 		soi.setStringsOfInterest(ofInterest);
-		dewac.sentencesOfInterestToFile2(new File("input//dewac_singlefile//sdewac-v3.tagged"), soi, 100);
+		dewac.sentencesOfInterestToFile2(new File("input//dewac_singlefile//sdewac-v3.tagged"), soi, 100, 1800);
+		FileUtils.printString(soi.stringsFoundToString(), "output//classification//", "DewacStingsFound", ".txt");
 		
 		
 //		List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//byWord//ofInterest3.txt"));
@@ -119,16 +156,19 @@ public class DeWacClassificationApp {
 	}
 	
 	public static void createContexts() throws IOException{
+		System.out.println("createContexts");
 		KeywordContexts contexts = new KeywordContexts();
 		// load
-		List<List<String>> tokenizedSentences = FileUtils.fileToListOfLists("output//dewac//tokenizedSentences3.txt");
-		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter3.txt");
+		List<List<String>> tokenizedSentences = FileUtils.fileToListOfLists("output//classification//DewacAmbigSentences.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		List<String> ofInterest = new ArrayList<String>();
 		for(HashSet<String> set : ambiguities.values()){
 			for(String word : set){
 				ofInterest.add(word);
 			}
 		}
+		
+		System.out.println("loaded");
 		
 		for(List<String> tokenizedSentence : tokenizedSentences){
 			List<String> tempList = new ArrayList<String>();
@@ -142,7 +182,7 @@ public class DeWacClassificationApp {
 				}
 			}
 		}
-		contexts.printKeywordContexts("output//classification//", "DewacKontexte3");
+		contexts.printKeywordContexts("output//classification//", "DewacKontexte4");
 //		contexts.printStats();
 	}
 	

@@ -170,6 +170,22 @@ public class FileUtils {
 
 		return file;
 	}
+	
+	public static <T> File printListOfList(List<List<T>> listOfLists, String destPath, String filename) throws IOException {
+
+		File file = new File(destPath + filename + ".txt");
+
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
+		
+		for (List<T> list : listOfLists) {
+			writer.append(list + "\n");
+		}
+
+		writer.flush();
+		writer.close();
+
+		return file;
+	}
 
 	public static <T> File printList(List<T> list, String destPath, String filename, String fileFormat)
 			throws IOException {
@@ -181,6 +197,20 @@ public class FileUtils {
 		for (Object o : list) {
 			writer.append(o + "\n");
 		}
+
+		writer.flush();
+		writer.close();
+
+		return file;
+	}
+	
+	public static File printString(String string, String destPath, String filename, String fileFormat)
+			throws IOException {
+
+		File file = new File(destPath + filename + fileFormat);
+
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
+		writer.append(string);
 
 		writer.flush();
 		writer.close();

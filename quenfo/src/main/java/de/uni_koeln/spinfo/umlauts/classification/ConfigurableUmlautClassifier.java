@@ -51,7 +51,7 @@ public class ConfigurableUmlautClassifier {
 
 		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
 		// Trainieren
-		Map<String, TreeSet<String>> ambiguities = null;
+		Map<String, HashSet<String>> ambiguities = null;
 		Map<String, Model> models= new HashMap<String, Model>();
 		
 		// Gruppierte Lesarten + deren Kontexte holen (Dafür reicht der einfache Tokenisierer)
@@ -103,7 +103,7 @@ public class ConfigurableUmlautClassifier {
 		ZoneJobs jobs = new ZoneJobs();
 		
 		// Classification Units erstellen (diese sind dann schon initialisiert)
-		for (Entry<String, TreeSet<String>> entry : ambiguities.entrySet()) {
+		for (Entry<String, HashSet<String>> entry : ambiguities.entrySet()) {
 			List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
 			for(String string : entry.getValue()){

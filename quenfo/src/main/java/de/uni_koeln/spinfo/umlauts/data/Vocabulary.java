@@ -1,8 +1,12 @@
 package de.uni_koeln.spinfo.umlauts.data;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+
+import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 
 public class Vocabulary {
@@ -64,6 +68,17 @@ public class Vocabulary {
 				vocabulary.put(token, vocabulary.get(token)+1);
 			}
 		}
+	}
+	
+	public void printTokensWithOccurenceLowerThan(int numberOfMinOccurences) throws IOException{
+		Map<String, Integer> mapToReturn = new TreeMap<String, Integer>();
+		for(String key : vocabulary.keySet()){
+			if(vocabulary.get(key)<=numberOfMinOccurences){
+				mapToReturn.put(key, vocabulary.get(key));
+				System.out.println(key + ": " + vocabulary.get(key));
+			}
+		}
+		FileUtils.printMap(mapToReturn, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
 	}
 	
 
