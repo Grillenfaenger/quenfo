@@ -187,7 +187,7 @@ public class DeWacClassificationApp {
 	}
 	
 	public static void ambiguitiesFilter() throws IOException{
-		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter2.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		List<String> stopwords = FileUtils.snowballStopwordReader("input//stop.txt");
 		
 		Set<String> keys = ambiguities.keySet();
@@ -211,8 +211,8 @@ public class DeWacClassificationApp {
 			ambiguities.remove(stopword);
 		}
 		System.out.println(ambiguities.size());
-		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter3");
-		FileUtils.printMap(ambigeStopwords, "output//classification//", "DewacAmbigeStopwords");
+		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
+//		FileUtils.printMap(ambigeStopwords, "output//classification//", "DewacAmbigeStopwords");
 		
 	}
 

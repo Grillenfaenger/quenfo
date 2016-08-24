@@ -77,8 +77,10 @@ public class KeywordContexts {
 	public void addContexts(String keyword, List<List<String>> newContexts){
 		if(keywordContextsMap.containsKey(keyword)){
 			List<List<String>> contexts = keywordContextsMap.get(keyword);
-			contexts.addAll(newContexts);
-			keywordContextsMap.put(keyword, contexts);
+			if(contexts.size() <= 100){
+				contexts.addAll(newContexts);
+				keywordContextsMap.put(keyword, contexts);
+			}
 		} else {
 			keywordContextsMap.put(keyword, newContexts);
 		}
@@ -88,8 +90,10 @@ public class KeywordContexts {
 	public void addContext(String keyword, List<String> context) {
 		if(keywordContextsMap.containsKey(keyword)){
 			List<List<String>> contexts = keywordContextsMap.get(keyword);
-			contexts.add(context);
-			keywordContextsMap.put(keyword, contexts);
+			if(contexts.size() <= 100){
+				contexts.add(context);
+				keywordContextsMap.put(keyword, contexts);
+			}
 		} else {
 			List<List<String>> contexts = new ArrayList<List<String>>();
 			contexts.add(context);
