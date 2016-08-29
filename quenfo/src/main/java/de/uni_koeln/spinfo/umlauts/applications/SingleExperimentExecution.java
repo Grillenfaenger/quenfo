@@ -26,6 +26,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClas
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneSingleExperimentExecutor;
+import de.uni_koeln.spinfo.umlauts.classification.workflow.ZoneSingleUmlautExperimentExecutor;
 
 /**
  * @author geduldia
@@ -77,7 +78,7 @@ public class SingleExperimentExecution {
 				miScoredFeaturesPerClass, suffixTrees);
 		ExperimentConfiguration expConfig = new ExperimentConfiguration(fuc,
 				quantifier, classifier, inputFile, "umlauts/classification/output");	
-		ExperimentResult result = ZoneSingleExperimentExecutor.crossValidate(
+		ExperimentResult result = ZoneSingleUmlautExperimentExecutor.crossValidate(
 				expConfig, jobs, inputFile, 2, 2, null, preClassify, evaluationCategories);
 		
 		System.out.println("F Measure: \t" + result.getF1Measure());

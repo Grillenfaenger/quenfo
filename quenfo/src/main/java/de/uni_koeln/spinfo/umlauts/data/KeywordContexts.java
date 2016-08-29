@@ -24,8 +24,8 @@ import org.apache.commons.io.FileUtils;
 
 public class KeywordContexts {
 	
-	private Map<String, List<List<String>>> keywordContextsMap;
-	UmlautExperimentConfiguration config;
+	public Map<String, List<List<String>>> keywordContextsMap;
+	private UmlautExperimentConfiguration config;
 	
 
 	public KeywordContexts() {

@@ -33,7 +33,8 @@ public class DeWacClassificationApp {
 	 */
 	
 	public static void main(String[] args) throws IOException{
-		vocExtraction();
+//		vocExtraction();
+		statsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
 //		createContexts();
@@ -127,6 +128,16 @@ public class DeWacClassificationApp {
 //		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
 		
 		
+		
+	}
+	
+	public static void statsAboutContexts() throws IOException{
+		KeywordContexts contexts = new KeywordContexts();
+		contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+		
+		for(String key : contexts.keywordContextsMap.keySet()){
+			System.out.println("Key:"+ key + "Anzahl der Kontexte: "+ contexts.keywordContextsMap.get(key).size());
+		}
 		
 	}
 	
