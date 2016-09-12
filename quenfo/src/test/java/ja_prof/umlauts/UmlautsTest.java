@@ -255,11 +255,22 @@ public class UmlautsTest {
 		
 	}
 	
+	@Ignore
 	@Test
 	public void stopwordReaderTest() throws IOException{
 		List<String> stopwords = FileUtils.snowballStopwordReader("input//stop.txt");
 		System.out.println(stopwords);
 	}
-
+	
+	@Test
+	public void readOrtsnamenTest() throws IOException{
+		List<String> ortsnamen = FileUtils.fileToList("output//stats//DE-Ortsnamen.txt", "#");
+		System.out.println(ortsnamen);
+	}
+	@Ignore
+	@Test
+	public void processFamilyNamesTest() throws IOException{
+		FileUtils.processFamilyNamesFile("output//stats//Familiennamen.txt");
+	}
 
 }

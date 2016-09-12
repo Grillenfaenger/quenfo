@@ -133,11 +133,27 @@ public class DeWacClassificationApp {
 	
 	public static void statsAboutContexts() throws IOException{
 		KeywordContexts contexts = new KeywordContexts();
-		contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+		List<String> output = new ArrayList<String>();
 		
-		for(String key : contexts.keywordContextsMap.keySet()){
-			System.out.println("Key:"+ key + "Anzahl der Kontexte: "+ contexts.keywordContextsMap.get(key).size());
+		System.out.println(contexts.keywordContextsMap.size());
+		
+		for (String ambigGroup : ambiguities.keySet()){
+			for(String key : ambiguities.get(ambigGroup)){
+				if(contexts.keywordContextsMap.containsKey(key)){
+					System.out.println("Key:"+ key + " Anzahl der Kontexte: "+ contexts.keywordContextsMap.get(key).size());
+					output.add("Key:"+ key + " Anzahl der Kontexte: "+ contexts.keywordContextsMap.get(key).size());
+					if(contexts.keywordContextsMap.get(key).size() == 1){
+						System.out.println(contexts.keywordContextsMap.get(key));
+						output.add(contexts.keywordContextsMap.get(key).toString());
+					}
+				} else {
+					System.out.println("***Keine Kontexte im split-Korpus gefunden");
+				}
+			}
 		}
+		FileUtils.printList(output, "output//stats//", "ContextStats", ".txt");
 		
 	}
 	

@@ -9,11 +9,14 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.Collator;
 import java.text.DateFormat;
 import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +47,21 @@ public class FileUtils {
 
 		for (String s : lines) {
 
+			s = Normalizer.normalize(s, Normalizer.Form.NFC);
+			normalized.add(s);
+		}
+		return normalized;
+	}
+	
+	public static List<String> fileToList(String filePath, String commentMarkup) throws IOException {
+
+		ArrayList<String> normalized = new ArrayList<String>();
+
+		ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+
+		for (String s : lines) {
+			if(s.startsWith(commentMarkup)) continue;
+			
 			s = Normalizer.normalize(s, Normalizer.Form.NFC);
 			normalized.add(s);
 		}
@@ -244,6 +262,25 @@ public class FileUtils {
 			}
 		}
 		return stopwords;
+	}
+	
+	public static void processFamilyNamesFile(String inputFilePath) throws IOException{
+		List<String> lines = fileToList(inputFilePath);
+		Set<String> familynames = new HashSet<String>();
+		
+		for (String string : lines) {
+			String[] splits = string.split("\\t");
+			familynames.addAll(Arrays.asList(splits));
+		}
+		
+		List<String> familynamesList = new ArrayList<String>();
+		familynamesList.addAll(familynames);
+		Collator coll = Collator.getInstance(Locale.GERMAN);
+		Collections.sort(familynamesList, coll);
+		System.out.println(familynamesList);
+		System.out.println(familynamesList.size());
+		
+		printList(familynamesList, "output//stats//", "familynames", ".txt");
 	}
 
 	
