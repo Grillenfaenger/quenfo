@@ -60,7 +60,7 @@ public class FileUtils {
 		ArrayList<String> lines = (ArrayList<String>) Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
 
 		for (String s : lines) {
-			if(s.startsWith(commentMarkup)) continue;
+			if(s.trim().startsWith(commentMarkup)) continue;
 			
 			s = Normalizer.normalize(s, Normalizer.Form.NFC);
 			normalized.add(s);

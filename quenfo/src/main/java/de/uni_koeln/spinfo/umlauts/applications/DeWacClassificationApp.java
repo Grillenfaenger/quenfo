@@ -34,7 +34,8 @@ public class DeWacClassificationApp {
 	
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
-		statsAboutContexts();
+//		onlyVocExtraction();
+		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
 //		createContexts();
@@ -131,6 +132,44 @@ public class DeWacClassificationApp {
 		
 	}
 	
+public static void onlyVocExtraction() throws IOException{
+		
+		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
+		
+		DewacSplitter dewac = new DewacSplitter("output//dewac//");
+		
+//		for(int i = 1000; i <=2000; i++){
+//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
+//		}
+		List<List<String>> allSentences = new ArrayList<List<String>>();
+		Vocabulary voc = new Vocabulary();
+		for(int i = 1000; i <=2000; i++){
+			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+			allSentences.addAll(tokenizedSentences);
+			for (List<String> list : tokenizedSentences) {
+				voc.addTokens(list);
+			}
+		}
+		
+//		List<List<String>> tokenizedSentences = dewag.getTokenizedSentences(new File("output//dewac//ofInterest1033.txt"));
+//		System.out.println("zum vokabular hinzufügen");
+//		for (List<String> list : tokenizedSentences) {
+//			voc.addTokens(list);
+//		}
+		
+
+		
+		System.out.println("Tokens: " + voc.getNumberOfTokens());
+		System.out.println("Types: " + voc.vocabulary.size());
+		
+		
+		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
+		System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
+		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
+		
+		FileUtils.printSet(umlautVoc.vocabulary.keySet(), "output//stats//", "umlautsInDeWac");
+	}
+	
 	public static void statsAboutContexts() throws IOException{
 		KeywordContexts contexts = new KeywordContexts();
 		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
@@ -154,6 +193,45 @@ public class DeWacClassificationApp {
 			}
 		}
 		FileUtils.printList(output, "output//stats//", "ContextStats", ".txt");
+		
+	}
+	
+	public static void moreStatsAboutContexts() throws IOException{
+//		KeywordContexts contexts = new KeywordContexts();
+//		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
+		names.addAll(FileUtils.fileToList("output//stats//DE-Ortsnamen.txt", "#"));
+		
+		Vocabulary namesVoc = new Vocabulary(names);
+		Vocabulary umlautNamesVoc = namesVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
+		System.out.println("Namen mit Umlauten: " + umlautNamesVoc.vocabulary.size());
+		
+		TranslationVocabulary transVoc = new TranslationVocabulary();
+		for (String key : umlautNamesVoc.vocabulary.keySet()) {
+			transVoc.addEntry(key);
+		}
+		Map<String, HashSet<String>> namesAmbiguities = transVoc.findAmbiguities(namesVoc);
+		System.out.println("Ambiguitäten in Namen: " + namesAmbiguities.size());
+		
+		List<String> umlautsInDewac = FileUtils.fileToList("output//stats//umlautsInDeWac.txt");
+		
+		List<String> namesInDewac = new ArrayList<String>();
+		for (String name : umlautNamesVoc.vocabulary.keySet()) {
+			if(umlautsInDewac.contains(name)){
+				namesInDewac.add(name);
+			}
+		}
+		System.out.println("Eigennamen mit Umlauten im Dewac: " + namesInDewac.size());
+		FileUtils.printList(namesInDewac, "output//stats//", "umlautNamesInDewac", ".txt");
+		
+		int namesInAmbiguities = 0;
+		for(String name : names){
+			if(ambiguities.values().contains(name)){
+				namesInAmbiguities++;
+			}
+		}
+		System.out.println(namesInAmbiguities + " bekannte Namen sind in den Dewac-Ambiguitäten.");	
 		
 	}
 	
