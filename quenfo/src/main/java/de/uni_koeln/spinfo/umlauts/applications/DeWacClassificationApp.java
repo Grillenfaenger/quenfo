@@ -2,10 +2,14 @@ package de.uni_koeln.spinfo.umlauts.applications;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -40,6 +44,8 @@ public class DeWacClassificationApp {
 //		dataExtraction();
 //		createContexts();
 //		ambiguitiesFilter();
+		removeNamesFromAmbiguities();
+//		nameFinder();
 	}
 		
 	public static void vocExtraction() throws IOException{
@@ -201,7 +207,12 @@ public static void onlyVocExtraction() throws IOException{
 //		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
+		names.addAll(FileUtils.fileToList("output//stats//extractedNames.txt"));
 		names.addAll(FileUtils.fileToList("output//stats//DE-Ortsnamen.txt", "#"));
+		HashSet<String> nameSet = new HashSet<String>();
+		nameSet.addAll(names);
+		names.clear();
+		names.addAll(nameSet);
 		
 		Vocabulary namesVoc = new Vocabulary(names);
 		Vocabulary umlautNamesVoc = namesVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
@@ -213,6 +224,7 @@ public static void onlyVocExtraction() throws IOException{
 		}
 		Map<String, HashSet<String>> namesAmbiguities = transVoc.findAmbiguities(namesVoc);
 		System.out.println("Ambiguitäten in Namen: " + namesAmbiguities.size());
+		System.out.println(namesAmbiguities);
 		
 		List<String> umlautsInDewac = FileUtils.fileToList("output//stats//umlautsInDeWac.txt");
 		
@@ -225,13 +237,56 @@ public static void onlyVocExtraction() throws IOException{
 		System.out.println("Eigennamen mit Umlauten im Dewac: " + namesInDewac.size());
 		FileUtils.printList(namesInDewac, "output//stats//", "umlautNamesInDewac", ".txt");
 		
+		Set<String> allAmbiguities = new HashSet<String>();
+		for(String key : ambiguities.keySet()){
+			allAmbiguities.addAll(ambiguities.get(key));
+		}
+		System.out.println(allAmbiguities.size());
+		
 		int namesInAmbiguities = 0;
 		for(String name : names){
-			if(ambiguities.values().contains(name)){
+			if(allAmbiguities.contains(name)){
 				namesInAmbiguities++;
 			}
 		}
 		System.out.println(namesInAmbiguities + " bekannte Namen sind in den Dewac-Ambiguitäten.");	
+		
+	}
+	
+	public static void removeNamesFromAmbiguities() throws IOException{
+//		KeywordContexts contexts = new KeywordContexts();
+//		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
+		
+		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
+		names.addAll(FileUtils.fileToList("output//stats//extractedNames.txt"));
+		names.addAll(FileUtils.fileToList("output//stats//DE-Ortsnamen.txt", "#"));
+		HashSet<String> nameSet = new HashSet<String>();
+		nameSet.addAll(names);
+		names.clear();
+		names.addAll(nameSet);
+		
+		remainingAmbiguities.putAll(ambiguities);
+		System.out.println("Ambiguitäten inkl. Namen: " + remainingAmbiguities.size());
+		
+		List<String> removed = new ArrayList<String>();
+		
+		for(String name : names){
+			for(String key : ambiguities.keySet()){
+				if(ambiguities.get(key).contains(name)) {
+					System.out.println(name);
+					removed.add(name);
+					remainingAmbiguities.remove(key);
+				} 
+			}
+		}
+		
+		Collections.sort(removed, Collator.getInstance(Locale.GERMAN));
+		FileUtils.printList(removed, "output//stats//", "removed", ".txt");
+		
+		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
+		FileUtils.printMap(remainingAmbiguities, "output//classification//", "DewacAmbigeWörterOhneNamen");
 		
 	}
 	
@@ -318,6 +373,55 @@ public static void onlyVocExtraction() throws IOException{
 		System.out.println(ambiguities.size());
 		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
 //		FileUtils.printMap(ambigeStopwords, "output//classification//", "DewacAmbigeStopwords");
+		
+	}
+	
+	public static void nameFinder() throws IOException{
+		
+		Set<String> names = new HashSet<String>();
+		
+		List<String> preNames = new ArrayList<String>();
+		preNames.add("Herr");
+		preNames.add("Frau");
+		preNames.add("Mr");
+		preNames.add("Mrs");
+		
+		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
+		
+		DewacSplitter dewac = new DewacSplitter("output//dewac//");
+		
+//		for(int i = 1000; i <=2000; i++){
+//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
+//		}
+		List<List<String>> allSentences = new ArrayList<List<String>>();
+		Vocabulary voc = new Vocabulary();
+		for(int i = 1000; i <=2000; i++){
+			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+			allSentences.addAll(tokenizedSentences);
+			for (List<String> list : tokenizedSentences) {
+				voc.addTokens(list);
+			}
+		}
+
+		for(List<String> sentence : allSentences){
+			for(String preName : preNames){
+				if(sentence.contains(preName)){
+					int index = sentence.indexOf(preName);
+					if(sentence.size()>index) {
+						String name = sentence.get(index+1);
+						if(name.matches("^[A-Z].*")){
+							System.out.println(name);
+							names.add(name);
+						}
+					}
+				}
+			}
+		}
+		
+		System.out.println(names);
+		System.out.println(names.size());
+		FileUtils.printSet(names, "output//stats//", "extractedNames");
+		
 		
 	}
 
