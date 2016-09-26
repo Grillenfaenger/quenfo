@@ -106,6 +106,10 @@ public class KeywordContexts {
 		return keywordContextsMap.get(keyword);
 	}
 	
+	public List<List<String>> getContextKV(String keyword){
+		return keywordContextsMap.get(replaceUmlaut(keyword));
+	}
+	
 	public KeywordContexts loadKeywordContextsFromFile(String path) throws IOException{
 		KeywordContexts keywordContexts = new KeywordContexts();
 		
@@ -131,6 +135,10 @@ public class KeywordContexts {
 			keywordContexts.addContexts(contexts[0], newContexts);	
 		}
 		return keywordContexts;
+	}
+	
+	public boolean containsKV (String word){
+		return keywordContextsMap.containsKey(replaceUmlaut(word)); 
 	}
 	
 	public File printKeywordContexts(String destPath, String fileName) throws IOException {
@@ -162,6 +170,18 @@ public class KeywordContexts {
 			count += entry.getValue().size();
 		}
 		System.out.println("Mehrdeutige Fälle insgesamt: " + count);
+	}
+	
+	private String replaceUmlaut(String umlautWord) {
+		String replacement = umlautWord;
+		replacement = replacement.replaceAll("Ä", "A");
+		replacement = replacement.replaceAll("ä", "a");
+		replacement = replacement.replaceAll("Ö", "O");
+		replacement = replacement.replaceAll("ö", "o");
+		replacement = replacement.replaceAll("Ü", "U");
+		replacement = replacement.replaceAll("ü", "u");
+		
+		return replacement;
 	}
 	
 
