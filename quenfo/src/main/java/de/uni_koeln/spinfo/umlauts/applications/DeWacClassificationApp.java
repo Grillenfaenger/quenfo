@@ -39,14 +39,15 @@ public class DeWacClassificationApp {
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
 //		onlyVocExtraction();
-		moreStatsAboutContexts();
+//		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
 //		createContexts();
 //		ambiguitiesFilter();
 //		removeNamesFromAmbiguities();
 //		nameFinder();
-		showContextsOfNames();
+//		showContextsOfNames();
+		removeNamesFromContexts();
 	}
 		
 	public static void vocExtraction() throws IOException{
@@ -259,6 +260,8 @@ public static void onlyVocExtraction() throws IOException{
 //		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
+		List<String> notRemove = FileUtils.fileToList("output//stats//betterNotRemove.txt");
+		
 		
 		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
 		names.addAll(FileUtils.fileToList("output//stats//extractedNames.txt"));
@@ -267,28 +270,53 @@ public static void onlyVocExtraction() throws IOException{
 		nameSet.addAll(names);
 		names.clear();
 		names.addAll(nameSet);
+		System.out.println(names.size());
+		names.removeAll(notRemove);
+		System.out.println(names.size());
+		Collections.sort(names, Collator.getInstance(Locale.GERMAN));
 		
 		remainingAmbiguities.putAll(ambiguities);
 		System.out.println("Ambiguitäten inkl. Namen: " + remainingAmbiguities.size());
 		
 		List<String> removed = new ArrayList<String>();
+		List<String> toRemove = new ArrayList<String>();
 		
 		for(String name : names){
 			for(String key : ambiguities.keySet()){
 				if(ambiguities.get(key).contains(name)) {
 					System.out.println(name);
 					removed.add(name);
+					toRemove.addAll(ambiguities.get(key));
 					remainingAmbiguities.remove(key);
 				} 
 			}
 		}
 		
-		Collections.sort(removed, Collator.getInstance(Locale.GERMAN));
-		FileUtils.printList(removed, "output//stats//", "removed", ".txt");
+//		Collections.sort(removed, Collator.getInstance(Locale.GERMAN));
+//		FileUtils.printList(removed, "output//stats//", "removed2", ".txt");
+		
+		Collections.sort(toRemove, Collator.getInstance(Locale.GERMAN));
+		FileUtils.printList(toRemove, "output//stats//", "toRemoveFromContexts", ".txt");
 		
 		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
-		FileUtils.printMap(remainingAmbiguities, "output//classification//", "DewacAmbigeWörterOhneNamen");
+//		FileUtils.printMap(remainingAmbiguities, "output//classification//", "DewacAmbigeWörterOhneNamen2");
 		
+	}
+	
+	public static void removeNamesFromContexts() throws IOException{
+		List<String> names = FileUtils.fileToList("output//stats//toRemoveFromContexts.txt");
+		KeywordContexts contexts = new KeywordContexts();
+		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacKontexte.txt");
+		System.out.println(contexts.keywordContextsMap.size());
+		System.out.println("names: " + names.size());
+		
+		for(String name : names){
+			
+			if(!contexts.keywordContextsMap.containsKey(name)) System.out.println(name);
+			contexts.keywordContextsMap.remove(name);
+		}
+		System.out.println(contexts.keywordContextsMap.size());
+		contexts.printKeywordContexts("output//classification//", "DewacAmbigSentencesWithoutNames");
 	}
 	
 	public static void showContextsOfNames() throws IOException{
@@ -311,15 +339,20 @@ public static void onlyVocExtraction() throws IOException{
 		for(String word : wordList){
 			if(contexts.keywordContextsMap.containsKey(word)){
 				List<List<String>> context = contexts.getContext(word);
+				if(context.size() < 11){
+					System.out.println(word + ": " + context.size() + " Kontexte");
+					for(List<String> ctxt : context){
+						System.out.println(ctxt);
+					}
+					
+				}
 				toPrint.addContexts(word, context);
 //				System.out.println(word);
 //				
-//				for(List<String> ctxt : context){
-//					System.out.println(ctxt);
-//				}
+//				
 			}
 		}
-		toPrint.printKeywordContexts("output//stats//", "ContextsOfSomeNames");
+//		toPrint.printKeywordContexts("output//stats//", "ContextsOfSomeNames");
 		
 	}
 	

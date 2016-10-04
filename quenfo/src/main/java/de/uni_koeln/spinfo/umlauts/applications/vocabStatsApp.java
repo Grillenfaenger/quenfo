@@ -25,6 +25,7 @@ public class vocabStatsApp {
 		SimpleTokenizer tokenizer = new SimpleTokenizer();
 		ArrayList<String> tokens = new ArrayList<String>();
 		
+		// Verbindung aufbauen und JobAds im Speicher halten
 		Connection connection = DBConnector.connect(dbPath);
 		List<JobAd> jobAds = DBConnector.getJobAdsExcept(connection, 2012);
 		for (JobAd jobAd : jobAds) {
