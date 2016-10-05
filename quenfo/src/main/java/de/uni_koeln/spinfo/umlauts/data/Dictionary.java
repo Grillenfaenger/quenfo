@@ -12,20 +12,27 @@ import java.util.TreeSet;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 
-public class TranslationVocabulary {
+public class Dictionary {
 	
-	public HashMap<String,String> vocabulary;
+	public HashMap<String,String> dictionary;
 	
-	public TranslationVocabulary() {
-		vocabulary = new HashMap<String, String>();
+	public Dictionary() {
+		dictionary = new HashMap<String, String>();
+	}
+	
+	public Dictionary(Vocabulary voc) {
+		dictionary = new HashMap<String, String>();
+		for (String key : voc.vocabulary.keySet()) {
+			addEntry(key);
+		}
 	}
 	
 	public void setVocabulary(Map<String, String> vocabulary) {
-		this.vocabulary = (HashMap<String,String>)vocabulary;
+		this.dictionary = (HashMap<String,String>)vocabulary;
 	}
 
 	public void addEntry(String umlautWord) {
-		vocabulary.put(replaceUmlaut(umlautWord), umlautWord);
+		dictionary.put(replaceUmlaut(umlautWord), umlautWord);
 	}
 	
 	public String replaceUmlaut(String umlautWord) {
@@ -50,7 +57,7 @@ public class TranslationVocabulary {
 		ArrayList<String> valueList = new ArrayList<String>();
 		
 		// Liste ambiger umlautbefreiter Wörter erzeugen
-		for(String key : vocabulary.keySet()){
+		for(String key : dictionary.keySet()){
 			if (!valueList.contains(key)) {
 				valueList.add(key);
 			} else {
@@ -62,13 +69,13 @@ public class TranslationVocabulary {
 //		System.out.println(ambige.size() + " Ambiguitäten zwischen umlautbefreiten Wörtern: " + ambige);
 		
 		// Die jeweiligen Lesweisen sichern
-		for(String key : vocabulary.keySet()){
+		for(String key : dictionary.keySet()){
 			if(ambige.contains(key)) {
 				if (ambiguities.containsKey(key)){
-					ambiguities.get(key).add(vocabulary.get(key));
+					ambiguities.get(key).add(dictionary.get(key));
 				} else {
 					HashSet<String> value = new HashSet<String>();
-					value.add(vocabulary.get(key));
+					value.add(dictionary.get(key));
 					ambiguities.put(key, value);
 				}
 			}
@@ -77,15 +84,15 @@ public class TranslationVocabulary {
 		
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
-		for(String key : vocabulary.keySet()){
+		for(String key : dictionary.keySet()){
 			if(referenceVoc.vocabulary.containsKey(key)) {
 				if (ambiguities.containsKey(key)){
 					ambiguities.get(key).add(key);
-					ambiguities.get(key).add(vocabulary.get(key));
+					ambiguities.get(key).add(dictionary.get(key));
 				} else {
 					HashSet<String> value = new HashSet<String>();
 					value.add(key);
-					value.add(vocabulary.get(key));
+					value.add(dictionary.get(key));
 					ambiguities.put(key, value);
 				}
 			}
@@ -113,7 +120,7 @@ public class TranslationVocabulary {
 	}
 	
 	public Map<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
-		HashMap<String, String> simpleReplacements = vocabulary;
+		HashMap<String, String> simpleReplacements = dictionary;
 		for(String word : ambiguousWords){
 			simpleReplacements.remove(word);
 		}
@@ -121,7 +128,7 @@ public class TranslationVocabulary {
 	}
 	
 	public void printToFile(String destPath, String fileName) throws IOException{
-		TreeMap<String, String> sortedVocabulary = new TreeMap<String,String>(vocabulary);
+		TreeMap<String, String> sortedVocabulary = new TreeMap<String,String>(dictionary);
 		FileUtils.printMap(sortedVocabulary, destPath, fileName);
 	}
 	

@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
-import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
 import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
@@ -45,11 +45,8 @@ public class vocabStatsApp {
 //		System.out.println(umlautVoc.vocabulary);
 		FileUtils.printMap(umlautVoc.vocabulary, "output//", "WörtermitUmlauten");
 		
-		TranslationVocabulary transVoc = new TranslationVocabulary();
-		for (String key : umlautVoc.vocabulary.keySet()) {
-			transVoc.addEntry(key);
-		}
-		System.out.println(transVoc.vocabulary);
+		Dictionary transVoc = new Dictionary(umlautVoc);
+		System.out.println(transVoc.dictionary);
 		
 		Vocabulary darkVowelVoc = withUmlauts.getAllByRegex(".*([AaOoUu]).*");
 		darkVowelVoc.generateNumberOfTokens();

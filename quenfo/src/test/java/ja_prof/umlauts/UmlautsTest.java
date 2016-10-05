@@ -25,7 +25,7 @@ import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
-import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
 import de.uni_koeln.spinfo.umlauts.preprocessing.IEPreprocessingWrapper;
@@ -151,7 +151,7 @@ public class UmlautsTest {
 				System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 				FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
 				
-				TranslationVocabulary transVoc = new TranslationVocabulary();
+				Dictionary transVoc = new Dictionary();
 				for (String key : umlautVoc.vocabulary.keySet()) {
 					transVoc.addEntry(key);
 				}
@@ -202,7 +202,7 @@ public class UmlautsTest {
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 		FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
 		
-		TranslationVocabulary transVoc = new TranslationVocabulary();
+		Dictionary transVoc = new Dictionary();
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}
@@ -236,7 +236,7 @@ public class UmlautsTest {
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 		FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlautenTest");
 		
-		TranslationVocabulary transVoc = new TranslationVocabulary();
+		Dictionary transVoc = new Dictionary();
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}

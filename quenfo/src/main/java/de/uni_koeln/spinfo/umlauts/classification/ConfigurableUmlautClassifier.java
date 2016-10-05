@@ -27,7 +27,7 @@ import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.data.Sentence;
-import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
@@ -77,7 +77,7 @@ public class ConfigurableUmlautClassifier {
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 		FileUtils.printMap(umlautVoc.vocabulary, "output//classification//", "WörtermitUmlauten");
 		
-		TranslationVocabulary transVoc = new TranslationVocabulary();
+		Dictionary transVoc = new Dictionary();
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}

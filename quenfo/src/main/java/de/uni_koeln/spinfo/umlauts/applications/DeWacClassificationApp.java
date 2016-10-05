@@ -22,7 +22,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
 import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
-import de.uni_koeln.spinfo.umlauts.data.TranslationVocabulary;
+import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dewag.DewacSplitter;
@@ -47,7 +47,8 @@ public class DeWacClassificationApp {
 //		removeNamesFromAmbiguities();
 //		nameFinder();
 //		showContextsOfNames();
-		removeNamesFromContexts();
+//		removeNamesFromContexts();
+		createFinalNamesList();
 	}
 		
 	public static void vocExtraction() throws IOException{
@@ -90,7 +91,7 @@ public class DeWacClassificationApp {
 		System.out.println("Wörter mit dunklem Vokal: " + darkVowelVoc.getNumberOfTokens());
 		System.out.println("Types mit dunklem Vokal: " + darkVowelVoc.vocabulary.size());
 	
-		TranslationVocabulary transVoc = new TranslationVocabulary();
+		Dictionary transVoc = new Dictionary();
 		for (String key : umlautVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}
@@ -220,7 +221,7 @@ public static void onlyVocExtraction() throws IOException{
 		Vocabulary umlautNamesVoc = namesVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
 		System.out.println("Namen mit Umlauten: " + umlautNamesVoc.vocabulary.size());
 		
-		TranslationVocabulary transVoc = new TranslationVocabulary();
+		Dictionary transVoc = new Dictionary();
 		for (String key : umlautNamesVoc.vocabulary.keySet()) {
 			transVoc.addEntry(key);
 		}
@@ -301,6 +302,22 @@ public static void onlyVocExtraction() throws IOException{
 		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
 //		FileUtils.printMap(remainingAmbiguities, "output//classification//", "DewacAmbigeWörterOhneNamen2");
 		
+	}
+	
+	public static void createFinalNamesList() throws IOException{
+		List<String> notRemove = FileUtils.fileToList("output//stats//betterNotRemove.txt");
+		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
+		names.addAll(FileUtils.fileToList("output//stats//extractedNames.txt"));
+		names.addAll(FileUtils.fileToList("output//stats//DE-Ortsnamen.txt", "#"));
+		HashSet<String> nameSet = new HashSet<String>();
+		nameSet.addAll(names);
+		names.clear();
+		names.addAll(nameSet);
+		System.out.println(names.size());
+		names.removeAll(notRemove);
+		System.out.println(names.size());
+		Collections.sort(names, Collator.getInstance(Locale.GERMAN));
+		FileUtils.printList(names, "output//stats//", "finalNames", ".txt");
 	}
 	
 	public static void removeNamesFromContexts() throws IOException{
