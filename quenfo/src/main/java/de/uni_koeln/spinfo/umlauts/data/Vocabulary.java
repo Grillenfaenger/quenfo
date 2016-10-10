@@ -38,6 +38,10 @@ public class Vocabulary {
 		return numberOfTokens;
 	}
 	
+	public Integer getOccurenceOf(String word){
+		return vocabulary.get(word);
+	}
+	
 	public void generateNumberOfTokens() {
 		
 		int total = 0;

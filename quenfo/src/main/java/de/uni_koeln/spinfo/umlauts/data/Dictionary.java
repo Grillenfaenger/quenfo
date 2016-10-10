@@ -135,5 +135,51 @@ public class Dictionary {
 	public void loadTranslationVocabularyFromFile(String filePath) throws IOException{
 		setVocabulary(FileUtils.fileToMap(filePath));
 	}
+	
+	public HashMap<String,HashSet<String>> removeByProportion(Map<String, HashSet<String>> ambiguities, Vocabulary voc, double logRate) {
+		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
+		remainingAmbiguities.putAll(ambiguities);
+		
+		ArrayList<String> removed = new ArrayList<String>();
+		String removedInfo = null;
+		
+		for(String key : ambiguities.keySet()){
+			StringBuffer sb = new StringBuffer();
+			HashSet<String> variants = ambiguities.get(key);
+			if(variants.size() == 2){
+				ArrayList<Integer> occurences = new ArrayList<Integer>();
+				for(String var : variants){
+					int index = 0;
+					if(!dictionary.containsKey(var)){
+						index = 1;
+						sb.append(key+"("+voc.getOccurenceOf(key)+")"+", ");
+						sb.append(var+"("+voc.getOccurenceOf(var)+")");
+					}
+					occurences.add(index,voc.getOccurenceOf(var));	
+				}
+				double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
+				// Math.log(occurences.get(0)-occurences.get(1).doubleValue())
+				System.out.println(occurenceRatio);
+				
+				if(occurenceRatio < logRate*-1){
+					// aus den ambiguities herauslöschen
+					remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
+				} else if(occurenceRatio > logRate){
+					// aus dem Dict und aus den ambiguities löschen
+					dictionary.remove(key); // d. h. es wird nicht korrigiert
+					remainingAmbiguities.remove(key); // und nicht klassifiziert
+				} else {
+					dictionary.remove(key); // d. h. es wird klassifiziert
+				}
+				
+			}
+		}
+		
+		// TODO write decision-Algorithm
+		// remove or keep it in Dictionary?
+		
+		
+		return remainingAmbiguities;
+	}
 
 }
