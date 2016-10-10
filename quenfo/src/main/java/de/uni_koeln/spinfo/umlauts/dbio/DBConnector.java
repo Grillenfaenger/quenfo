@@ -517,6 +517,51 @@ public static KeywordContexts getKeywordContexts6(Connection connection, Set<Str
 	return kwCtxts;
 }
 
+public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<String> keywords, int notjahrgang, UmlautExperimentConfiguration config) throws SQLException{
+	
+	KeywordContexts kwCtxts = new KeywordContexts();
+	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
+	int occurences = 0;
+	JobAd jobAd;
+	IETokenizer ietokenizer = new IETokenizer();
+	
+	connection.setAutoCommit(false);
+	String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+notjahrgang+"') ";
+	Statement stmt = connection.createStatement();
+	ResultSet result = stmt.executeQuery(sql);
+
+	// für jede Anzeige
+	while(result.next()){
+//		System.out.println("\n=========\nnächste Anzeige\n=========\n");
+		jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
+		List<String> sentences = ietokenizer.splitIntoSentences(jobAd.getContent(), false);
+		for (String sentence : sentences){
+			List<String> tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
+			tokenizedSentences.add(tokenizedSentence);
+		}
+		
+		for(List<String> sentencetokens : tokenizedSentences){	
+			for (int i = 0; i < sentencetokens.size(); i++) {
+				String token = sentencetokens.get(i);
+				if(keywords.contains(token)){
+					occurences++;
+					if(config.getStoreFullSentences() == false){
+						List<String> context = getContext(i, sentencetokens, config);
+						kwCtxts.addContext(token, context);
+					} else {
+						kwCtxts.addContext(token, sentencetokens);
+					}
+				}
+			}
+		}	
+	}	
+	stmt.close();
+	connection.commit();
+			
+	System.out.println("getKeywordContextsBibb: " + occurences);
+	return kwCtxts;
+}
+
 /**
  * Returns contexts of keywords within the sentence of occurence.
  * @param connection

@@ -136,7 +136,7 @@ public class Dictionary {
 		setVocabulary(FileUtils.fileToMap(filePath));
 	}
 	
-	public HashMap<String,HashSet<String>> removeByProportion(Map<String, HashSet<String>> ambiguities, Vocabulary voc, double logRate) {
+	public HashMap<String,HashSet<String>> removeByProportion(Map<String, HashSet<String>> ambiguities, Vocabulary voc, double logRate) throws IOException {
 		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
 		remainingAmbiguities.putAll(ambiguities);
 		
@@ -144,6 +144,7 @@ public class Dictionary {
 		String removedInfo = null;
 		
 		for(String key : ambiguities.keySet()){
+			removedInfo = null;
 			StringBuffer sb = new StringBuffer();
 			HashSet<String> variants = ambiguities.get(key);
 			if(variants.size() == 2){
@@ -157,28 +158,33 @@ public class Dictionary {
 					}
 					occurences.add(index,voc.getOccurenceOf(var));	
 				}
-				double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
-				// Math.log(occurences.get(0)-occurences.get(1).doubleValue())
+//				double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
+				Integer difference = occurences.get(0)-occurences.get(1);
+				double occurenceRatio = Math.log(difference.doubleValue());
 				System.out.println(occurenceRatio);
 				
 				if(occurenceRatio < logRate*-1){
 					// aus den ambiguities herauslöschen
 					remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
+					sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
+					removedInfo = sb.toString();
 				} else if(occurenceRatio > logRate){
 					// aus dem Dict und aus den ambiguities löschen
 					dictionary.remove(key); // d. h. es wird nicht korrigiert
 					remainingAmbiguities.remove(key); // und nicht klassifiziert
+					sb.append(": "+occurenceRatio + dictionary.get(key)+ " wird nie korrigiert.");
+					removedInfo = sb.toString();
 				} else {
 					dictionary.remove(key); // d. h. es wird klassifiziert
 				}
-				
+			} else {
+				System.out.println(variants);
 			}
+			
 		}
-		
-		// TODO write decision-Algorithm
-		// remove or keep it in Dictionary?
-		
-		
+		if(removed != null){
+			FileUtils.printList(removed, "output//stats//", "decidedByRatio", ".txt");
+		}
 		return remainingAmbiguities;
 	}
 
