@@ -38,7 +38,7 @@ public class DeWacClassificationApp {
 	
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
-		onlyVocExtraction();
+//		onlyVocExtraction();
 //		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
@@ -62,12 +62,15 @@ public class DeWacClassificationApp {
 		}
 		voc.setVocabulary(vocabulary);
 		// load Dictionary
-		
+		Dictionary dict = new Dictionary();
+		dict.loadTranslationVocabularyFromFile("output//dewac//DewacDictionary.txt");
 		// load ambiguities
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		
-		// run RemoveByProportion
 		
+		ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
+		// run RemoveByProportion
+		dict.removeByProportion(ambiguities, voc, 2d);
 		
 		
 	}
@@ -84,7 +87,7 @@ public class DeWacClassificationApp {
 		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){
-			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//old//dewac//ofInterest"+i+".txt"));
 			allSentences.addAll(tokenizedSentences);
 			for (List<String> list : tokenizedSentences) {
 				voc.addTokens(list);
@@ -174,7 +177,7 @@ public static void onlyVocExtraction() throws IOException{
 		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){
-			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//ofInterest"+i+".txt"));
+			List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//old//dewac//ofInterest"+i+".txt"));
 			allSentences.addAll(tokenizedSentences);
 			for (List<String> list : tokenizedSentences) {
 				voc.addTokens(list);
@@ -200,6 +203,9 @@ public static void onlyVocExtraction() throws IOException{
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 		
 		FileUtils.printSet(umlautVoc.vocabulary.keySet(), "output//stats//", "umlautsInDeWac");
+		
+		Dictionary dict = new Dictionary(umlautVoc);
+		dict.printToFile("output//dewac//", "DewacDictionary");
 	}
 	
 	public static void statsAboutContexts() throws IOException{

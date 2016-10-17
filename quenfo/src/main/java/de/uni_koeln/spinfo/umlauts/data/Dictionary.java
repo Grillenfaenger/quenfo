@@ -158,7 +158,7 @@ public class Dictionary {
 			}
 		}
 		
-		FileUtils.printList(removed, "//output//stats", "removedNames", ".txt");
+		FileUtils.printList(removed, "output//stats//", "removedNames", ".txt");
 		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
 		
 		return remainingAmbiguities;
@@ -177,6 +177,8 @@ public class Dictionary {
 			HashSet<String> variants = ambiguities.get(key);
 			if(variants.size() == 2){
 				ArrayList<Integer> occurences = new ArrayList<Integer>();
+				occurences.add(0);
+				occurences.add(0);
 				for(String var : variants){
 					int index = 0;
 					if(!dictionary.containsKey(var)){
@@ -186,33 +188,44 @@ public class Dictionary {
 					}
 					occurences.add(index,voc.getOccurenceOf(var));	
 				}
-//				double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
-				Integer difference = occurences.get(0)-occurences.get(1);
-				double occurenceRatio = Math.log(difference.doubleValue());
-				System.out.println(occurenceRatio);
-				
-				if(occurenceRatio < logRate*-1){
-					// aus den ambiguities herauslöschen
-					remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
-					sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
-					removedInfo = sb.toString();
-				} else if(occurenceRatio > logRate){
-					// aus dem Dict und aus den ambiguities löschen
-					dictionary.remove(key); // d. h. es wird nicht korrigiert
-					remainingAmbiguities.remove(key); // und nicht klassifiziert
-					sb.append(": "+occurenceRatio + dictionary.get(key)+ " wird nie korrigiert.");
-					removedInfo = sb.toString();
+				if(!occurences.get(0).equals(occurences.get(1))){
+					double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
+//					Integer difference = occurences.get(0)-occurences.get(1);
+	//					double occurenceRatio = Math.log10(difference.doubleValue());
+	//					System.out.println(occurenceRatio);
+						
+						if(occurenceRatio < logRate*-1){
+							// aus den ambiguities herauslöschen
+							remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
+							sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
+							removedInfo = sb.toString();
+						} else if(occurenceRatio > logRate){
+							// aus dem Dict und aus den ambiguities löschen
+							dictionary.remove(key); // d. h. es wird nicht korrigiert
+							remainingAmbiguities.remove(key); // und nicht klassifiziert
+							sb.append(": "+occurenceRatio + dictionary.get(key)+ " wird nie korrigiert.");
+							removedInfo = sb.toString();
+						} else {
+							dictionary.remove(key); // d. h. es wird klassifiziert
+						}
 				} else {
+					// wenn es genau gleich viele Vorkommen gibt
+					System.out.println(variants + "werden klassifiziert");
 					dictionary.remove(key); // d. h. es wird klassifiziert
 				}
 			} else {
 				System.out.println(variants);
 			}
+			if(removedInfo != null){
+				removed.add(removedInfo);
+			}
 			
 		}
-		if(removed != null){
+		if(!removed.isEmpty()){
 			FileUtils.printList(removed, "output//stats//", "decidedByRatio", ".txt");
 		}
+		System.out.println("Es gibt " + ambiguities.size() + " Wortpaare.");
+		System.out.println(removed.size() + " Wortpaare wurden nun aufgrund ihres Verhältnisses bestimmt");
 		return remainingAmbiguities;
 	}
 
