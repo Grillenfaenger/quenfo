@@ -33,6 +33,10 @@ public class Vocabulary {
 		vocabulary = new HashMap<String,Integer>();
 	}
 	
+	public void setVocabulary(HashMap<String,Integer> vocabulary){
+		this.vocabulary = vocabulary; 
+	}
+	
 	public int getNumberOfTokens() {
 		generateNumberOfTokens();
 		return numberOfTokens;

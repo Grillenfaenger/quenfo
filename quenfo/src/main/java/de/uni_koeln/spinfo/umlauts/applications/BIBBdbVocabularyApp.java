@@ -99,7 +99,7 @@ public class BIBBdbVocabularyApp {
 		
 		// filter Ambiguities 
 			// if it is a name (from the names List)
-			ambiguities = removeNamesFromAmbiguities(ambiguities);
+			ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
 			// by Proportion
 			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
 		
@@ -115,8 +115,6 @@ public class BIBBdbVocabularyApp {
 		
 		// classifiy and correct ambiguous words
 	}
-		
-	
 
 	public static Vocabulary extractVocabulary(String dbPath, int excludeYear) throws ClassNotFoundException, SQLException{
 	
@@ -141,34 +139,4 @@ public class BIBBdbVocabularyApp {
 		
 		return fullVoc;
 	}
-	
-	private static HashMap<String,HashSet<String>> removeNamesFromAmbiguities(Map<String, HashSet<String>> ambiguities) throws IOException{
-
-		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
-		List<String> names = FileUtils.fileToList("output//stats//finalNames.txt");
-		
-		remainingAmbiguities.putAll(ambiguities);
-		System.out.println("Ambiguitäten inkl. Namen: " + remainingAmbiguities.size());
-		
-		List<String> removed = new ArrayList<String>();
-		List<String> toRemove = new ArrayList<String>();
-		
-		for(String name : names){
-			for(String key : ambiguities.keySet()){
-				if(ambiguities.get(key).contains(name)) {
-					System.out.println(name);
-					removed.add(name);
-					remainingAmbiguities.remove(key);
-				} 
-			}
-		}
-		
-		FileUtils.printList(removed, "//output//stats", "removedNames", ".txt");
-		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
-		
-		return remainingAmbiguities;
-	}
-	
-	
-	
 }

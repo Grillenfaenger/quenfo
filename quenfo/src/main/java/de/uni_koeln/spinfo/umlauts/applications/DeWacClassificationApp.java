@@ -38,7 +38,7 @@ public class DeWacClassificationApp {
 	
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
-//		onlyVocExtraction();
+		onlyVocExtraction();
 //		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
@@ -48,9 +48,30 @@ public class DeWacClassificationApp {
 //		nameFinder();
 //		showContextsOfNames();
 //		removeNamesFromContexts();
-		createFinalNamesList();
+//		createFinalNamesList();
+		decisionByRatioStats();
 	}
 		
+	private static void decisionByRatioStats() throws IOException {
+		// load voc
+		Vocabulary voc = new Vocabulary();
+		HashMap<String,String> loadVoc = FileUtils.fileToMap("output//stats//DewacVoc.txt");
+		HashMap<String,Integer> vocabulary = new HashMap<String,Integer>();
+		for(String key : loadVoc.keySet()){
+			vocabulary.put(key, Integer.valueOf(loadVoc.get(key)));
+		}
+		voc.setVocabulary(vocabulary);
+		// load Dictionary
+		
+		// load ambiguities
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+		
+		// run RemoveByProportion
+		
+		
+		
+	}
+
 	public static void vocExtraction() throws IOException{
 		
 		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
@@ -170,6 +191,8 @@ public static void onlyVocExtraction() throws IOException{
 		
 		System.out.println("Tokens: " + voc.getNumberOfTokens());
 		System.out.println("Types: " + voc.vocabulary.size());
+		
+		FileUtils.printMap(voc.vocabulary, "output//stats//", "DewacVoc");
 		
 		
 		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
