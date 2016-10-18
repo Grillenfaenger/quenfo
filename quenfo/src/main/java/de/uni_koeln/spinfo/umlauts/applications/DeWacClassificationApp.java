@@ -70,7 +70,7 @@ public class DeWacClassificationApp {
 		
 		ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
 		// run RemoveByProportion
-		dict.removeByProportion(ambiguities, voc, 2d);
+		dict.removeByProportion(ambiguities, voc, 1d);
 		
 		
 	}

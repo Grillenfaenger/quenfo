@@ -160,6 +160,7 @@ public class Dictionary {
 		
 		FileUtils.printList(removed, "output//stats//", "removedNames", ".txt");
 		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
+		System.out.println("Namen: " + removed.size());
 		
 		return remainingAmbiguities;
 	}
@@ -170,26 +171,33 @@ public class Dictionary {
 		
 		ArrayList<String> removed = new ArrayList<String>();
 		String removedInfo = null;
+		StringBuffer sb = null;
 		
 		for(String key : ambiguities.keySet()){
 			removedInfo = null;
-			StringBuffer sb = new StringBuffer();
+			sb = new StringBuffer();
 			HashSet<String> variants = ambiguities.get(key);
 			if(variants.size() == 2){
-				ArrayList<Integer> occurences = new ArrayList<Integer>();
-				occurences.add(0);
-				occurences.add(0);
+				Integer[] occurences = new Integer[2];
+				String without = key;
+				String with = null;
 				for(String var : variants){
-					int index = 0;
 					if(!dictionary.containsKey(var)){
-						index = 1;
+						with = var;
 						sb.append(key+"("+voc.getOccurenceOf(key)+")"+", ");
 						sb.append(var+"("+voc.getOccurenceOf(var)+")");
+						break;
 					}
-					occurences.add(index,voc.getOccurenceOf(var));	
 				}
-				if(!occurences.get(0).equals(occurences.get(1))){
-					double occurenceRatio = Math.log(occurences.get(0).doubleValue()) - Math.log(occurences.get(1).doubleValue());
+				if(without == null){
+					System.out.println("Error: " + key);
+				}
+				occurences[0] = voc.getOccurenceOf(without);
+				occurences[1] = voc.getOccurenceOf(with);
+				
+				if(!occurences[0].equals(occurences[1])){
+//					double occurenceRatio = Math.log10(occurences.get(0).doubleValue()) - Math.log10(occurences.get(1).doubleValue());
+					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
 //					Integer difference = occurences.get(0)-occurences.get(1);
 	//					double occurenceRatio = Math.log10(difference.doubleValue());
 	//					System.out.println(occurenceRatio);
@@ -203,7 +211,7 @@ public class Dictionary {
 							// aus dem Dict und aus den ambiguities löschen
 							dictionary.remove(key); // d. h. es wird nicht korrigiert
 							remainingAmbiguities.remove(key); // und nicht klassifiziert
-							sb.append(": "+occurenceRatio + dictionary.get(key)+ " wird nie korrigiert.");
+							sb.append(": "+occurenceRatio + " "+ key+ " wird nie korrigiert.");
 							removedInfo = sb.toString();
 						} else {
 							dictionary.remove(key); // d. h. es wird klassifiziert
