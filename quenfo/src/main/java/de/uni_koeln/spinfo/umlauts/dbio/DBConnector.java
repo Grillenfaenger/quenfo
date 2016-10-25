@@ -59,6 +59,23 @@ public class DBConnector {
 		connection.commit();
 	}
 	
+	/**
+	 *creates an empty database (copy of jobAd_DB in BIBB)
+	 * @param connection 
+	 * @throws SQLException
+	 */
+	public static void createBIBBDBcorrected(Connection connection) throws SQLException {
+		System.out.println("create BIBB_DB");
+		connection.setAutoCommit(false);
+		Statement stmt = connection.createStatement();
+		String sql = "DROP TABLE IF EXISTS DL_ALL_Spinfo";
+		stmt.executeUpdate(sql);
+		sql = "CREATE TABLE DL_ALL_Spinfo (ID  INTEGER PRIMARY KEY AUTOINCREMENT, OrigID INT NOT NULL, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT, CORRECTED TEXT)";
+		stmt.executeUpdate(sql);
+		stmt.close();
+		connection.commit();
+	}
+	
 	
 	
 	/**

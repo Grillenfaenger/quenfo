@@ -3,6 +3,7 @@ package de.uni_koeln.spinfo.umlauts.applications;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -42,6 +43,8 @@ import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 public class BIBBdbVocabularyApp {
 	
 		private static String dbPath = "umlaute_db.db";	
+		private static String intermediateDbPath = "inter_db.db";
+		private static String correctedDbPath = "corrected_db.db";
 		private static Vocabulary fullVoc;
 		private static Map<String, HashSet<String>> ambiguities;
 		private static Dictionary dict;
@@ -113,6 +116,8 @@ public class BIBBdbVocabularyApp {
 			// by Proportion
 			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
 		
+		// for statistics: comparision between BiBB and sDewac Vocabulary
+		compareVocabulary();
 			
 		// get Contexts
 		Connection connection = DBConnector.connect(dbPath);
@@ -122,19 +127,35 @@ public class BIBBdbVocabularyApp {
 		contexts.printKeywordContexts("output//classification//", "AmbigSentences");
 		
 		// create outputDB
-		Connection intermediateDB = DBConnector.connect(outputDbPath);
+		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
+		DBConnector.createBIBBDBcorrected(intermediateDB);
 		// TODO: set up output db
 		
 		// correct unambiguous words
 		correctUnabiguousWords(2012, intermediateDB);
 		
-		Connection correctedDB = DBConnector.connect(outputDbPath);
+		Connection correctedDB = DBConnector.connect(correctedDbPath);
+		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		correctAmbiguousWords(2012, intermediateDB, correctedDB, contexts);
+		correctAmbiguousWords(2012, intermediateDB, correctedDB, contexts, expConfig);
 	}
 
-	private static void correctAmbiguousWords(int year, Connection input, Connection output, KeywordContexts keywordContexts, UmlautExperimentConfiguration config) throws SQLException, IOException {
+	private static void compareVocabulary() {
+		
+		// load sDewac Vocabulary
+		// load sDewac ambiguities
+		
+		// work with copies!!! deleteAll??
+		
+		// compare
+		// when in both, delete in both
+		// only in BiBB
+		// only in sDewac
+		
+	}
+
+	private static void correctAmbiguousWords(int year, Connection input, Connection dbOut, KeywordContexts keywordContexts, UmlautExperimentConfiguration config) throws SQLException, IOException {
 		IETokenizer tokenizer = new IETokenizer();
 		Map<String, Model> models= new HashMap<String, Model>();
 		Map<ClassifyUnit, boolean[]> allClassified = new HashMap<ClassifyUnit, boolean[]>();
@@ -165,6 +186,9 @@ public class BIBBdbVocabularyApp {
 			Model model = jobs.getNewModelForClassifier(trainingData, config);
 			models.put(entry.getKey(), model);
 		}
+		
+		dbOut.setAutoCommit(false);
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		// Verbindung zur Datenbank aufbauen und JobAds abrufen
 		input.setAutoCommit(false);
@@ -220,10 +244,17 @@ public class BIBBdbVocabularyApp {
 					}
 				}
 			}
-			jobAd.replaceContent(buf.toString());
-			// in neue Datenbank schreiben
-			//TODO
+			outPStmt.setInt(1, jobAd.getId());
+			outPStmt.setInt(2, jobAd.getZeilennummer());
+			outPStmt.setInt(3, jobAd.getJahrgang());
+			outPStmt.setString(4, jobAd.getContent());
+			outPStmt.setString(5, buf.toString());
+			outPStmt.executeUpdate();
+			
 		}
+		outPStmt.close();
+		dbOut.commit();
+		dbOut.close();
 	}
 
 	private static void correctUnabiguousWords(int year, Connection dbOut) throws ClassNotFoundException, SQLException {
@@ -231,6 +262,9 @@ public class BIBBdbVocabularyApp {
 		
 		Connection inputConnection = DBConnector.connect(dbPath);
 		inputConnection.setAutoCommit(false);
+		
+		dbOut.setAutoCommit(false);
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		
 		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
@@ -263,10 +297,19 @@ public class BIBBdbVocabularyApp {
 					}
 				}
 			}
-			jobAd.replaceContent(buf.toString());
+			//jobAd.replaceContent(buf.toString());
 			// korrigierte Stellenanzeige in neue Datenbank schreiben
+			outPStmt.setInt(1, jobAd.getId());
+			outPStmt.setInt(2, jobAd.getZeilennummer());
+			outPStmt.setInt(3, jobAd.getJahrgang());
+			outPStmt.setString(4, jobAd.getContent());
+			outPStmt.setString(5, buf.toString());
+			outPStmt.executeUpdate();
 			
 		}
+		outPStmt.close();
+		dbOut.commit();
+		dbOut.close();
 		
 		
 	}
