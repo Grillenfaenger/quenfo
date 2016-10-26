@@ -89,6 +89,19 @@ public class Vocabulary {
 		FileUtils.printMap(mapToReturn, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
 	}
 	
+	public void saveVocabularyToFile(String destPath, String fileName) throws IOException{
+		FileUtils.printMap(vocabulary, destPath, fileName);
+	}
+	
+	public void loadVocabularyFromFile(String filePath) throws IOException{
+		HashMap<String, String> stringMap  = FileUtils.fileToMap(filePath);
+		HashMap<String,Integer> tempVoc = new HashMap<String, Integer>();
+		for(Entry<String,String> entry : stringMap.entrySet()){
+			tempVoc.put(entry.getKey(), Integer.parseInt(entry.getValue()));
+		}
+		setVocabulary(tempVoc);
+	}
+	
 
 	
 	

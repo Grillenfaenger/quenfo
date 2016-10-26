@@ -38,7 +38,7 @@ public class DeWacClassificationApp {
 	
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
-//		onlyVocExtraction();
+		onlyVocExtraction();
 //		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
@@ -49,7 +49,7 @@ public class DeWacClassificationApp {
 //		showContextsOfNames();
 //		removeNamesFromContexts();
 //		createFinalNamesList();
-		decisionByRatioStats();
+//		decisionByRatioStats();
 	}
 		
 	private static void decisionByRatioStats() throws IOException {
@@ -195,14 +195,17 @@ public static void onlyVocExtraction() throws IOException{
 		System.out.println("Tokens: " + voc.getNumberOfTokens());
 		System.out.println("Types: " + voc.vocabulary.size());
 		
-		FileUtils.printMap(voc.vocabulary, "output//stats//", "DewacVoc");
+		TreeMap<String,Integer> sortedVoc = new TreeMap<String,Integer>(Collator.getInstance(Locale.GERMAN));
+		sortedVoc.putAll(voc.vocabulary);
+		
+		FileUtils.printMap(sortedVoc, "output//stats//", "DewacVoc");
 		
 		
 		Vocabulary umlautVoc = voc.getAllByRegex(".*([ÄäÖöÜü]).*");
 		System.out.println("Token mit Umlaut: " + umlautVoc.getNumberOfTokens());
 		System.out.println("Types mit Umlaut: " + umlautVoc.vocabulary.size());
 		
-		FileUtils.printSet(umlautVoc.vocabulary.keySet(), "output//stats//", "umlautsInDeWac");
+		FileUtils.printSet(umlautVoc.vocabulary.keySet(), "output//dewac//", "umlautsInDeWac");
 		
 		Dictionary dict = new Dictionary(umlautVoc);
 		dict.printToFile("output//dewac//", "DewacDictionary");

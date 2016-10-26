@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
@@ -48,34 +49,35 @@ public class BIBBdbVocabularyApp {
 		private static Vocabulary fullVoc;
 		private static Map<String, HashSet<String>> ambiguities;
 		private static Dictionary dict;
+		private static KeywordContexts contexts;
 		
+		private static UmlautExperimentConfiguration expConfig;
+		private static int excludeYear = 2012;
 		
-		
-	
 	
 	public static void main() throws ClassNotFoundException, SQLException, IOException{
 		
 		// /////////////////////////////////////////////
-				// /////experiment parameters
-				// /////////////////////////////////////////////
-				
-				
-				boolean preClassify = false;
-				File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
-				int knnValue = 3;
-				boolean ignoreStopwords = false;
-				boolean normalizeInput = false;
-				boolean useStemmer = false;
-				boolean suffixTrees = false;
-				int[] nGrams = null; //new int[]{3,4};
-				int miScoredFeaturesPerClass = 0;
-				Distance distance = Distance.EUKLID;
-				ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
-				AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
-				
-				// ///////////////////////////////////////////////
-				// ////////END///
-				// //////////////////////////////////////////////
+		// /////experiment parameters
+		// /////////////////////////////////////////////
+		
+		
+		boolean preClassify = false;
+		File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
+		int knnValue = 3;
+		boolean ignoreStopwords = false;
+		boolean normalizeInput = false;
+		boolean useStemmer = false;
+		boolean suffixTrees = false;
+		int[] nGrams = null; //new int[]{3,4};
+		int miScoredFeaturesPerClass = 0;
+		Distance distance = Distance.EUKLID;
+		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
+		AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
+		
+		// ///////////////////////////////////////////////
+		// ////////END///
+		// //////////////////////////////////////////////
 		
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
 				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,
@@ -84,8 +86,41 @@ public class BIBBdbVocabularyApp {
 				quantifier, classifier, null, "umlauts/classification/output", false, 3,3);
 		
 		
-		int excludeYear = 2012;
+
+		buildDictionary();
 		
+		// for statistics: comparision between BiBB and sDewac Vocabulary
+		compareVocabulary();
+		
+		getContexts();
+		
+		
+		// create outputDB
+		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
+		DBConnector.createBIBBDBcorrected(intermediateDB);
+		// TODO: set up output db
+		
+		// correct unambiguous words
+		correctUnabiguousWords(2012, intermediateDB);
+		
+		Connection correctedDB = DBConnector.connect(correctedDbPath);
+		DBConnector.createBIBBDBcorrected(correctedDB);
+		
+		// classifiy and correct ambiguous words
+		correctAmbiguousWords(2012, intermediateDB, correctedDB, contexts, expConfig);
+	}
+
+	private static void getContexts() throws ClassNotFoundException, SQLException, IOException {
+		// get Contexts
+				Connection connection = DBConnector.connect(dbPath);
+				KeywordContexts contexts = new KeywordContexts();
+				contexts = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
+				
+				contexts.printKeywordContexts("output//classification//", "AmbigSentences");
+		
+	}
+
+	private static void buildDictionary() throws ClassNotFoundException, SQLException, IOException {
 		// extract Vocabulary
 		fullVoc = extractVocabulary(dbPath, excludeYear);
 		System.out.println("Tokens: " + fullVoc.getNumberOfTokens());
@@ -116,44 +151,36 @@ public class BIBBdbVocabularyApp {
 			// by Proportion
 			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
 		
-		// for statistics: comparision between BiBB and sDewac Vocabulary
-		compareVocabulary();
-			
-		// get Contexts
-		Connection connection = DBConnector.connect(dbPath);
-		KeywordContexts contexts = new KeywordContexts();
-		contexts = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
-		
-		contexts.printKeywordContexts("output//classification//", "AmbigSentences");
-		
-		// create outputDB
-		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
-		DBConnector.createBIBBDBcorrected(intermediateDB);
-		// TODO: set up output db
-		
-		// correct unambiguous words
-		correctUnabiguousWords(2012, intermediateDB);
-		
-		Connection correctedDB = DBConnector.connect(correctedDbPath);
-		DBConnector.createBIBBDBcorrected(correctedDB);
-		
-		// classifiy and correct ambiguous words
-		correctAmbiguousWords(2012, intermediateDB, correctedDB, contexts, expConfig);
 	}
 
-	private static void compareVocabulary() {
+	private static void compareVocabulary() throws IOException {
 		
-		// load sDewac Vocabulary
+		// load sDewac Dictionary
+		
 		// load sDewac ambiguities
+		HashMap<String, HashSet<String>> dewacAmbiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		
 		// work with copies!!! deleteAll??
+		HashMap<String, HashSet<String>> ambiguitiesCopy = new HashMap<String, HashSet<String>>();
+		ambiguitiesCopy.putAll(ambiguities);
 		
-		// compare
-		// when in both, delete in both
-		// only in BiBB
-		// only in sDewac
+		System.out.println("Ambige Wörter im sDewac-Korpus: " + dewacAmbiguities.size());
+		System.out.println("Ambige Wörter in der Datenbank: " + ambiguitiesCopy.size());
+		
+		Set<String> dewacKeyset = dewacAmbiguities.keySet();
+		
+		for(String key : dewacKeyset){
+			if(ambiguitiesCopy.containsKey(key)){
+				ambiguitiesCopy.remove(key);
+				dewacAmbiguities.remove(key);
+			}	
+		}
+		
+		System.out.println("Einzigartige ambige Wörter im sDewac-Korpus: " + dewacAmbiguities.size());
+		System.out.println("Einzigartige ambige Wörter in der Datenbank: " + ambiguitiesCopy.size());
 		
 	}
+	
 
 	private static void correctAmbiguousWords(int year, Connection input, Connection dbOut, KeywordContexts keywordContexts, UmlautExperimentConfiguration config) throws SQLException, IOException {
 		IETokenizer tokenizer = new IETokenizer();
