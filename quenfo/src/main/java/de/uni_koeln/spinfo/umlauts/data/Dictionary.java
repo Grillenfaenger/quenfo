@@ -28,12 +28,16 @@ public class Dictionary {
 		}
 	}
 	
-	public void setVocabulary(Map<String, String> vocabulary) {
+	public void setDictionary(Map<String, String> vocabulary) {
 		this.dictionary = (HashMap<String,String>)vocabulary;
 	}
-
+	
 	public void addEntry(String umlautWord) {
 		dictionary.put(replaceUmlaut(umlautWord), umlautWord);
+	}
+	
+	public void addEntries(Map<String, String> dict){
+		dictionary.putAll(dict);
 	}
 	
 	public String replaceUmlaut(String umlautWord) {
@@ -133,8 +137,8 @@ public class Dictionary {
 		FileUtils.printMap(sortedVocabulary, destPath, fileName);
 	}
 	
-	public void loadTranslationVocabularyFromFile(String filePath) throws IOException{
-		setVocabulary(FileUtils.fileToMap(filePath));
+	public void loadDictionary(String filePath) throws IOException{
+		setDictionary(FileUtils.fileToMap(filePath));
 	}
 	
 	public HashMap<String,HashSet<String>> removeNamesFromAmbiguities(Map<String, HashSet<String>> ambiguities) throws IOException{

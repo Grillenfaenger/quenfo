@@ -539,6 +539,7 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 	KeywordContexts kwCtxts = new KeywordContexts();
 	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
 	int occurences = 0;
+	boolean storeFullSentences = config.getStoreFullSentences();
 	JobAd jobAd;
 	IETokenizer ietokenizer = new IETokenizer();
 	
@@ -550,7 +551,7 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 	// für jede Anzeige
 	while(result.next()){
 //		System.out.println("\n=========\nnächste Anzeige\n=========\n");
-		jobAd = new JobAd(result.getInt(1), result.getInt(2), result.getString(3));
+		jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
 		List<String> sentences = ietokenizer.splitIntoSentences(jobAd.getContent(), false);
 		for (String sentence : sentences){
 			List<String> tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
@@ -562,7 +563,7 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 				String token = sentencetokens.get(i);
 				if(keywords.contains(token)){
 					occurences++;
-					if(config.getStoreFullSentences() == false){
+					if(storeFullSentences){
 						List<String> context = getContext(i, sentencetokens, config);
 						kwCtxts.addContext(token, context);
 					} else {

@@ -63,7 +63,7 @@ public class DeWacClassificationApp {
 		voc.setVocabulary(vocabulary);
 		// load Dictionary
 		Dictionary dict = new Dictionary();
-		dict.loadTranslationVocabularyFromFile("output//dewac//DewacDictionary.txt");
+		dict.loadDictionary("output//dewac//DewacDictionary.txt");
 		// load ambiguities
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		
