@@ -29,13 +29,13 @@ public class KeywordContexts {
 	
 
 	public KeywordContexts() {
-		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		this.keywordContextsMap = new HashMap<String, List<List<String>>>();
 		this.config = new UmlautExperimentConfiguration(null, null, null, null, null, true, 3, 3);
 	}
 	
 	private KeywordContexts(
 			UmlautExperimentConfiguration config) {
-		this.keywordContextsMap = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		this.keywordContextsMap = new HashMap<String, List<List<String>>>();
 		this.config = config;
 	}
 	
@@ -145,8 +145,11 @@ public class KeywordContexts {
 
 		File file = new File(destPath + fileName /*+ getISO8601StringForCurrentDate() */+ ".txt");
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
+		
+		TreeMap<String, List<List<String>>> toPrint = new TreeMap<String, List<List<String>>>(Collator.getInstance(Locale.GERMAN));
+		toPrint.putAll(keywordContextsMap);
 
-		for (Entry<String, List<List<String>>> entry : keywordContextsMap.entrySet()) {
+		for (Entry<String, List<List<String>>> entry : toPrint.entrySet()) {
 			out.append(entry.getKey());
 			out.append("\n");
 			

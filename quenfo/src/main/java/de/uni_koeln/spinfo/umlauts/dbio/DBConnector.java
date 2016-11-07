@@ -563,7 +563,7 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 				String token = sentencetokens.get(i);
 				if(keywords.contains(token)){
 					occurences++;
-					if(storeFullSentences){
+					if(!storeFullSentences){
 						List<String> context = getContext(i, sentencetokens, config);
 						kwCtxts.addContext(token, context);
 					} else {
