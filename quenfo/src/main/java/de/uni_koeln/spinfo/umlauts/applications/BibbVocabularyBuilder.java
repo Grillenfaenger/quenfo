@@ -5,12 +5,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
@@ -59,19 +61,21 @@ public class BibbVocabularyBuilder {
 		// create Dictionary for correcting
 		dict = new Dictionary(umlautVoc);
 		
-		dict.printToFile("output//bibb//", "bibbDictionary.txt");
+		dict.printToFile("output//bibb//", "bibbDictionary");
 		return dict;
 	}
 	
 	public Map<String, HashSet<String>> findAmbiguities() throws IOException{
 		ambiguities = dict.findAmbiguities(fullVoc);
-		FileUtils.printMap(ambiguities, "output//", "allAmbiguities");
+		FileUtils.printMap(ambiguities, "output//bibb//", "allAmbiguities");
 		
 		// filter Ambiguities 
 			// if it is a name (from the names List)
 			ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
 			// by Proportion
 			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
+			
+			FileUtils.printMap(ambiguities, "output//bibb//", "bibbFilteredAmbiguities");
 			
 		return ambiguities;
 	}
@@ -80,7 +84,8 @@ public class BibbVocabularyBuilder {
 		
 		Vocabulary voc = new Vocabulary();
 		
-		SimpleTokenizer tokenizer = new SimpleTokenizer();
+//		SimpleTokenizer tokenizer = new SimpleTokenizer();
+		IETokenizer ietokenizer = new IETokenizer();
 		Connection connection = DBConnector.connect(dbPath);
 		
 		connection.setAutoCommit(false);
@@ -90,8 +95,8 @@ public class BibbVocabularyBuilder {
 		JobAd jobAd = null;
 		while(result.next()){
 			jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
-			List<String> tokens = tokenizer.tokenize(jobAd.getContent());
-			voc.addTokens(tokens);
+			String[] tokens = ietokenizer.tokenizeSentence(jobAd.getContent());
+			voc.addTokens(Arrays.asList(tokens));
 		}
 		stmt.close();
 		connection.commit();
@@ -166,16 +171,16 @@ public class BibbVocabularyBuilder {
 			
 			for(String key : cont.keywordContextsMap.keySet()){
 				int size = cont.keywordContextsMap.get(key).size();
-				if(size < 50){
-					if(dewacContexts.keywordContextsMap.get(key).size() > 49){
-						cont.addContexts(key, dewacContexts.getContext(key).subList(0, 49-size));
+				if(size < 100){
+					if(dewacContexts.keywordContextsMap.get(key).size() > 100){
+						cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
 					} else {
 						cont.addContexts(key, dewacContexts.getContext(key));
 					}
 				}
 			}
 		}
-		cont.printKeywordContexts("output//bibb//", "BibbKontexte.txt");
+		cont.printKeywordContexts("output//bibb//", "BibbKontexte");
 		return cont;
 	}
 	

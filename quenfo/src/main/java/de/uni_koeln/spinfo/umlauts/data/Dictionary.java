@@ -48,7 +48,7 @@ public class Dictionary {
 		replacement = replacement.replaceAll("ö", "o");
 		replacement = replacement.replaceAll("Ü", "U");
 		replacement = replacement.replaceAll("ü", "u");
-//		replacement = replacement.replaceAll("ß", "ss");
+		replacement = replacement.replaceAll("ß", "ss");
 		
 		return replacement;
 	}

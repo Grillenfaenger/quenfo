@@ -537,7 +537,6 @@ public static KeywordContexts getKeywordContexts6(Connection connection, Set<Str
 public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<String> keywords, int notjahrgang, UmlautExperimentConfiguration config) throws SQLException{
 	
 	KeywordContexts kwCtxts = new KeywordContexts();
-	List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
 	int occurences = 0;
 	boolean storeFullSentences = config.getStoreFullSentences();
 	JobAd jobAd;
@@ -553,14 +552,18 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 //		System.out.println("\n=========\nnächste Anzeige\n=========\n");
 		jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
 		List<String> sentences = ietokenizer.splitIntoSentences(jobAd.getContent(), false);
+		List<List<String>> tokenizedSentences = new ArrayList<List<String>>(); 
+		
 		for (String sentence : sentences){
 			List<String> tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
-			tokenizedSentences.add(tokenizedSentence);
+			tokenizedSentences.add(tokenizedSentence);	
 		}
-		
 		for(List<String> sentencetokens : tokenizedSentences){	
 			for (int i = 0; i < sentencetokens.size(); i++) {
 				String token = sentencetokens.get(i);
+				if(token.equals("Fügen")){
+					System.out.println("Fügen, Kontext: " + sentencetokens);
+				}
 				if(keywords.contains(token)){
 					occurences++;
 					if(!storeFullSentences){

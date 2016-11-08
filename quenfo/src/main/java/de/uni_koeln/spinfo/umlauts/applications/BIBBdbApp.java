@@ -124,6 +124,7 @@ public class BIBBdbApp {
 		correctUnabiguousWords(dict,2012, dbPath,intermediateDB);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
+		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
@@ -141,7 +142,8 @@ public class BIBBdbApp {
 		for (Entry<String, HashSet<String>> entry : ambiguities.entrySet()) {
 			List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
 			String[] senses = entry.getValue().toArray(new String[entry.getValue().size()]);
-			for(String string : entry.getValue()){
+			HashSet<String> variants = entry.getValue();
+			for(String string : variants){
 				System.out.println("build model for " + entry.getKey());
 				System.out.println(entry.getValue());
 				List<List<String>> contexts = keywordContexts.getContext(string);

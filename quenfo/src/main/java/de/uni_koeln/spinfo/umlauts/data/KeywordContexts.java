@@ -77,7 +77,7 @@ public class KeywordContexts {
 	public void addContexts(String keyword, List<List<String>> newContexts){
 		if(keywordContextsMap.containsKey(keyword)){
 			List<List<String>> contexts = keywordContextsMap.get(keyword);
-			if(contexts.size() <= 100){
+			if(contexts.size() < 100){
 				contexts.addAll(newContexts);
 				keywordContextsMap.put(keyword, contexts);
 			}
