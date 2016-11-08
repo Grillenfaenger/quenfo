@@ -159,23 +159,25 @@ public class BibbVocabularyBuilder {
 
 	public KeywordContexts getContexts(boolean getContextsFromDewac) throws ClassNotFoundException, SQLException, IOException {
 		// get Contexts
-			Connection connection = DBConnector.connect(dbPath);
-			KeywordContexts cont = new KeywordContexts();
-			cont = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
-			
-			cont.printKeywordContexts("output//classification//", "AmbigSentences");
+		Connection connection = DBConnector.connect(dbPath);
+		KeywordContexts cont = new KeywordContexts();
+		cont = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
+		
+		cont.printKeywordContexts("output//classification//", "AmbigSentences");
 	
 		if(getContextsFromDewac){
 			KeywordContexts dewacContexts = new KeywordContexts();
-			dewacContexts.loadKeywordContextsFromFile("ouput//dewac//DewacKontexte.txt");
+			dewacContexts = dewacContexts.loadKeywordContextsFromFile("output//dewac//DewacKontexte.txt");
 			
 			for(String key : cont.keywordContextsMap.keySet()){
 				int size = cont.keywordContextsMap.get(key).size();
 				if(size < 100){
-					if(dewacContexts.keywordContextsMap.get(key).size() > 100){
-						cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
-					} else {
-						cont.addContexts(key, dewacContexts.getContext(key));
+					if(dewacContexts.keywordContextsMap.containsKey(key)){
+						if(dewacContexts.keywordContextsMap.get(key).size() > 100){
+							cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
+						} else {
+							cont.addContexts(key, dewacContexts.getContext(key));
+						}
 					}
 				}
 			}

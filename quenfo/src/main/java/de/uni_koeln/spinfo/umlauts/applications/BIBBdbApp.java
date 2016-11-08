@@ -113,7 +113,7 @@ public class BIBBdbApp {
 		vocBuilder.compareVocabulary(extendDictionary, extendAmbiguities);
 		
 		// extract contexts
-		boolean getContextsFromDewac = false;
+		boolean getContextsFromDewac = true;
 		contexts = vocBuilder.getContexts(getContextsFromDewac);
 		
 		// create outputDB
