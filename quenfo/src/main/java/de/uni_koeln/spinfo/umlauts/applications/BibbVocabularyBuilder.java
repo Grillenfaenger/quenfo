@@ -61,7 +61,6 @@ public class BibbVocabularyBuilder {
 		// create Dictionary for correcting
 		dict = new Dictionary(umlautVoc);
 		
-		dict.printToFile("output//bibb//", "bibbDictionary");
 		return dict;
 	}
 	

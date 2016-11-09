@@ -38,7 +38,7 @@ public class DeWacClassificationApp {
 	
 	public static void main(String[] args) throws IOException{
 //		vocExtraction();
-		onlyVocExtraction();
+//		onlyVocExtraction();
 //		moreStatsAboutContexts();
 //		sentenceExtraction();
 //		dataExtraction();
@@ -50,8 +50,46 @@ public class DeWacClassificationApp {
 //		removeNamesFromContexts();
 //		createFinalNamesList();
 //		decisionByRatioStats();
+		cleanDictionary();
 	}
 		
+	private static void cleanDictionary() throws IOException {
+		
+		//load
+		// load voc
+		Vocabulary voc = new Vocabulary();
+		HashMap<String,String> loadVoc = FileUtils.fileToMap("output//dewac//DewacVoc.txt");
+		HashMap<String,Integer> vocabulary = new HashMap<String,Integer>();
+		for(String key : loadVoc.keySet()){
+			vocabulary.put(key, Integer.valueOf(loadVoc.get(key)));
+		}
+		voc.setVocabulary(vocabulary);
+		// load Dictionary
+		Dictionary dict = new Dictionary();
+		dict.loadDictionary("output//dewac//DewacDictionary.txt");
+		// load ambiguities
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//dewac//DewacAmbigeWörter4.txt");
+		
+		
+		System.out.println("das: " + voc.getOccurenceOf("das"));
+		System.out.println("däs: " + voc.getOccurenceOf("däs"));
+		
+		System.out.println("das: " + ambiguities.get("das"));
+		
+		//clean
+		
+		System.out.println(dict.dictionary.size());
+		
+		dict.removeNamesFromAmbiguities(ambiguities);
+		dict.removeByProportion(ambiguities, voc, 1d);
+		
+		
+		System.out.println("das: " + dict.dictionary.get("das"));
+		
+		System.out.println(dict.dictionary.size());
+		dict.printToFile("output//dewac//", "dewacDictionary2");
+	}
+
 	private static void decisionByRatioStats() throws IOException {
 		// load voc
 		Vocabulary voc = new Vocabulary();

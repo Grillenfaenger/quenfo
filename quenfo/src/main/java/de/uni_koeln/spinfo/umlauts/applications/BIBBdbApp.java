@@ -104,13 +104,23 @@ public class BIBBdbApp {
 		// extract full Vocabulary and build Dictionary
 		dict = vocBuilder.buildDictionary();
 		
+		System.out.println("das: " + dict.dictionary.get("das"));
+		System.out.println("und: " + dict.dictionary.get("und"));
+		System.out.println("an: " + dict.dictionary.get("an"));
+		
 		// find ambiguities
 		ambiguities = vocBuilder.findAmbiguities();
+		
+		dict.printToFile("output//bibb//", "bibbDictionary");
 		
 		// for statistics: comparision between BiBB and sDewac Vocabulary
 		boolean extendDictionary = true;
 		boolean extendAmbiguities = false;
 		vocBuilder.compareVocabulary(extendDictionary, extendAmbiguities);
+		
+		System.out.println("das: " + dict.dictionary.get("das"));
+		System.out.println("und: " + dict.dictionary.get("und"));
+		System.out.println("an: " + dict.dictionary.get("an"));
 		
 		// extract contexts
 		boolean getContextsFromDewac = true;
@@ -237,6 +247,8 @@ public class BIBBdbApp {
 	private static void correctUnabiguousWords(Dictionary dict, int year, String dbIn, Connection dbOut) throws ClassNotFoundException, SQLException {
 		IETokenizer tokenizer = new IETokenizer();
 		
+		 System.out.println("das: " + dict.dictionary.get("das"));
+		
 		Connection inputConnection = DBConnector.connect(dbIn);
 		inputConnection.setAutoCommit(false);
 		
@@ -247,6 +259,8 @@ public class BIBBdbApp {
 		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 		Statement stmt = inputConnection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
+		
+		
 		
 		JobAd jobAd = null;
 		while(result.next()){
@@ -266,6 +280,7 @@ public class BIBBdbApp {
 					        int start = span.getStart();
 					        int end = span.getEnd();
 					        String replacement = dict.dictionary.get(occurence.getKey());
+					        System.out.println(occurence.getKey() + ": " + dict.dictionary.get(occurence.getKey()));
 					        
 					        buf.replace(start, end, replacement);
 					        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
