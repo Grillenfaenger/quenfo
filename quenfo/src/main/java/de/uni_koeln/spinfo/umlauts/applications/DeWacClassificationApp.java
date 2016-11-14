@@ -68,7 +68,7 @@ public class DeWacClassificationApp {
 		Dictionary dict = new Dictionary();
 		dict.loadDictionary("output//dewac//DewacDictionary.txt");
 		// load ambiguities
-		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//dewac//DewacAmbigeWörter4.txt");
+		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//dewac//DewacAmbiguities5.txt");
 		
 		
 		System.out.println("das: " + voc.getOccurenceOf("das"));
@@ -80,14 +80,16 @@ public class DeWacClassificationApp {
 		
 		System.out.println(dict.dictionary.size());
 		
-		dict.removeNamesFromAmbiguities(ambiguities);
-		dict.removeByProportion(ambiguities, voc, 1d);
+		ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
+		ambiguities = dict.removeByProportion(ambiguities, voc, 1d);
 		
 		
 		System.out.println("das: " + dict.dictionary.get("das"));
 		
 		System.out.println(dict.dictionary.size());
 		dict.printToFile("output//dewac//", "dewacDictionary2");
+		
+		FileUtils.printMap(ambiguities, "output//dewac//", "DewacAmbiguities6");
 	}
 
 	private static void decisionByRatioStats() throws IOException {
@@ -163,38 +165,41 @@ public class DeWacClassificationApp {
 		
 		ambiguities = transVoc.findAmbiguities(voc);
 		
+		// print Ambiguities!
+		FileUtils.printMap(ambiguities, "output//dewac//", "DewacAmbiguities5");
+		
 		List<String> ofInterest = new ArrayList<String>();
 		for(HashSet<String> set : ambiguities.values()){
 			for(String word : set){
 				ofInterest.add(word);
 			}
 		}
-		KeywordContexts contexts = new KeywordContexts();
-//		List<List<String>> ambigSentences = new ArrayList<List<String>>();
-		for(List<String> sentence : allSentences){
-			for(String word : sentence){
-				if(ofInterest.contains(word)){
-//					ambigSentences.add(sentence);
-					contexts.addContext(word, sentence);
-				}
-			}
-		}
-		contexts.printKeywordContexts("output//classification//", "DewacAmbigSentences");
-//		FileUtils.printListOfList(ambigSentences, "output//classification//", "DewacAmbigSentences");
-		
-//		// find Ambiguities which are rare
-//		int numberOfMinOccurences = 10;
-//		Map<String, Integer> lowFrequencyAmbig = new TreeMap<String, Integer>();
-//		for(String key : ambiguities.keySet()){
-//			for(String value : ambiguities.get(key)){
-//				if(voc.vocabulary.get(value)<=numberOfMinOccurences){
-//					lowFrequencyAmbig.put(value, voc.vocabulary.get(value));
+//		KeywordContexts contexts = new KeywordContexts();
+////		List<List<String>> ambigSentences = new ArrayList<List<String>>();
+//		for(List<String> sentence : allSentences){
+//			for(String word : sentence){
+//				if(ofInterest.contains(word)){
+////					ambigSentences.add(sentence);
+//					contexts.addContext(word, sentence);
 //				}
 //			}
 //		}
-//		FileUtils.printMap(lowFrequencyAmbig, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
-//		System.out.println("Ambiguities which occur less than" + " times: " + lowFrequencyAmbig.size());
-		
+//		contexts.printKeywordContexts("output//classification//", "DewacAmbigSentences");
+////		FileUtils.printListOfList(ambigSentences, "output//classification//", "DewacAmbigSentences");
+//		
+////		// find Ambiguities which are rare
+////		int numberOfMinOccurences = 10;
+////		Map<String, Integer> lowFrequencyAmbig = new TreeMap<String, Integer>();
+////		for(String key : ambiguities.keySet()){
+////			for(String value : ambiguities.get(key)){
+////				if(voc.vocabulary.get(value)<=numberOfMinOccurences){
+////					lowFrequencyAmbig.put(value, voc.vocabulary.get(value));
+////				}
+////			}
+////		}
+////		FileUtils.printMap(lowFrequencyAmbig, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
+////		System.out.println("Ambiguities which occur less than" + " times: " + lowFrequencyAmbig.size());
+//		
 		
 		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
 //		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
@@ -247,6 +252,8 @@ public static void onlyVocExtraction() throws IOException{
 		
 		Dictionary dict = new Dictionary(umlautVoc);
 		dict.printToFile("output//dewac//", "DewacDictionary");
+		
+		
 	}
 	
 	public static void statsAboutContexts() throws IOException{

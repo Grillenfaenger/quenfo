@@ -28,9 +28,9 @@ public class BibbVocabularyBuilder {
 	UmlautExperimentConfiguration expConfig;
 	int excludeYear;
 	
-	Vocabulary fullVoc;
-	Map<String, HashSet<String>> ambiguities;
-	Dictionary dict;
+	public Vocabulary fullVoc;
+	public Map<String, HashSet<String>> ambiguities;
+	public Dictionary dict;
 	//KeywordContexts contexts;
 	
 	public BibbVocabularyBuilder(String dbPath, UmlautExperimentConfiguration expConfig, int excludeYear){
@@ -68,9 +68,17 @@ public class BibbVocabularyBuilder {
 		ambiguities = dict.findAmbiguities(fullVoc);
 		FileUtils.printMap(ambiguities, "output//bibb//", "allAmbiguities");
 		
+		System.out.println(ambiguities.get("Noten"));
+		System.out.println(ambiguities.get("Hohe"));
+		System.out.println(ambiguities.get("Guter"));
+		
 		// filter Ambiguities 
 			// if it is a name (from the names List)
-			ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
+//			ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
+			
+			System.out.println(ambiguities.get("Noten"));
+			System.out.println(ambiguities.get("Hohe"));
+			System.out.println(ambiguities.get("Guter"));
 			// by Proportion
 			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
 			
@@ -101,7 +109,7 @@ public class BibbVocabularyBuilder {
 		connection.commit();
 		
 		fullVoc = voc;
-		voc.saveVocabularyToFile("output//bibb//", "bibbVocabulary.txt");
+		voc.saveVocabularyToFile("output//bibb//", "bibbVocabulary");
 		return voc;
 	}
 	
@@ -109,7 +117,7 @@ public class BibbVocabularyBuilder {
 		
 		// load sDewac Dictionary
 		Dictionary dewacDic = new Dictionary();
-		dewacDic.loadDictionary("output//dewac//DewacDictionary.txt");
+		dewacDic.loadDictionary("output//dewac//DewacDictionary2.txt");
 		
 		System.out.println("sDewac Dictionary: " + dewacDic.dictionary.size());
 		System.out.println("bibb Dictionary: " + dict.dictionary.size());
@@ -129,7 +137,7 @@ public class BibbVocabularyBuilder {
 		}
 		
 		// load sDewac ambiguities
-		HashMap<String, HashSet<String>> dewacAmbiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+		HashMap<String, HashSet<String>> dewacAmbiguities = FileUtils.fileToAmbiguities("output//dewac//DewacAmbiguities6.txt");
 		
 		// work with copies!!! deleteAll??
 		HashMap<String, HashSet<String>> ambiguitiesCopy = new HashMap<String, HashSet<String>>();

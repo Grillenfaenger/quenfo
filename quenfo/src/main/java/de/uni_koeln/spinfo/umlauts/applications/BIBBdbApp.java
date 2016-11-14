@@ -104,23 +104,39 @@ public class BIBBdbApp {
 		// extract full Vocabulary and build Dictionary
 		dict = vocBuilder.buildDictionary();
 		
-		System.out.println("das: " + dict.dictionary.get("das"));
-		System.out.println("und: " + dict.dictionary.get("und"));
-		System.out.println("an: " + dict.dictionary.get("an"));
+//		System.out.println("das: " + dict.dictionary.get("das"));
+//		System.out.println("und: " + dict.dictionary.get("und"));
+//		System.out.println("an: " + dict.dictionary.get("an"));
+		System.out.println("Noten: " + dict.dictionary.get("Noten"));
+		System.out.println("Hohe: " + dict.dictionary.get("Hohe"));
+		System.out.println("Guter: " + dict.dictionary.get("Guter"));
 		
 		// find ambiguities
 		ambiguities = vocBuilder.findAmbiguities();
+		dict = vocBuilder.dict;
+		
+		System.out.println(ambiguities.get("Noten"));
+		System.out.println(ambiguities.get("Hohe"));
+		System.out.println(ambiguities.get("Guter"));
+		
+		System.out.println("Noten: " + dict.dictionary.get("Noten"));
+		System.out.println("Hohe: " + dict.dictionary.get("Hohe"));
+		System.out.println("Guter: " + dict.dictionary.get("Guter"));
+		
+		FileUtils.printMap(ambiguities, "output//bibb//", "AmbiguitiesZwischenstand");
 		
 		dict.printToFile("output//bibb//", "bibbDictionary");
 		
 		// for statistics: comparision between BiBB and sDewac Vocabulary
-		boolean extendDictionary = true;
+		boolean extendDictionary = false;
 		boolean extendAmbiguities = false;
 		vocBuilder.compareVocabulary(extendDictionary, extendAmbiguities);
 		
-		System.out.println("das: " + dict.dictionary.get("das"));
-		System.out.println("und: " + dict.dictionary.get("und"));
-		System.out.println("an: " + dict.dictionary.get("an"));
+//		System.out.println("das: " + dict.dictionary.get("das"));
+//		System.out.println("und: " + dict.dictionary.get("und"));
+//		System.out.println("an: " + dict.dictionary.get("an"));
+		
+		
 		
 		// extract contexts
 		boolean getContextsFromDewac = true;
