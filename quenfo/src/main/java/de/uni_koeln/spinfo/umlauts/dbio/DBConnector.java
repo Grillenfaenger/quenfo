@@ -561,9 +561,6 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 		for(List<String> sentencetokens : tokenizedSentences){	
 			for (int i = 0; i < sentencetokens.size(); i++) {
 				String token = sentencetokens.get(i);
-				if(token.equals("Fügen")){
-					System.out.println("Fügen, Kontext: " + sentencetokens);
-				}
 				if(keywords.contains(token)){
 					occurences++;
 					if(!storeFullSentences){

@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,23 +65,20 @@ public class BibbVocabularyBuilder {
 		return dict;
 	}
 	
-	public Map<String, HashSet<String>> findAmbiguities() throws IOException{
+	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, boolean filterNames) throws IOException{
 		ambiguities = dict.findAmbiguities(fullVoc);
 		FileUtils.printMap(ambiguities, "output//bibb//", "allAmbiguities");
 		
-		System.out.println(ambiguities.get("Noten"));
-		System.out.println(ambiguities.get("Hohe"));
-		System.out.println(ambiguities.get("Guter"));
-		
 		// filter Ambiguities 
-			// if it is a name (from the names List)
-//			ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
-			
-			System.out.println(ambiguities.get("Noten"));
-			System.out.println(ambiguities.get("Hohe"));
-			System.out.println(ambiguities.get("Guter"));
 			// by Proportion
-			ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
+			if(filterByProportion){
+				ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
+			}
+			
+			// if it is a name (from the names List)
+			if(filterNames){
+				ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
+			}
 			
 			FileUtils.printMap(ambiguities, "output//bibb//", "bibbFilteredAmbiguities");
 			
@@ -164,32 +162,64 @@ public class BibbVocabularyBuilder {
 		}
 	}
 
-	public KeywordContexts getContexts(boolean getContextsFromDewac) throws ClassNotFoundException, SQLException, IOException {
+	public KeywordContexts getContexts() throws ClassNotFoundException, SQLException, IOException {
 		// get Contexts
 		Connection connection = DBConnector.connect(dbPath);
 		KeywordContexts cont = new KeywordContexts();
+		
 		cont = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
 		
-		cont.printKeywordContexts("output//classification//", "AmbigSentences");
+//		cont.printKeywordContexts("output//classification//", "AmbigSentences");
 	
-		if(getContextsFromDewac){
-			KeywordContexts dewacContexts = new KeywordContexts();
-			dewacContexts = dewacContexts.loadKeywordContextsFromFile("output//dewac//DewacKontexte.txt");
-			
-			for(String key : cont.keywordContextsMap.keySet()){
-				int size = cont.keywordContextsMap.get(key).size();
-				if(size < 100){
-					if(dewacContexts.keywordContextsMap.containsKey(key)){
-						if(dewacContexts.keywordContextsMap.get(key).size() > 100){
-							cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
-						} else {
-							cont.addContexts(key, dewacContexts.getContext(key));
-						}
+//		if(getContextsFromDewac){
+//			KeywordContexts dewacContexts = new KeywordContexts();
+//			dewacContexts = dewacContexts.loadKeywordContextsFromFile("output//dewac//DewacKontexte.txt");
+//			
+//			for(String key : cont.keywordContextsMap.keySet()){
+//				int size = cont.keywordContextsMap.get(key).size();
+//				if(size < 100){
+//					System.out.println("Add contexts from Dewac for " + key + ", " + size + " Kontexte");
+//					if(dewacContexts.keywordContextsMap.containsKey(key)){
+//						if(dewacContexts.keywordContextsMap.get(key).size() > 100){
+//							
+//							cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
+//						} else {
+//							cont.addContexts(key, dewacContexts.getContext(key));
+//						}
+//					}
+//					System.out.print(", neue Anzahl: " + cont.keywordContextsMap.get(key).size() + "\n");
+//				}
+//			}
+//		}
+		cont.printKeywordContexts("output//bibb//", "BibbKontexte");
+		return cont;
+	}
+	
+	public KeywordContexts extendByDewacContexts(KeywordContexts cont) throws IOException{
+		KeywordContexts dewacContexts = new KeywordContexts();
+		dewacContexts = dewacContexts.loadKeywordContextsFromFile("output//dewac//DewacKontexte.txt");
+		
+		// TODO run over ambiguites, not Contexts!
+		Set<String> ambiguitySet = dict.createAmbiguitySet(ambiguities);
+		
+		for(String key : ambiguitySet){
+			if(!cont.keywordContextsMap.containsKey(key)){
+				cont.addContext(key, new ArrayList<String>());
+			}
+			int size = cont.keywordContextsMap.get(key).size();
+			if(size < 100){
+				System.out.println("Add contexts from Dewac for " + key + ", " + size + " Kontexte");
+				if(dewacContexts.keywordContextsMap.containsKey(key)){
+					if(dewacContexts.keywordContextsMap.get(key).size() > 100){
+						
+						cont.addContexts(key, dewacContexts.getContext(key).subList(0, 100-size));
+					} else {
+						cont.addContexts(key, dewacContexts.getContext(key));
 					}
 				}
+				System.out.print(", neue Anzahl: " + cont.keywordContextsMap.get(key).size() + "\n");
 			}
 		}
-		cont.printKeywordContexts("output//bibb//", "BibbKontexte");
 		return cont;
 	}
 	

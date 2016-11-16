@@ -91,11 +91,6 @@ public class Dictionary {
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
 		for(String key : dictionary.keySet()){
-//			if(key.equals("das")){
-//				System.out.println(key);
-//				System.out.println("Schon enthalten: " + ambige.contains(key));
-//				System.out.println("In der Value-List: " + valueList.contains(key));
-//			}
 			if(referenceVoc.vocabulary.containsKey(key)) {
 				if (ambiguities.containsKey(key)){
 					ambiguities.get(key).add(key);
@@ -161,7 +156,7 @@ public class Dictionary {
 		for(String name : names){
 			for(String key : ambiguities.keySet()){
 				if(ambiguities.get(key).contains(name)) {
-					System.out.println(name);
+					System.out.println(name + " removed");
 					removed.add(name);
 					remainingAmbiguities.remove(key);
 				} 
