@@ -105,8 +105,8 @@ public class BIBBdbApp {
 			dict.printToFile("output//bibb//", "bibbDictionary");
 			
 			// for statistics: comparision between BiBB and sDewac Vocabulary
-			boolean extendDictionary = true;
-			boolean extendAmbiguities = true;
+			boolean extendDictionary = false;
+			boolean extendAmbiguities = false;
 			vocBuilder.compareVocabulary(extendDictionary, extendAmbiguities);
 		
 			// extract contexts
@@ -254,8 +254,9 @@ public class BIBBdbApp {
 		dbOut.commit();
 		dbOut.close();
 		
-		System.out.println("Classification successful: " + correct);
-		System.out.println("Classification failure: " + failure);
+		double ratio = (correct * 1d /(correct+failure))*100d;
+		
+		System.out.println("not changed/correct(in Test mode): " + correct + ", changed/failure (test Mode): " + failure + ", not changed ratio:" + ratio);
 	}
 
 	private static void correctUnabiguousWords(Dictionary dict, int year, String dbIn, Connection dbOut) throws ClassNotFoundException, SQLException {

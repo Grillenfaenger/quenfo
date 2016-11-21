@@ -154,13 +154,18 @@ public class Dictionary {
 		List<String> toRemove = new ArrayList<String>();
 		
 		for(String name : names){
-			for(String key : ambiguities.keySet()){
-				if(ambiguities.get(key).contains(name)) {
-					System.out.println(name + " removed");
-					removed.add(name);
-					remainingAmbiguities.remove(key);
-				} 
+			name = replaceUmlaut(name);
+			if(ambiguities.containsKey(name)){
+				ambiguities.remove(name);
+				dictionary.remove(name);
 			}
+//			for(String key : ambiguities.keySet()){
+//				if(ambiguities.get(key).contains(name)) {
+//					System.out.println(name + " removed");
+//					removed.add(name);
+//					remainingAmbiguities.remove(key);
+//				} 
+//			}
 		}
 		
 		FileUtils.printList(removed, "output//stats//", "removedNames", ".txt");
