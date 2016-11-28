@@ -1,4 +1,4 @@
-package de.uni_koeln.spinfo.umlauts.applications;
+package de.uni_koeln.spinfo.umlauts.applications.old;
 
 import java.io.File;
 import java.io.IOException;
