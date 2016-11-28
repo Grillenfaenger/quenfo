@@ -109,9 +109,6 @@ public class DeWacClassificationApp {
 		
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
 		
-//		for(int i = 1000; i <=2000; i++){
-//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
-//		}
 		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){

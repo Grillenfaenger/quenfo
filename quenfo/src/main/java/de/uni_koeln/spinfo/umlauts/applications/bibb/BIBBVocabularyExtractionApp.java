@@ -45,16 +45,6 @@ public class BIBBVocabularyExtractionApp {
 		// /////experiment parameters
 		// /////////////////////////////////////////////
 		
-		int knnValue = 3;
-		boolean ignoreStopwords = false;
-		boolean normalizeInput = false;
-		boolean useStemmer = false;
-		boolean suffixTrees = false;
-		int[] nGrams = null; //new int[]{3,4};
-		int miScoredFeaturesPerClass = 0;
-		Distance distance = Distance.EUKLID;
-		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
-		AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
 		boolean getFullSentences = true;
 		int wordsBefore = 3;
 		int wordsAfter = 3;
@@ -64,11 +54,8 @@ public class BIBBVocabularyExtractionApp {
 		// //////////////////////////////////////////////
 		
 		// inizialize
-		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
-				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,
-				miScoredFeaturesPerClass, suffixTrees);
-		UmlautExperimentConfiguration expConfig = new UmlautExperimentConfiguration(fuc,
-				quantifier, classifier, null, "umlauts/classification/output", getFullSentences, wordsBefore, wordsAfter);
+		UmlautExperimentConfiguration expConfig = new UmlautExperimentConfiguration(null,
+				null, null, null, "umlauts/classification/output", getFullSentences, wordsBefore, wordsAfter);
 		
 		// Vocabulary Extraction varibles
 		Dictionary dict = new Dictionary();
