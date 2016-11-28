@@ -37,7 +37,7 @@ public class DeWacClassificationApp {
 	 */
 	
 	public static void main(String[] args) throws IOException{
-//		vocExtraction();
+		vocExtraction();
 //		onlyVocExtraction();
 //		moreStatsAboutContexts();
 //		sentenceExtraction();
@@ -50,7 +50,7 @@ public class DeWacClassificationApp {
 //		removeNamesFromContexts();
 //		createFinalNamesList();
 //		decisionByRatioStats();
-		cleanDictionary();
+//		cleanDictionary();
 	}
 		
 	private static void cleanDictionary() throws IOException {

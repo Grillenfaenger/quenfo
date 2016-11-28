@@ -45,22 +45,19 @@ public class BIBBdbApp {
 		
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException{
 		
+		
+		// run mode
 		boolean loadFromFiles = false;
 		
+		// run variables
 		String dbPath = "umlaute_db.db";	
 		String intermediateDbPath = "inter_db.db";
 		String correctedDbPath = "corrected_db.db";
-		UmlautExperimentConfiguration expConfig;
 		int excludeYear = 2012;
-		
-		Dictionary dict = new Dictionary();
-		Map<String, HashSet<String>> ambiguities;
-		KeywordContexts contexts = new KeywordContexts();
 		
 		// /////////////////////////////////////////////
 		// /////experiment parameters
 		// /////////////////////////////////////////////
-		
 		
 		boolean preClassify = false;
 		File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
@@ -74,7 +71,7 @@ public class BIBBdbApp {
 		Distance distance = Distance.EUKLID;
 		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
 		AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
-		boolean getFullSentences = false;
+		boolean getFullSentences = true;
 		int wordsBefore = 3;
 		int wordsAfter = 3;
 		
@@ -82,17 +79,24 @@ public class BIBBdbApp {
 		// ////////END///
 		// //////////////////////////////////////////////
 		
+		// inizialize
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(
 				normalizeInput, useStemmer, ignoreStopwords, nGrams, false,
 				miScoredFeaturesPerClass, suffixTrees);
-		expConfig = new UmlautExperimentConfiguration(fuc,
+		UmlautExperimentConfiguration expConfig = new UmlautExperimentConfiguration(fuc,
 				quantifier, classifier, null, "umlauts/classification/output", getFullSentences, wordsBefore, wordsAfter);
+		
+		//  
+		Dictionary dict = new Dictionary();
+		Map<String, HashSet<String>> ambiguities;
+		KeywordContexts contexts = new KeywordContexts();
 		
 		BibbVocabularyBuilder vocBuilder = new BibbVocabularyBuilder(dbPath, expConfig, excludeYear);
 		
 		if(loadFromFiles == false){
 			// extract full Vocabulary and build Dictionary
-			dict = vocBuilder.buildDictionary();
+			boolean useDewacVocabulary = true;
+			dict = vocBuilder.buildDictionary(useDewacVocabulary);
 			
 			// find ambiguities
 			boolean filterByProportion = true;
@@ -105,12 +109,9 @@ public class BIBBdbApp {
 			dict.printToFile("output//bibb//", "bibbDictionary");
 			
 			// for statistics: comparision between BiBB and sDewac Vocabulary
-			boolean extendDictionary = false;
-			boolean extendAmbiguities = false;
-			vocBuilder.compareVocabulary(extendDictionary, extendAmbiguities);
+			vocBuilder.compareVocabulary();
 		
 			// extract contexts
-			
 			contexts = vocBuilder.getContexts();
 			
 		} else {
@@ -122,17 +123,18 @@ public class BIBBdbApp {
 		
 		// fill up Contexts with Dewac Contexts
 		contexts = vocBuilder.extendByDewacContexts(contexts);
+		Vocabulary voc = vocBuilder.fullVoc;
 		
-		System.out.println(ambiguities.get("Wintergarten"));
-		System.out.println(contexts.getContextKV("Wintergarten"));
-		System.out.println(contexts.getContextKV("Wintergärten"));
+		System.out.println(ambiguities.get("Stresstoleranz"));
+		System.out.println(contexts.getContext("Streßtoleranz").size());
+		System.out.println(contexts.getContextKV("Stresstoleranz").size());
 		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		correctUnabiguousWords(dict,2012, dbPath,intermediateDB);
+		correctUnabiguousWords(dict, voc, 2012, dbPath,intermediateDB);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
@@ -142,6 +144,8 @@ public class BIBBdbApp {
 		correctAmbiguousWords(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
 	}
 
+	
+	
 	private static void correctAmbiguousWords(Map<String, HashSet<String>> ambiguities, KeywordContexts keywordContexts, int year, Connection input, Connection dbOut, UmlautExperimentConfiguration config) throws SQLException, IOException {
 		IETokenizer tokenizer = new IETokenizer();
 		Map<String, Model> models= new HashMap<String, Model>();
@@ -192,7 +196,7 @@ public class BIBBdbApp {
 			jobAd = new JobAd(resultSet.getInt(3), resultSet.getInt(2), resultSet.getString(4), resultSet.getInt(1));
 			StringBuffer buf = new StringBuffer();
 			buf.append(jobAd.getContent());
-			List<Sentence> tokenizedSentences = tokenizer.tokenizeWithPositions(jobAd.getContent(), false);
+			List<Sentence> tokenizedSentences = tokenizer.tokenizeWithPositions(jobAd.getContent(), config.getStoreFullSentences());
 			
 			for(Sentence s : tokenizedSentences){
 			
@@ -201,10 +205,10 @@ public class BIBBdbApp {
 					String word = tokens2.get(i);
 					if(ambiguities.containsKey(word)){
 						// Kontext extrahieren
-						List<String> context = extractContext(tokens2, i, 2,2);
+						List<String> context = extractContext(tokens2, i, config.getContextBefore(),config.getContextAfter());
 						// cu erstellen
 						List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
-						ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[0]), true);
+						ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, ambiguities.get(word).toArray(new String[ambiguities.get(word).size()]), true);
 						cus.add(zcu);
 						cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
 						cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), models.get(word).getFUOrder());
@@ -259,7 +263,7 @@ public class BIBBdbApp {
 		System.out.println("not changed/correct(in Test mode): " + correct + ", changed/failure (test Mode): " + failure + ", not changed ratio:" + ratio);
 	}
 
-	private static void correctUnabiguousWords(Dictionary dict, int year, String dbIn, Connection dbOut) throws ClassNotFoundException, SQLException {
+	private static void correctUnabiguousWords(Dictionary dict, Vocabulary voc, int year, String dbIn, Connection dbOut) throws ClassNotFoundException, SQLException {
 		IETokenizer tokenizer = new IETokenizer();
 		
 		Connection inputConnection = DBConnector.connect(dbIn);
@@ -293,7 +297,7 @@ public class BIBBdbApp {
 					        int start = span.getStart();
 					        int end = span.getEnd();
 					        String replacement = dict.dictionary.get(occurence.getKey());
-					        System.out.println(occurence.getKey() + ": " + dict.dictionary.get(occurence.getKey()));
+					        System.out.println(occurence.getKey() + ","+ voc.vocabulary.get(occurence.getKey()) +": " + dict.dictionary.get(occurence.getKey()) + ", " + voc.vocabulary.get(replacement));
 					        
 					        buf.replace(start, end, replacement);
 					        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
@@ -332,8 +336,5 @@ public class BIBBdbApp {
 		}
 		return text.subList(fromIndex,toIndex);
 	}
-
-	
-	
 	
 }

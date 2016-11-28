@@ -83,8 +83,7 @@ public class KeywordContexts {
 			}
 		} else {
 			keywordContextsMap.put(keyword, newContexts);
-		}
-		
+		}	
 	}
 	
 	public void addContext(String keyword, List<String> context) {
@@ -98,8 +97,7 @@ public class KeywordContexts {
 			List<List<String>> contexts = new ArrayList<List<String>>();
 			contexts.add(context);
 			keywordContextsMap.put(keyword, contexts);
-		}
-		
+		}	
 	}
 	
 	public List<List<String>> getContext(String keyword){
@@ -118,18 +116,13 @@ public class KeywordContexts {
 		String[] keywords = file.split("\\$;\\n");
 		
 		for (int i = 0; i < keywords.length; i++) {
-//			System.out.println(keywords[i]+"\n");
 			String[] contexts = keywords[i].split("\\n");
-//			System.out.println(contexts[0]);
-			
+
 			List<List<String>> newContexts = new ArrayList<List<String>>();
 			for (int j = 1; j < contexts.length; j++) {
-//				System.out.println("contexts["+j+"]= "+ contexts[j]);
 				String substring = contexts[j].substring(1,contexts[j].length()-1);
-//				System.out.println(substring);
 				String[] split = substring.split(", ");
 				List<String> context = Arrays.asList(split);
-//				System.out.println(Arrays.asList(split));
 				newContexts.add(context);
 			}
 			keywordContexts.addContexts(contexts[0], newContexts);	

@@ -71,9 +71,6 @@ public class Dictionary {
 			}
 		}
 		
-//		System.out.println(valueList);
-//		System.out.println(ambige.size() + " Ambiguitäten zwischen umlautbefreiten Wörtern: " + ambige);
-		
 		// Die jeweiligen Lesweisen sichern
 		for(String key : dictionary.keySet()){
 			if(ambige.contains(key)) {
@@ -86,8 +83,6 @@ public class Dictionary {
 				}
 			}
 		}
-		
-		
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
 		for(String key : dictionary.keySet()){
@@ -105,7 +100,6 @@ public class Dictionary {
 		}
 		
 		System.out.println("Es gibt " + ambiguities.size() + " Fälle mit Ambiguitäten.");
-//		System.out.println(ambiguities);
 		
 		return ambiguities;
 		
@@ -117,11 +111,6 @@ public class Dictionary {
 		for (Set<String> ambigueSet : ambiguities.values()) {
 			ambiguitySet.addAll(ambigueSet);
 		}
-//		ambiguitySet.remove("a");
-//		ambiguitySet.remove("A");
-//		ambiguitySet.remove("Ä");
-//		ambiguitySet.remove("ä");
-//		System.out.println(ambiguitySet);
 		return ambiguitySet;
 	}
 	
@@ -159,13 +148,6 @@ public class Dictionary {
 				ambiguities.remove(name);
 				dictionary.remove(name);
 			}
-//			for(String key : ambiguities.keySet()){
-//				if(ambiguities.get(key).contains(name)) {
-//					System.out.println(name + " removed");
-//					removed.add(name);
-//					remainingAmbiguities.remove(key);
-//				} 
-//			}
 		}
 		
 		FileUtils.printList(removed, "output//stats//", "removedNames", ".txt");
@@ -206,26 +188,21 @@ public class Dictionary {
 				occurences[1] = voc.getOccurenceOf(with);
 				
 				if(!occurences[0].equals(occurences[1])){
-//					double occurenceRatio = Math.log10(occurences.get(0).doubleValue()) - Math.log10(occurences.get(1).doubleValue());
 					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
-//					Integer difference = occurences.get(0)-occurences.get(1);
-	//					double occurenceRatio = Math.log10(difference.doubleValue());
-	//					System.out.println(occurenceRatio);
-						
-						if(occurenceRatio < logRate*-1){
-							// aus den ambiguities herauslöschen
-							remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
-							sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
-							removedInfo = sb.toString();
-						} else if(occurenceRatio > logRate){
-							// aus dem Dict und aus den ambiguities löschen
-							dictionary.remove(key); // d. h. es wird nicht korrigiert
-							remainingAmbiguities.remove(key); // und nicht klassifiziert
-							sb.append(": "+occurenceRatio + " "+ key+ " wird nie korrigiert.");
-							removedInfo = sb.toString();
-						} else {
-							dictionary.remove(key); // d. h. es wird klassifiziert
-						}
+					if(occurenceRatio < logRate*-1){
+						// aus den ambiguities herauslöschen
+						remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
+						sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
+						removedInfo = sb.toString();
+					} else if(occurenceRatio > logRate){
+						// aus dem Dict und aus den ambiguities löschen
+						dictionary.remove(key); // d. h. es wird nicht korrigiert
+						remainingAmbiguities.remove(key); // und nicht klassifiziert
+						sb.append(": "+occurenceRatio + " "+ key+ " wird nie korrigiert.");
+						removedInfo = sb.toString();
+					} else {
+						dictionary.remove(key); // d. h. es wird klassifiziert
+					}
 				} else {
 					// wenn es genau gleich viele Vorkommen gibt
 					System.out.println(variants + "werden klassifiziert");

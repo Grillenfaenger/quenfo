@@ -49,7 +49,12 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 				classID = i+1;
 			}
 		}
-		return senses[classID-1];
+		//failsafe
+		if(classID-1<0 || classID-1>senses.length-1){
+			return senses[0];
+		} else {
+			return senses[classID-1];
+		}
 		
 	}
 	

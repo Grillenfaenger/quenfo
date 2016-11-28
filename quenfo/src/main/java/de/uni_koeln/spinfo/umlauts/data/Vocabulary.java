@@ -102,8 +102,14 @@ public class Vocabulary {
 		setVocabulary(tempVoc);
 	}
 	
-
-	
-	
-
+	public void mergeVocabularies(Vocabulary vocToAdd){
+		
+		for(String key : vocToAdd.vocabulary.keySet()){
+			if(vocabulary.containsKey(key)){
+				vocabulary.put(key, vocabulary.get(key)+vocToAdd.getOccurenceOf(key));
+			} else {
+				vocabulary.put(key, vocToAdd.getOccurenceOf(key));
+			}
+		}
+	}
 }

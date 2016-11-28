@@ -40,12 +40,30 @@ public class BibbVocabularyBuilder {
 		this.excludeYear = excludeYear;
 	}
 	
-	public Dictionary buildDictionary() throws ClassNotFoundException, SQLException, IOException {
+	public Dictionary buildDictionary(boolean useExternalVocabulary) throws ClassNotFoundException, SQLException, IOException {
 		// extract Vocabulary
 		fullVoc = extractVocabulary(dbPath, excludeYear);
 		System.out.println("Tokens: " + fullVoc.getNumberOfTokens());
 		System.out.println("Types: " + fullVoc.vocabulary.size());
 		FileUtils.printMap(fullVoc.vocabulary, "output//", "SteADBVocabulary");
+		
+		if(useExternalVocabulary){
+			// load voc
+			Vocabulary dewacVoc = new Vocabulary();
+			HashMap<String,String> loadVoc = FileUtils.fileToMap("output//dewac//DewacVoc.txt");
+			HashMap<String,Integer> vocabulary = new HashMap<String,Integer>();
+			for(String key : loadVoc.keySet()){
+				vocabulary.put(key, Integer.valueOf(loadVoc.get(key)));
+			}
+			dewacVoc.setVocabulary(vocabulary);
+			System.out.println("dewac Tokens: " + dewacVoc.getNumberOfTokens());
+			System.out.println("dewac Types: " + dewacVoc.vocabulary.size());
+			
+			fullVoc.mergeVocabularies(dewacVoc);
+			System.out.println("Tokens: " + fullVoc.getNumberOfTokens());
+			System.out.println("Types: " + fullVoc.vocabulary.size());
+			FileUtils.printMap(fullVoc.vocabulary, "output//", "mergedVocabulary");
+		}
 		
 		// reduce Vocabulary to Umlaut words
 		Vocabulary umlautVoc = fullVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
@@ -111,7 +129,7 @@ public class BibbVocabularyBuilder {
 		return voc;
 	}
 	
-	public void compareVocabulary(boolean extendDictionary, boolean extendAmbiguities) throws IOException {
+	public void compareVocabulary() throws IOException {
 		
 		// load sDewac Dictionary
 		Dictionary dewacDic = new Dictionary();
@@ -127,12 +145,7 @@ public class BibbVocabularyBuilder {
 				dewacDic.dictionary.remove(key);
 			}
 		}
-		
 		System.out.println("sDewac Dictionary exklusive Wörter: " + dewacDic.dictionary.size());
-		
-		if(extendDictionary == true){
-			dict.addEntries(dewacDic.dictionary);
-		}
 		
 		// load sDewac ambiguities
 		HashMap<String, HashSet<String>> dewacAmbiguities = FileUtils.fileToAmbiguities("output//dewac//DewacAmbiguities6.txt");
@@ -156,10 +169,6 @@ public class BibbVocabularyBuilder {
 		
 		System.out.println("Einzigartige ambige Wörter im sDewac-Korpus: " + dewacAmbiguities.size());
 		System.out.println("Einzigartige ambige Wörter in der Datenbank: " + ambiguitiesCopy.size());
-		
-		if(extendAmbiguities == true){
-			ambiguities.putAll(dewacAmbiguities);
-		}
 	}
 
 	public KeywordContexts getContexts() throws ClassNotFoundException, SQLException, IOException {
@@ -169,28 +178,6 @@ public class BibbVocabularyBuilder {
 		
 		cont = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
 		
-//		cont.printKeywordContexts("output//classification//", "AmbigSentences");
-	
-//		if(getContextsFromDewac){
-//			KeywordContexts dewacContexts = new KeywordContexts();
-//			dewacContexts = dewacContexts.loadKeywordContextsFromFile("output//dewac//DewacKontexte.txt");
-//			
-//			for(String key : cont.keywordContextsMap.keySet()){
-//				int size = cont.keywordContextsMap.get(key).size();
-//				if(size < 100){
-//					System.out.println("Add contexts from Dewac for " + key + ", " + size + " Kontexte");
-//					if(dewacContexts.keywordContextsMap.containsKey(key)){
-//						if(dewacContexts.keywordContextsMap.get(key).size() > 100){
-//							
-//							cont.addContexts(key, dewacContexts.getContext(key).subList(0, 99-size));
-//						} else {
-//							cont.addContexts(key, dewacContexts.getContext(key));
-//						}
-//					}
-//					System.out.print(", neue Anzahl: " + cont.keywordContextsMap.get(key).size() + "\n");
-//				}
-//			}
-//		}
 		cont.printKeywordContexts("output//bibb//", "BibbKontexte");
 		return cont;
 	}
