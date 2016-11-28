@@ -83,14 +83,14 @@ public class BibbVocabularyBuilder {
 		return dict;
 	}
 	
-	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, boolean filterNames) throws IOException{
+	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, double filterMeasure, boolean filterNames) throws IOException{
 		ambiguities = dict.findAmbiguities(fullVoc);
 		FileUtils.printMap(ambiguities, "output//bibb//", "allAmbiguities");
 		
 		// filter Ambiguities 
 			// by Proportion
 			if(filterByProportion){
-				ambiguities = dict.removeByProportion(ambiguities, fullVoc, 1d);
+				ambiguities = dict.removeByProportion(ambiguities, fullVoc, filterMeasure);
 			}
 			
 			// if it is a name (from the names List)

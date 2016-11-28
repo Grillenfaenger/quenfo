@@ -188,7 +188,8 @@ public class Dictionary {
 				occurences[1] = voc.getOccurenceOf(with);
 				
 				if(!occurences[0].equals(occurences[1])){
-					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
+//					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
+					double occurenceRatio = Math.log10(occurences[0].doubleValue())-Math.log10(occurences[1].doubleValue());
 					if(occurenceRatio < logRate*-1){
 						// aus den ambiguities herauslöschen
 						remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.

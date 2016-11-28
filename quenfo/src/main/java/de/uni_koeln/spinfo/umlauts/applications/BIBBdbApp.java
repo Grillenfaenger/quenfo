@@ -55,6 +55,13 @@ public class BIBBdbApp {
 		String correctedDbPath = "corrected_db.db";
 		int excludeYear = 2012;
 		
+		// extraction parameters
+		boolean filterByProportion = true;
+		double filterMeasure = 1d;
+		boolean filterNames = true;
+		boolean useDewacVocabulary = true;
+		boolean extendContextsWithDewac = true;
+		
 		// /////////////////////////////////////////////
 		// /////experiment parameters
 		// /////////////////////////////////////////////
@@ -95,13 +102,11 @@ public class BIBBdbApp {
 		
 		if(loadFromFiles == false){
 			// extract full Vocabulary and build Dictionary
-			boolean useDewacVocabulary = true;
+		
 			dict = vocBuilder.buildDictionary(useDewacVocabulary);
 			
 			// find ambiguities
-			boolean filterByProportion = true;
-			boolean filterNames = true;
-			ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterNames);
+			ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterMeasure, filterNames);
 			dict = vocBuilder.dict;
 			
 			FileUtils.printMap(ambiguities, "output//bibb//", "AmbiguitiesZwischenstand");
@@ -121,8 +126,10 @@ public class BIBBdbApp {
 			contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbKontexte.txt");
 		}
 		
-		// fill up Contexts with Dewac Contexts
-		contexts = vocBuilder.extendByDewacContexts(contexts);
+		if(extendContextsWithDewac){
+			// fill up Contexts with Dewac Contexts
+			contexts = vocBuilder.extendByDewacContexts(contexts);
+		}
 		Vocabulary voc = vocBuilder.fullVoc;
 		
 		System.out.println(ambiguities.get("Stresstoleranz"));

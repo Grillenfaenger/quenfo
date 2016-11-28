@@ -576,7 +576,7 @@ public static KeywordContexts getKeywordContextsBibb(Connection connection, Set<
 	stmt.close();
 	connection.commit();
 			
-	System.out.println("getKeywordContextsBibb: " + occurences);
+	System.out.println("occurences in getKeywordContextsBibb: " + occurences);
 	return kwCtxts;
 }
 
