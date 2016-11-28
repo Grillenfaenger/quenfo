@@ -5,11 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 
@@ -140,8 +137,6 @@ public class Dictionary {
 		System.out.println("Ambiguitäten inkl. Namen: " + remainingAmbiguities.size());
 		
 		List<String> removed = new ArrayList<String>();
-		List<String> toRemove = new ArrayList<String>();
-		
 		for(String name : names){
 			name = replaceUmlaut(name);
 			if(ambiguities.containsKey(name)){

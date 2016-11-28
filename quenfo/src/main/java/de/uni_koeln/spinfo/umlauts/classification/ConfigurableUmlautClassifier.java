@@ -10,18 +10,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeSet;
 
 import opennlp.tools.util.Span;
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
-import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.CategoryResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.dbIO.DbConnector;
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
@@ -31,7 +27,6 @@ import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
-import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class ConfigurableUmlautClassifier {
@@ -49,7 +44,6 @@ public class ConfigurableUmlautClassifier {
 	
 	public void classify(UmlautExperimentConfiguration config) throws ClassNotFoundException, SQLException, IOException {
 
-		// TODO: später sollen die hier geholten Daten erst einmal persistiert werden, Trainieren erfolgt dann in einer eigenen Methode
 		// Trainieren
 		Map<String, HashSet<String>> ambiguities = null;
 		Map<String, Model> models= new HashMap<String, Model>();
@@ -170,21 +164,11 @@ public class ConfigurableUmlautClassifier {
 				        String replacement = simpleReplacements.get(occurence.getKey());
 				        
 				        buf.replace(start, end, replacement);
-				        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");
-				    
-				        
+				        System.out.println(occurence.getKey() + " wurde durch " + replacement + " ersetzt.");          
 				}
 			}
 			
-			
 			// mehrdeutige Vorkommen erkennen
-			
-			// TODO leider funktioniert dies hier nicht
-//			Map<String,List<Span>> ambiguousTokens = s.getTokenPos();
-//			ambiguousTokens.keySet().retainAll(ambiguities.keySet());
-			
-			// statt dessen:
-			
 			List<String> tokens2 = s.getTokens();
 			for (int i = 0; i < tokens2.size(); i++) {
 				String word = tokens2.get(i);
@@ -247,6 +231,7 @@ public class ConfigurableUmlautClassifier {
 	
 	System.out.println(result.getCategoryEvaluations());
 	
+	@SuppressWarnings("unused")
 	List<CategoryResult> categoryEvaluations = result.getCategoryEvaluations();
 	
 	

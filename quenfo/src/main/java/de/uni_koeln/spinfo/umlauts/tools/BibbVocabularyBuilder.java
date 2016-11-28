@@ -22,7 +22,6 @@ import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
-import de.uni_koeln.spinfo.umlauts.preprocessing.SimpleTokenizer;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class BibbVocabularyBuilder {
@@ -236,20 +235,6 @@ public class BibbVocabularyBuilder {
 			}
 		}
 		return cont;
-	}
-	
-	private List<String> extractContext(List<String> text, int index, int left, int right){
-		
-		int fromIndex = index-left;
-		int toIndex = index+right;
-				
-		if(fromIndex<0){
-			fromIndex = 0;
-		}
-		if(toIndex>text.size()){
-			toIndex = text.size();
-		}
-		return text.subList(fromIndex,toIndex);
 	}
 
 }

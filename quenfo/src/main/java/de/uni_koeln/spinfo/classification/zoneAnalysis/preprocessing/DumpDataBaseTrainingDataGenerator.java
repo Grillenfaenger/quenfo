@@ -43,7 +43,7 @@ public class DumpDataBaseTrainingDataGenerator {
 	
 	public void readInBIBBClassifiedParagraphsFromFile() throws IOException{
 		data = new ArrayList<ClassifyUnit>();
-		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
+//		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
 		
 		Workbook w;
 		try {

@@ -1,10 +1,7 @@
 package de.uni_koeln.spinfo.umlauts.data;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -25,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 public class KeywordContexts {
 	
 	public Map<String, List<List<String>>> keywordContextsMap;
+	@SuppressWarnings("unused")
 	private UmlautExperimentConfiguration config;
 	
 
@@ -33,6 +31,7 @@ public class KeywordContexts {
 		this.config = new UmlautExperimentConfiguration(null, null, null, null, null, true, 3, 3);
 	}
 	
+	@SuppressWarnings("unused")
 	private KeywordContexts(
 			UmlautExperimentConfiguration config) {
 		this.keywordContextsMap = new HashMap<String, List<List<String>>>();

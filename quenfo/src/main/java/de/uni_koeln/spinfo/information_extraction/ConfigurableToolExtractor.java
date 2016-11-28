@@ -150,7 +150,7 @@ public class ConfigurableToolExtractor {
 		categories.add(3);
 		translations.put(6, categories);
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
-		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
+//		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
 	}
 	
 

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
@@ -60,25 +59,6 @@ public class vocabStatsApp {
 		FileUtils.printMap(ambiguities, "output//", "ambigeWörter");
 		
 		// Kontexte der ambigen Wörter ausgeben
-		
-		
-//		List<JobAd> ambigueJobAds = DBConnector.getJobAdsWithKeyword(connection, transVoc.createAmbiguitySet(ambiguities));
-//		System.out.println(ambigueJobAds.size());
-		
-//		Map<String, ArrayList<List<String>>> keywordContexts = DBConnector.getKeywordContexts(connection, ambiguities);
-		
-//		List<Contexts> keywordContexts2 = DBConnector.getKeywordContexts2(connection, ambiguities);
-//		FileUtils.printList(keywordContexts2, "output//", "Kontexte2", ".txt");
-//		
-//		List<Contexts> keywordContexts3 = DBConnector.getKeywordContexts3(connection, transVoc.createAmbiguitySet(ambiguities));
-//		FileUtils.printList(keywordContexts3, "output//", "Kontexte3", ".txt");
-		
-//		KeywordContexts keywordContexts4 = DBConnector.getKeywordContexts4(connection, transVoc.createAmbiguitySet(ambiguities));
-//		keywordContexts4.printKeywordContexts("output//", "Kontexte4");
-		
-		KeywordContexts keywordContexts5 = DBConnector.getKeywordContexts5(connection, transVoc.createAmbiguitySet(ambiguities));
-		keywordContexts5.printKeywordContexts("output//", "Kontexte5");
-		
 		KeywordContexts keywordContexts6 = DBConnector.getKeywordContexts6(connection, transVoc.createAmbiguitySet(ambiguities));
 		keywordContexts6.printKeywordContexts("output//", "Kontexte6");
 		

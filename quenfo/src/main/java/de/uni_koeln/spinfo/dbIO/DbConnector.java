@@ -1,8 +1,5 @@
 package de.uni_koeln.spinfo.dbIO;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,7 +12,6 @@ import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
-import de.uni_koeln.spinfo.information_extraction.data.competenceExtraction.Competence;
 import de.uni_koeln.spinfo.information_extraction.data.toolExtraction.Tool;
 import de.uni_koeln.spinfo.umlauts.data.JobAd;
 

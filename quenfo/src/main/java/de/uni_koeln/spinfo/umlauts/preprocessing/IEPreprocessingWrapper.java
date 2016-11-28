@@ -48,6 +48,7 @@ public class IEPreprocessingWrapper {
 		List<String> sentences = tokenizer.splitIntoSentences(string, false);
 		List<SentenceData09> sdList = new ArrayList<SentenceData09>();
 		
+		@SuppressWarnings("deprecation")
 		is2.tools.Tool lemmatizer = new Lemmatizer(
 				"information_extraction/sentencedata_models/ger-tagger+lemmatizer+morphology+graph-based-3.6/lemma-ger-3.6.model");
 		is2.mtag.Tagger morphTagger  = null;

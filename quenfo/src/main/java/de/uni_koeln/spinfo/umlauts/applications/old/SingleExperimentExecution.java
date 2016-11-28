@@ -3,29 +3,16 @@ package de.uni_koeln.spinfo.umlauts.applications.old;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import weka.classifiers.bayes.NaiveBayesMultinomial;
-import weka.classifiers.lazy.IBk;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbstractFeatureQuantifier;
-import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.LogLikeliHoodFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.TFIDFFeatureQuantifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.WekaClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneNaiveBayesClassifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneRocchioClassifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.svm.SVMClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ExperimentSetupUI;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneSingleExperimentExecutor;
 import de.uni_koeln.spinfo.umlauts.classification.workflow.ZoneSingleUmlautExperimentExecutor;
 
 /**

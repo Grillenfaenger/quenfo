@@ -2,8 +2,6 @@ package de.uni_koeln.spinfo.umlauts.classification.workflow;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,25 +9,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.RegexClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.dbIO.DbConnector;
 import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class ZoneSingleUmlautExperimentExecutor {
-	
-
 	
 	public static ExperimentResult crossValidate(ExperimentConfiguration expConfig, ZoneJobs jobs, File trainingDataFile, int numCategories, int numClasses, Map<Integer,List<Integer>> translations, boolean preClassify, List<Integer> evaluationCategories) throws IOException {
 		long before = System.nanoTime();
@@ -95,7 +87,8 @@ public class ZoneSingleUmlautExperimentExecutor {
 		
 	    //evaluate
 	    before = System.nanoTime();
-		ExperimentResult result = jobs.evaluate(classified, evaluationCategories, expConfig);
+		Map<ClassifyUnit, boolean[]> classified = null;
+		ExperimentResult result = jobs.evaluate(classified , evaluationCategories, expConfig);
 		after = System.nanoTime();
 		//system.out.println("evaluate: " + (after - before)/1000000000d);
 		return result;

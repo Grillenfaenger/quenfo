@@ -2,7 +2,6 @@ package de.uni_koeln.spinfo.umlauts.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +55,7 @@ public class Sentence {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private List<String> getContext(int index, int rangeBefore, int rangeAfter){
 				
 				int fromIndex = index-rangeBefore;

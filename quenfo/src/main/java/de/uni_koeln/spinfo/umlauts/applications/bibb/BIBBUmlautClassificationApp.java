@@ -1,46 +1,24 @@
 package de.uni_koeln.spinfo.umlauts.applications.bibb;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
-import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
-import de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbsoluteFrequencyFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbstractFeatureQuantifier;
-import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.TFIDFFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneRocchioClassifier;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
-import de.uni_koeln.spinfo.umlauts.classification.ConfigurableUmlautClassifier;
-import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
-import de.uni_koeln.spinfo.umlauts.data.JobAd;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
-import de.uni_koeln.spinfo.umlauts.data.Sentence;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dbio.DBConnector;
 import de.uni_koeln.spinfo.umlauts.tools.BibbVocabularyBuilder;
 import de.uni_koeln.spinfo.umlauts.tools.ClassificationTools;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
-import opennlp.tools.util.Span;
 
 public class BIBBUmlautClassificationApp {
 	
@@ -67,8 +45,6 @@ public class BIBBUmlautClassificationApp {
 		// /////experiment parameters
 		// /////////////////////////////////////////////
 		
-		boolean preClassify = false;
-		File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
 		int knnValue = 3;
 		boolean ignoreStopwords = false;
 		boolean normalizeInput = false;

@@ -2,13 +2,11 @@ package de.uni_koeln.spinfo.umlauts.dewag;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -122,6 +120,8 @@ public class DewacSplitter {
 		System.out.println("Sentences not of interest: " + notOfInterest);
 		System.out.println();
 		soi.printMap();
+		
+		in.close();
 	}
 	
 	/**
@@ -289,7 +289,6 @@ public class DewacSplitter {
 		List<String> sentence = null;
 		
 		System.out.println(inputFile.getName());
-		int i = 0;
 		while(nextLine!= null){
 			if(nextLine.startsWith("<")){
 				if(nextLine.trim().equals("<s>")){					
@@ -422,7 +421,6 @@ public class DewacSplitter {
 	public void getSentencesWithMaxLength(File inputFile, Set<Integer> lengthes, int max) throws IOException{
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String nextLine = in.readLine();
-		int sentenceCounter = 0;
 		//Map<Integer, Integer> lengthes = new HashMap<Integer, Integer>();
 		PrintWriter out = new PrintWriter(new FileWriter(new File(destinationDir + "//shortTexts.txt")));
 		StringBuffer toWrite = new StringBuffer();
@@ -431,8 +429,6 @@ public class DewacSplitter {
 			
 			if(nextLine.startsWith("<")){				
 				if(nextLine.trim().equals("<s>")){					
-					//System.out.println(sentenceCounter + " length =" + length);
-					sentenceCounter++;
 					length=0;
 				}
 				else{

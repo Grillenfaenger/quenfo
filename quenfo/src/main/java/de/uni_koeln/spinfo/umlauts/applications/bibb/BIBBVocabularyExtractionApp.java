@@ -1,6 +1,5 @@
 package de.uni_koeln.spinfo.umlauts.applications.bibb;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -46,8 +45,6 @@ public class BIBBVocabularyExtractionApp {
 		// /////experiment parameters
 		// /////////////////////////////////////////////
 		
-		boolean preClassify = false;
-		File outputFolder = new File("umlauts/classification/output/singleResults/preClassified");
 		int knnValue = 3;
 		boolean ignoreStopwords = false;
 		boolean normalizeInput = false;
@@ -84,10 +81,19 @@ public class BIBBVocabularyExtractionApp {
 		// extract full Vocabulary and build Dictionary
 		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc);
 		
+		// print
+		voc = vocBuilder.fullVoc;
+		voc.saveVocabularyToFile(destPath, "bibbVocabulary");
+		
 		// find ambiguities
 		ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterMeasure, filterNames);
 		
-		// for statistics: comparision between BiBB and sDewac Vocabulary
+		// print
+		dict = vocBuilder.dict;
+		dict.printToFile(destPath, "bibbDictionary");
+		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
+		
+		// for statistics: comparison between BiBB and sDewac Vocabulary
 		vocBuilder.compareVocabulary();
 	
 		// extract contexts
@@ -98,12 +104,7 @@ public class BIBBVocabularyExtractionApp {
 			contexts = vocBuilder.extendByDewacContexts(contexts);
 		}
 		
-		// save to files
-		voc = vocBuilder.fullVoc;
-		voc.saveVocabularyToFile(destPath, "bibbVocabulary");
-		dict = vocBuilder.dict;
-		dict.printToFile(destPath, "bibbDictionary");
-		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
+		// print
 		contexts.printKeywordContexts(destPath, "bibbContexts");
 
 	}

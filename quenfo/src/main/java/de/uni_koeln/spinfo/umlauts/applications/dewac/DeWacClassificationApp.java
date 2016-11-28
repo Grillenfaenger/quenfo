@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,17 +12,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Map.Entry;
-
-import de.uni_koeln.spinfo.classification.core.classifier.model.Model;
-import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
-import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
-import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
 import de.uni_koeln.spinfo.umlauts.data.Vocabulary;
 import de.uni_koeln.spinfo.umlauts.dewag.DewacSplitter;
 import de.uni_koeln.spinfo.umlauts.dewag.StringsOfInterest;
@@ -53,7 +43,7 @@ public class DeWacClassificationApp {
 //		cleanDictionary();
 	}
 		
-	private static void cleanDictionary() throws IOException {
+	public static void cleanDictionary() throws IOException {
 		
 		//load
 		// load voc
@@ -92,7 +82,7 @@ public class DeWacClassificationApp {
 		FileUtils.printMap(ambiguities, "output//dewac//", "DewacAmbiguities6");
 	}
 
-	private static void decisionByRatioStats() throws IOException {
+	public static void decisionByRatioStats() throws IOException {
 		// load voc
 		Vocabulary voc = new Vocabulary();
 		HashMap<String,String> loadVoc = FileUtils.fileToMap("output//stats//DewacVoc.txt");
@@ -117,8 +107,6 @@ public class DeWacClassificationApp {
 
 	public static void vocExtraction() throws IOException{
 		
-		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
-		
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
 		
 //		for(int i = 1000; i <=2000; i++){
@@ -133,15 +121,7 @@ public class DeWacClassificationApp {
 				voc.addTokens(list);
 			}
 		}
-		
-//		List<List<String>> tokenizedSentences = dewag.getTokenizedSentences(new File("output//dewac//ofInterest1033.txt"));
-//		System.out.println("zum vokabular hinzufügen");
-//		for (List<String> list : tokenizedSentences) {
-//			voc.addTokens(list);
-//		}
-		
 
-		
 		System.out.println("Tokens: " + voc.getNumberOfTokens());
 		System.out.println("Types: " + voc.vocabulary.size());
 		
@@ -174,49 +154,15 @@ public class DeWacClassificationApp {
 				ofInterest.add(word);
 			}
 		}
-//		KeywordContexts contexts = new KeywordContexts();
-////		List<List<String>> ambigSentences = new ArrayList<List<String>>();
-//		for(List<String> sentence : allSentences){
-//			for(String word : sentence){
-//				if(ofInterest.contains(word)){
-////					ambigSentences.add(sentence);
-//					contexts.addContext(word, sentence);
-//				}
-//			}
-//		}
-//		contexts.printKeywordContexts("output//classification//", "DewacAmbigSentences");
-////		FileUtils.printListOfList(ambigSentences, "output//classification//", "DewacAmbigSentences");
-//		
-////		// find Ambiguities which are rare
-////		int numberOfMinOccurences = 10;
-////		Map<String, Integer> lowFrequencyAmbig = new TreeMap<String, Integer>();
-////		for(String key : ambiguities.keySet()){
-////			for(String value : ambiguities.get(key)){
-////				if(voc.vocabulary.get(value)<=numberOfMinOccurences){
-////					lowFrequencyAmbig.put(value, voc.vocabulary.get(value));
-////				}
-////			}
-////		}
-////		FileUtils.printMap(lowFrequencyAmbig, "output//classification//", "tokensWithLessThan" + numberOfMinOccurences + "Occurences");
-////		System.out.println("Ambiguities which occur less than" + " times: " + lowFrequencyAmbig.size());
-//		
 		
 		System.out.println(ambiguities.size() + " Gruppen mehrdeutiger Wörter gefunden");
-//		FileUtils.printMap(ambiguities, "output//classification//", "DewacAmbigeWörter4");
-		
-		
-		
+
 	}
 	
 public static void onlyVocExtraction() throws IOException{
-		
-		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
-		
+	
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
 		
-//		for(int i = 1000; i <=2000; i++){
-//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
-//		}
 		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){
@@ -226,14 +172,6 @@ public static void onlyVocExtraction() throws IOException{
 				voc.addTokens(list);
 			}
 		}
-		
-//		List<List<String>> tokenizedSentences = dewag.getTokenizedSentences(new File("output//dewac//ofInterest1033.txt"));
-//		System.out.println("zum vokabular hinzufügen");
-//		for (List<String> list : tokenizedSentences) {
-//			voc.addTokens(list);
-//		}
-		
-
 		
 		System.out.println("Tokens: " + voc.getNumberOfTokens());
 		System.out.println("Types: " + voc.vocabulary.size());
@@ -252,8 +190,6 @@ public static void onlyVocExtraction() throws IOException{
 		
 		Dictionary dict = new Dictionary(umlautVoc);
 		dict.printToFile("output//dewac//", "DewacDictionary");
-		
-		
 	}
 	
 	public static void statsAboutContexts() throws IOException{
@@ -283,8 +219,7 @@ public static void onlyVocExtraction() throws IOException{
 	}
 	
 	public static void moreStatsAboutContexts() throws IOException{
-//		KeywordContexts contexts = new KeywordContexts();
-//		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		List<String> names = FileUtils.fileToList("output//stats//familynames.txt");
 		names.addAll(FileUtils.fileToList("output//stats//extractedNames.txt"));
@@ -334,8 +269,6 @@ public static void onlyVocExtraction() throws IOException{
 	}
 	
 	public static void removeNamesFromAmbiguities() throws IOException{
-//		KeywordContexts contexts = new KeywordContexts();
-//		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
 		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
 		HashMap<String, HashSet<String>> remainingAmbiguities = new HashMap<String, HashSet<String>>();
 		List<String> notRemove = FileUtils.fileToList("output//stats//betterNotRemove.txt");
@@ -370,14 +303,10 @@ public static void onlyVocExtraction() throws IOException{
 			}
 		}
 		
-//		Collections.sort(removed, Collator.getInstance(Locale.GERMAN));
-//		FileUtils.printList(removed, "output//stats//", "removed2", ".txt");
-		
 		Collections.sort(toRemove, Collator.getInstance(Locale.GERMAN));
 		FileUtils.printList(toRemove, "output//stats//", "toRemoveFromContexts", ".txt");
 		
 		System.out.println("Ambiguitäten ohne Namen: " + remainingAmbiguities.size());
-//		FileUtils.printMap(remainingAmbiguities, "output//classification//", "DewacAmbigeWörterOhneNamen2");
 		
 	}
 	
@@ -441,12 +370,9 @@ public static void onlyVocExtraction() throws IOException{
 					
 				}
 				toPrint.addContexts(word, context);
-//				System.out.println(word);
-//				
-//				
 			}
 		}
-//		toPrint.printKeywordContexts("output//stats//", "ContextsOfSomeNames");
+
 		
 	}
 	
@@ -456,8 +382,6 @@ public static void onlyVocExtraction() throws IOException{
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
 		
 		// Kontexte suchen
-		// dewac-Splitter funktionen verwenden!
-		
 		List<String> ofInterest = new ArrayList<String>();
 		for(HashSet<String> set : ambiguities.values()){
 			for(String word : set){
@@ -468,11 +392,6 @@ public static void onlyVocExtraction() throws IOException{
 		soi.setStringsOfInterest(ofInterest);
 		dewac.sentencesOfInterestToFile2(new File("input//dewac_singlefile//sdewac-v3.tagged"), soi, 100, 1800);
 		FileUtils.printString(soi.stringsFoundToString(), "output//classification//", "DewacStingsFound", ".txt");
-		
-		
-//		List<List<String>> tokenizedSentences = dewac.getTokenizedSentences(new File("output//dewac//byWord//ofInterest3.txt"));
-//		System.out.println("Anzahl der Kontexte insgesamt: " + tokenizedSentences.size());
-//		FileUtils.printList(tokenizedSentences, "output//dewac//", "tokenizedSentences3", ".txt");
 	}
 	
 	public static void createContexts() throws IOException{
@@ -546,13 +465,8 @@ public static void onlyVocExtraction() throws IOException{
 		preNames.add("Mr");
 		preNames.add("Mrs");
 		
-		UmlautExperimentConfiguration config = new UmlautExperimentConfiguration(null, null, null, null, null, false, 3, 3);
-		
 		DewacSplitter dewac = new DewacSplitter("output//dewac//");
-		
-//		for(int i = 1000; i <=2000; i++){
-//			dewag.sentencesWithUmlautsToFile(new File("input//dewac//sdewac-v3.tagged_"+i), 10000, i);
-//		}
+
 		List<List<String>> allSentences = new ArrayList<List<String>>();
 		Vocabulary voc = new Vocabulary();
 		for(int i = 1000; i <=2000; i++){
