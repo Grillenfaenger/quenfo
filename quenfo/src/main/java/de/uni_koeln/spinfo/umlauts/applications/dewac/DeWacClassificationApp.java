@@ -41,8 +41,18 @@ public class DeWacClassificationApp {
 //		createFinalNamesList();
 //		decisionByRatioStats();
 //		cleanDictionary();
+//		filterVoc();
 	}
-		
+	
+
+//	private static void filterVoc() throws IOException {
+//		KeywordContexts contexts = new KeywordContexts();
+//		contexts = contexts.loadKeywordContextsFromFile("output//classification//DewacAmbigSentences.txt");
+//		HashMap<String, HashSet<String>> ambiguities = FileUtils.fileToAmbiguities("output//classification//DewacAmbigeWörter4.txt");
+//		"output//dewac//DewacVoc.txt"
+//	}
+
+
 	public static void cleanDictionary() throws IOException {
 		
 		//load

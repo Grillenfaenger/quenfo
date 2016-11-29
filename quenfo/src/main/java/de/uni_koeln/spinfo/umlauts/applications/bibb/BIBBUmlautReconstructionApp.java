@@ -5,10 +5,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
+
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbsoluteFrequencyFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbstractFeatureQuantifier;
+import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.LogLikeliHoodFeatureQuantifier;
+import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.TFIDFFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassifier;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
@@ -20,7 +23,7 @@ import de.uni_koeln.spinfo.umlauts.tools.BibbVocabularyBuilder;
 import de.uni_koeln.spinfo.umlauts.tools.ClassificationTools;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
-public class BIBBUmlautClassificationApp {
+public class BIBBUmlautReconstructionApp {
 	
 	public static void main(String[] args) throws ClassNotFoundException,
 	IOException, SQLException {
@@ -36,12 +39,6 @@ public class BIBBUmlautClassificationApp {
 		int excludeYear = 2012;
 		
 		// /////////////////////////////////////////////
-		// extraction parameters
-		// /////////////////////////////////////////////
-		
-		boolean extendContextsWithDewac = false;
-		
-		// /////////////////////////////////////////////
 		// /////experiment parameters
 		// /////////////////////////////////////////////
 		
@@ -52,9 +49,9 @@ public class BIBBUmlautClassificationApp {
 		boolean suffixTrees = false;
 		int[] nGrams = null; //new int[]{3,4};
 		int miScoredFeaturesPerClass = 0;
-		Distance distance = Distance.EUKLID;
-		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance);//new ZoneRocchioClassifier(false, distance);//new ZoneKNNClassifier(false, knnValue, distance);
-		AbstractFeatureQuantifier quantifier = new AbsoluteFrequencyFeatureQuantifier();//new  TFIDFFeatureQuantifier();
+		Distance distance = Distance.COSINUS;
+		ZoneAbstractClassifier classifier = new ZoneKNNClassifier(false, knnValue, distance); //new ZoneRocchioClassifier(false, distance);
+		AbstractFeatureQuantifier quantifier = new  TFIDFFeatureQuantifier(); //new LogLikeliHoodFeatureQuantifier(); //new AbsoluteFrequencyFeatureQuantifier(); // //
 		boolean getFullSentences = true;
 		int wordsBefore = 3;
 		int wordsAfter = 3;
@@ -70,7 +67,7 @@ public class BIBBUmlautClassificationApp {
 		UmlautExperimentConfiguration expConfig = new UmlautExperimentConfiguration(fuc,
 				quantifier, classifier, null, "umlauts/classification/output", getFullSentences, wordsBefore, wordsAfter);
 		
-		// Vocabulary Extraction varibles
+		// Vocabulary Extraction variables
 		Dictionary dict = new Dictionary();
 		Map<String, HashSet<String>> ambiguities;
 		KeywordContexts contexts = new KeywordContexts();
@@ -84,11 +81,6 @@ public class BIBBUmlautClassificationApp {
 		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
 		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
 		
-		if(extendContextsWithDewac){
-			// fill up Contexts with Dewac Contexts
-			contexts = vocBuilder.extendByDewacContexts(contexts);
-		}
-		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
@@ -101,6 +93,6 @@ public class BIBBUmlautClassificationApp {
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		ClassificationTools.correctAmbiguousWords(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
+		ClassificationTools.correctAmbiguousWords2(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
 	}
 }

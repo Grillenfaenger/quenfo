@@ -35,11 +35,15 @@ public class BIBBVocabularyExtractionApp {
 		// /////////////////////////////////////////////
 		
 		boolean useDewacVocabulary = true;
+		boolean extendContextsWithDewac = true;
 		String externalVoc = "output//dewac//DewacVoc.txt";
 		boolean filterByProportion = true;
 		double filterMeasure = 1d;
 		boolean filterNames = true;
-		boolean extendContextsWithDewac = true;
+		
+		if(useDewacVocabulary){
+			extendContextsWithDewac = true;
+		}
 		
 		// /////////////////////////////////////////////
 		// /////experiment parameters
@@ -78,7 +82,7 @@ public class BIBBVocabularyExtractionApp {
 		// print
 		dict = vocBuilder.dict;
 		dict.printToFile(destPath, "bibbDictionary");
-		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
+		
 		
 		// for statistics: comparison between BiBB and sDewac Vocabulary
 		vocBuilder.compareVocabulary();
@@ -86,12 +90,11 @@ public class BIBBVocabularyExtractionApp {
 		// extract contexts
 		contexts = vocBuilder.getContexts();
 		
-		if(extendContextsWithDewac){
-			// fill up Contexts with Dewac Contexts
-			contexts = vocBuilder.extendByDewacContexts(contexts);
-		}
+		if(extendContextsWithDewac) contexts = vocBuilder.extendByDewacContexts(contexts);
+		if(useDewacVocabulary) vocBuilder.cleanFiles();
 		
 		// print
+		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
 		contexts.printKeywordContexts(destPath, "bibbContexts");
 
 	}

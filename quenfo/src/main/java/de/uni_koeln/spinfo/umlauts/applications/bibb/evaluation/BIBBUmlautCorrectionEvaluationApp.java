@@ -1,19 +1,21 @@
-package de.uni_koeln.spinfo.umlauts.applications.bibb;
-
+package de.uni_koeln.spinfo.umlauts.applications.bibb.evaluation;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbsoluteFrequencyFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.AbstractFeatureQuantifier;
+import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.LogLikeliHoodFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.core.featureEngineering.featureWeighting.TFIDFFeatureQuantifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassifier;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneRocchioClassifier;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.data.UmlautExperimentConfiguration;
@@ -23,11 +25,12 @@ import de.uni_koeln.spinfo.umlauts.tools.BibbVocabularyBuilder;
 import de.uni_koeln.spinfo.umlauts.tools.ClassificationTools;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
-public class BIBBdbApp {
+public class BIBBUmlautCorrectionEvaluationApp {
+	
+	public static void main(String[] args) throws ClassNotFoundException,
+	IOException, SQLException {
 		
-	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException{
-		
-		
+
 		// /////////////////////////////////////////////
 		// run variables
 		// /////////////////////////////////////////////
@@ -36,22 +39,6 @@ public class BIBBdbApp {
 		String intermediateDbPath = "inter_db.db";
 		String correctedDbPath = "corrected_db.db";
 		int excludeYear = 2012;
-		String destPath = "output//bibb//";
-		
-		// /////////////////////////////////////////////
-		// extraction parameters
-		// /////////////////////////////////////////////
-		
-		boolean useDewacVocabulary = true;
-		String externalVoc = "output//dewac//DewacVoc.txt";
-		boolean filterByProportion = true;
-		double filterMeasure = 1d;
-		boolean filterNames = true;
-		boolean extendContextsWithDewac = true;
-		
-		if(useDewacVocabulary){
-			extendContextsWithDewac = true;
-		}
 		
 		// /////////////////////////////////////////////
 		// /////experiment parameters
@@ -90,49 +77,36 @@ public class BIBBdbApp {
 		
 		BibbVocabularyBuilder vocBuilder = new BibbVocabularyBuilder(dbPath, expConfig, excludeYear);
 		
-		
-		// extract full Vocabulary and build Dictionary
-	
-		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc);
-		
-		// find ambiguities
-		ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterMeasure, filterNames);
-		dict = vocBuilder.dict;
-		
-		FileUtils.printMap(ambiguities, "output//bibb//", "AmbiguitiesZwischenstand");
-		
-		dict.printToFile("output//bibb//", "bibbDictionary");
-		
-		// for statistics: comparision between BiBB and sDewac Vocabulary
-		vocBuilder.compareVocabulary();
-		voc = vocBuilder.fullVoc;
-	
-		// extract contexts
-		contexts = vocBuilder.getContexts();
-		
-		// save to files
-		voc.saveVocabularyToFile(destPath, "bibbVocabulary");
-		dict = vocBuilder.dict;
-		dict.printToFile(destPath, "bibbDictionary");
-		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
-		contexts.printKeywordContexts(destPath, "bibbContexts");
-		
-		if(extendContextsWithDewac) contexts = vocBuilder.extendByDewacContexts(contexts);
-		if(useDewacVocabulary) vocBuilder.cleanFiles();
+		// load Vocabulary from Files
+		dict.loadDictionary("output//bibb//bibbDictionary.txt");
+		ambiguities = FileUtils.fileToAmbiguities("output//bibb//bibbAmbiguities.txt");
+		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
+		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
 		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		ClassificationTools.correctUnabiguousWords(dict, voc, 2012, dbPath,intermediateDB);
+		List<Integer> correctUnabiguousWordsEval = ClassificationTools.correctUnabiguousWordsEval(dict, voc, 2012, dbPath,intermediateDB);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		ClassificationTools.correctAmbiguousWords2(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
-	}
+		List<Integer> correctAmbiguousWordsEval = ClassificationTools.correctAmbiguousWordsEval(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
 	
+		// Evaluation
+		int total = correctUnabiguousWordsEval.get(0) + correctAmbiguousWordsEval.get(0);
+		int correct = correctUnabiguousWordsEval.get(1) + correctAmbiguousWordsEval.get(1);
+		int failure = correctUnabiguousWordsEval.get(2) + correctAmbiguousWordsEval.get(2);
+		double ratio = (correct * 1d/ total) * 100d;
+		System.out.println("Evaluation:" );
+		System.out.println("tokens insgesamt: " + correctUnabiguousWordsEval.get(3));
+		System.out.println("zu korrigieren: " + total);
+		System.out.println("korrekt: " + correct);
+		System.out.println("falsch: " + failure);
+		System.out.println("Anteil korrekt: " + ratio);
+	}
 }

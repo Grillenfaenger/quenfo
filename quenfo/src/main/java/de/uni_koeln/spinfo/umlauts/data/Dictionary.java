@@ -29,6 +29,10 @@ public class Dictionary {
 		this.dictionary = (HashMap<String,String>)vocabulary;
 	}
 	
+	public String get(String key){
+		return dictionary.get(key);
+	}
+	
 	public void addEntry(String umlautWord) {
 		dictionary.put(replaceUmlaut(umlautWord), umlautWord);
 	}

@@ -33,7 +33,7 @@ public class BibbVocabularyBuilder {
 	public Vocabulary fullVoc;
 	public Map<String, HashSet<String>> ambiguities;
 	public Dictionary dict;
-	//KeywordContexts contexts;
+	KeywordContexts contexts;
 	
 	public BibbVocabularyBuilder(String dbPath, UmlautExperimentConfiguration expConfig, int excludeYear){
 		this.dbPath = dbPath;
@@ -88,12 +88,25 @@ public class BibbVocabularyBuilder {
 		System.out.println("create dictionary");
 		dict = new Dictionary(umlautVoc);
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-		FileUtils.printList(log, "output//logs//", "VocLog"+sdf.format(new Timestamp(System.currentTimeMillis())), ".txt");
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+//		FileUtils.printList(log, "output//logs//", "VocLog"+sdf.format(new Timestamp(System.currentTimeMillis())), ".txt");
+		FileUtils.printList(log, "output//logs//", "VocLog", ".txt");
 		
 		return dict;
 	}
 	
+	public void setFullVoc(Vocabulary fullVoc) {
+		this.fullVoc = fullVoc;
+	}
+
+	public void setAmbiguities(Map<String, HashSet<String>> ambiguities) {
+		this.ambiguities = ambiguities;
+	}
+
+	public void setDict(Dictionary dict) {
+		this.dict = dict;
+	}
+
 	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, double filterMeasure, boolean filterNames) throws IOException{
 		System.out.println("find ambiguities");
 		ambiguities = dict.findAmbiguities(fullVoc);
@@ -189,8 +202,9 @@ public class BibbVocabularyBuilder {
 		log.add("sDewac exclusive Ambiguities: " + dewacAmbiguities.size());
 		log.add("db exclusive Ambiguities: " + ambiguitiesCopy.size());
 		
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-		FileUtils.printList(log, "output//logs//", "CompareLog"+sdf.format(new Timestamp(System.currentTimeMillis())), ".txt");
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+//		FileUtils.printList(log, "output//logs//", "CompareLog"+sdf.format(new Timestamp(System.currentTimeMillis())), ".txt");
+		FileUtils.printList(log, "output//logs//", "CompareLog", ".txt");
 	}
 
 	public KeywordContexts getContexts() throws ClassNotFoundException, SQLException, IOException {
@@ -199,12 +213,12 @@ public class BibbVocabularyBuilder {
 		
 		// get Contexts
 		Connection connection = DBConnector.connect(dbPath);
-		KeywordContexts cont = new KeywordContexts();
+		contexts = new KeywordContexts();
 		
-		cont = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
+		contexts = DBConnector.getKeywordContextsBibb(connection, dict.createAmbiguitySet(ambiguities), 2012, expConfig);
 		
 //		cont.printKeywordContexts("output//bibb//", "BibbKontexte");
-		return cont;
+		return contexts;
 	}
 	
 	public KeywordContexts extendByDewacContexts(KeywordContexts cont) throws IOException{
@@ -235,6 +249,28 @@ public class BibbVocabularyBuilder {
 			}
 		}
 		return cont;
+	}
+
+	public void cleanFiles() {
+		List<String> toRemove = new ArrayList<String>();
+		for(String key : ambiguities.keySet()){
+			HashSet<String> variants = ambiguities.get(key);
+			boolean remove = false;
+			for(String var : variants){
+				if(contexts.getContext(var).isEmpty()){
+					remove = true;
+				}
+			}
+			if(remove == true){
+				toRemove.add(key);
+			}
+		}
+		
+		System.out.println("Ambiguities without contexts: " + toRemove.size());
+		for(String key : toRemove){
+			ambiguities.remove(key);
+		}
+		
 	}
 
 }

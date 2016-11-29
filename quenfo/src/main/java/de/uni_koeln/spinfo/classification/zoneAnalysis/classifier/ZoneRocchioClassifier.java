@@ -134,8 +134,9 @@ public class ZoneRocchioClassifier extends ZoneAbstractClassifier {
 				}
 			}
 		}
-
-		toReturn[bestClass - 1] = true;
+		int k = bestClass-1;
+		if(k < 0) k = 0;
+		toReturn[k] = true;
 		return toReturn;
 
 	}
