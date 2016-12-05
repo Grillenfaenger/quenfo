@@ -83,19 +83,23 @@ public class BIBBUmlautCorrectionEvaluationApp {
 		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
 		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
 		
+		vocBuilder.setAmbiguities(ambiguities);
+		vocBuilder.setDict(dict);
+		vocBuilder.setFullVoc(voc);
+		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		List<Integer> correctUnabiguousWordsEval = ClassificationTools.correctUnabiguousWordsEval(dict, voc, 2012, dbPath,intermediateDB);
+		List<Integer> correctUnabiguousWordsEval = ClassificationTools.correctUnabiguousWordsEval(vocBuilder, 2012, dbPath,intermediateDB);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		List<Integer> correctAmbiguousWordsEval = ClassificationTools.correctAmbiguousWordsEval(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
+		List<Integer> correctAmbiguousWordsEval = ClassificationTools.correctAmbiguousWordsEval(vocBuilder, 2012, intermediateDB, correctedDB, expConfig);
 	
 		// Evaluation
 		int total = correctUnabiguousWordsEval.get(0) + correctAmbiguousWordsEval.get(0);

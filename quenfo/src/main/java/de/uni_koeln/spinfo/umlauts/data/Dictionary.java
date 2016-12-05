@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 
@@ -49,7 +50,7 @@ public class Dictionary {
 		replacement = replacement.replaceAll("ö", "o");
 		replacement = replacement.replaceAll("Ü", "U");
 		replacement = replacement.replaceAll("ü", "u");
-		replacement = replacement.replaceAll("ß", "ss");
+//		replacement = replacement.replaceAll("ß", "ss");
 		
 		return replacement;
 	}
@@ -104,6 +105,16 @@ public class Dictionary {
 		
 		return ambiguities;
 		
+	}
+	
+	public Set<String> createDictSet() {
+		Set<String> dictSet = new HashSet<String>();
+		
+		for(String key : dictionary.keySet()){
+			dictSet.add(key);
+			dictSet.add(dictionary.get(key));
+		}
+		return dictSet;
 	}
 	
 	public Set<String> createAmbiguitySet(Map<String, HashSet<String>> ambiguities) {

@@ -81,18 +81,22 @@ public class BIBBUmlautReconstructionApp {
 		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
 		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
 		
+		vocBuilder.setAmbiguities(ambiguities);
+		vocBuilder.setDict(dict);
+		vocBuilder.setFullVoc(voc);
+		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		ClassificationTools.correctUnabiguousWords(dict, voc, 2012, dbPath,intermediateDB);
+		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		ClassificationTools.correctAmbiguousWords2(ambiguities, contexts, 2012, intermediateDB, correctedDB, expConfig);
+		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig);
 	}
 }
