@@ -21,7 +21,7 @@ import de.uni_koeln.spinfo.umlauts.classification.UmlautClassifyUnit;
 import de.uni_koeln.spinfo.umlauts.data.KeywordContexts;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
-public class ZoneSingleUmlautExperimentExecutor {
+public class UmlautSingleExperimentExecutor {
 	
 	public static ExperimentResult crossValidate(ExperimentConfiguration expConfig, ZoneJobs jobs, File trainingDataFile, int numCategories, int numClasses, Map<Integer,List<Integer>> translations, boolean preClassify, List<Integer> evaluationCategories) throws IOException {
 		long before = System.nanoTime();
@@ -87,7 +87,7 @@ public class ZoneSingleUmlautExperimentExecutor {
 		
 	    //evaluate
 	    before = System.nanoTime();
-		Map<ClassifyUnit, boolean[]> classified = null;
+//		Map<ClassifyUnit, boolean[]> classified = null;
 		ExperimentResult result = jobs.evaluate(classified , evaluationCategories, expConfig);
 		after = System.nanoTime();
 		//system.out.println("evaluate: " + (after - before)/1000000000d);

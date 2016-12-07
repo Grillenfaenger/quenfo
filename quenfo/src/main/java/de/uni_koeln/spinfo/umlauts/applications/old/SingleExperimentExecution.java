@@ -13,7 +13,7 @@ import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneAbstractCl
 import de.uni_koeln.spinfo.classification.zoneAnalysis.classifier.ZoneKNNClassifier;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ExperimentResult;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.workflow.ZoneJobs;
-import de.uni_koeln.spinfo.umlauts.classification.workflow.ZoneSingleUmlautExperimentExecutor;
+import de.uni_koeln.spinfo.umlauts.classification.workflow.UmlautSingleExperimentExecutor;
 
 /**
  * @author geduldia
@@ -65,7 +65,7 @@ public class SingleExperimentExecution {
 				miScoredFeaturesPerClass, suffixTrees);
 		ExperimentConfiguration expConfig = new ExperimentConfiguration(fuc,
 				quantifier, classifier, inputFile, "umlauts/classification/output");	
-		ExperimentResult result = ZoneSingleUmlautExperimentExecutor.crossValidate(
+		ExperimentResult result = UmlautSingleExperimentExecutor.crossValidate(
 				expConfig, jobs, inputFile, 2, 2, null, preClassify, evaluationCategories);
 		
 		System.out.println("F Measure: \t" + result.getF1Measure());

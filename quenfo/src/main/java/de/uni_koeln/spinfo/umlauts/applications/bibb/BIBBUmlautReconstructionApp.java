@@ -84,6 +84,7 @@ public class BIBBUmlautReconstructionApp {
 		vocBuilder.setAmbiguities(ambiguities);
 		vocBuilder.setDict(dict);
 		vocBuilder.setFullVoc(voc);
+		vocBuilder.setContexts(contexts);
 		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);

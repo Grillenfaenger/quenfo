@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 /**
  * 
  */
@@ -22,7 +23,7 @@ public class UmlautClassifyUnit extends ZoneClassifyUnit{
 	 * @param training inizialize training data/ evaluation data or data to classify
 	 */
 	public UmlautClassifyUnit(List<String> context, String word, String[] senses, boolean training) {
-		super(word, senses.length);
+		super(word, new SingleToMultiClassConverter(senses.length,senses.length,null));
 		List<String> cuContext = new ArrayList<String>();
 		cuContext.addAll(context);
 		cuContext.remove(word);

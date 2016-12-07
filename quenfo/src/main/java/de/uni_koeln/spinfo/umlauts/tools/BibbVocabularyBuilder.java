@@ -106,6 +106,10 @@ public class BibbVocabularyBuilder {
 	public void setDict(Dictionary dict) {
 		this.dict = dict;
 	}
+	
+	public void setContexts(KeywordContexts contexts) {
+		this.contexts = contexts;
+	}
 
 	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, double filterMeasure, boolean filterNames) throws IOException{
 		System.out.println("find ambiguities");
@@ -272,5 +276,7 @@ public class BibbVocabularyBuilder {
 		}
 		
 	}
+
+	
 
 }

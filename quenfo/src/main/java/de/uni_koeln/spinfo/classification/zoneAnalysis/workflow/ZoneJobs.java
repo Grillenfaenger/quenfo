@@ -113,7 +113,7 @@ public class ZoneJobs {
 		for (Integer textID : textIDs) {
 			List<String> splitAtEmptyLine = ClassifyUnitSplitter.splitIntoParagraphs(texts.get(textID));
 			for (String content : splitAtEmptyLine) {
-				JASCClassifyUnit unitToClassify = new JASCClassifyUnit(content.replaceAll("\\/", "\\_"), textID);
+				JASCClassifyUnit unitToClassify = new JASCClassifyUnit(content.replaceAll("\\/", "\\_"), textID, stmc);
 				paragraphs.add(unitToClassify);
 			}
 		}
@@ -144,6 +144,7 @@ public class ZoneJobs {
 	 */
 	public List<ClassifyUnit> getKeywordContextsFromFile(File keywordContexts){
 		// TODO Schreiben!!!
+//		???
 		return null;
 	}
 
@@ -187,7 +188,7 @@ public class ZoneJobs {
 			}
 //			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
 //					stmc.getTranslations());
-			cu = new JASCClassifyUnit(content, parentID);
+			cu = new JASCClassifyUnit(content, parentID, stmc);
 			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
 		}
@@ -214,7 +215,7 @@ public class ZoneJobs {
 			}
 //			ZoneClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
 //					stmc.getTranslations());
-			cu = new JASCClassifyUnit(EncodingProblemTreatment.normalizeEncoding(content), parentID);
+			cu = new JASCClassifyUnit(EncodingProblemTreatment.normalizeEncoding(content), parentID, stmc);
 			((ZoneClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
 		}
@@ -241,7 +242,7 @@ public class ZoneJobs {
 		for (ClassifyUnit paragraph : paragraphs) {
 			// System.out.println(((ZoneClassifyUnit)
 			// paragraph).getActualClassID());
-			ZoneClassifyUnit newParagraph = new ZoneClassifyUnit(paragraph.getContent(), paragraph.getID());
+			ZoneClassifyUnit newParagraph = new ZoneClassifyUnit(paragraph.getContent(), paragraph.getID(), stmc);
 		
 			newParagraph.setClassIDs(((ZoneClassifyUnit) paragraph).getClassIDs());
 			newParagraph.setActualClassID(((ZoneClassifyUnit) paragraph).getActualClassID());
