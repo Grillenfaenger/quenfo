@@ -27,22 +27,19 @@ import de.uni_koeln.spinfo.umlauts.tools.BibbVocabularyBuilder;
 import de.uni_koeln.spinfo.umlauts.tools.ClassificationTools;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
-public class BIBBUmlautReconstructionApp {
+public class BIBBUmlautCorrectAmbiguousWordsApp {
 	
-	private static final Logger log = Logger.getLogger( BIBBUmlautReconstructionApp.class.getName() );
+	private static final Logger log = Logger.getLogger( BIBBUmlautCorrectAmbiguousWordsApp.class.getName() );
 	
 	public static void main(String[] args) throws ClassNotFoundException,
 	IOException, SQLException {
 		
 		// logging
 		Handler handler = new FileHandler( "output//log.txt" );
-		handler.setLevel(Level.FINEST);
 		log.addHandler(handler);
-		log.setLevel(Level.FINEST);
 		
 		try{
 		
-
 		// /////////////////////////////////////////////
 		// run variables
 		// /////////////////////////////////////////////
@@ -100,15 +97,8 @@ public class BIBBUmlautReconstructionApp {
 		vocBuilder.setFullVoc(voc);
 		vocBuilder.setContexts(contexts);
 		
-		// create outputDB
-		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
-		DBConnector.createBIBBDBcorrected(intermediateDB);
-		
-		// correct unambiguous words
-		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB, log);
-		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
-		intermediateDB = DBConnector.connect(intermediateDbPath);
+		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
