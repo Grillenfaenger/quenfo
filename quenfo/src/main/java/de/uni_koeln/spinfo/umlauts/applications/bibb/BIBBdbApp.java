@@ -6,6 +6,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
@@ -24,9 +28,18 @@ import de.uni_koeln.spinfo.umlauts.tools.ClassificationTools;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class BIBBdbApp {
+	
+	private static final Logger log = Logger.getLogger( BIBBdbApp.class.getName() );
 		
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException{
 		
+	// logging
+		Handler handler = new FileHandler( "output//log.txt" );
+		handler.setLevel(Level.FINEST);
+		log.addHandler(handler);
+		log.setLevel(Level.FINEST);
+		
+	try {	
 		
 		// /////////////////////////////////////////////
 		// run variables
@@ -93,15 +106,12 @@ public class BIBBdbApp {
 		
 		// extract full Vocabulary and build Dictionary
 	
-		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc);
+		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc, log);
 		
-		// find ambiguities
+		// find ambiguities and invert Dictionary afterwards
 		ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterMeasure, filterNames);
-		dict = vocBuilder.dict;
 		
 		FileUtils.printMap(ambiguities, "output//bibb//", "AmbiguitiesZwischenstand");
-		
-		dict.printToFile("output//bibb//", "bibbDictionary");
 		
 		// for statistics: comparision between BiBB and sDewac Vocabulary
 		vocBuilder.compareVocabulary();
@@ -112,7 +122,6 @@ public class BIBBdbApp {
 		
 		// save to files
 		voc.saveVocabularyToFile(destPath, "bibbVocabulary");
-		dict = vocBuilder.dict;
 		dict.printToFile(destPath, "bibbDictionary");
 		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
 		contexts.printKeywordContexts(destPath, "bibbContexts");
@@ -125,14 +134,18 @@ public class BIBBdbApp {
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB);
+		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB, log);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig);
+		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig, log);
+		
+	}catch (Exception e){
+		log.log(Level.SEVERE, "FEHLER: ", e);
+	}
 	}
 	
 }

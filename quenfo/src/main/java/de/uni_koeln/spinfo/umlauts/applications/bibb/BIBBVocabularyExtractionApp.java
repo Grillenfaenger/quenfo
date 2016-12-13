@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
@@ -19,8 +23,18 @@ import de.uni_koeln.spinfo.umlauts.tools.BibbVocabularyBuilder;
 import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class BIBBVocabularyExtractionApp {
+	
+	private static final Logger log = Logger.getLogger( BIBBVocabularyExtractionApp.class.getName() );
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
+		
+		// logging
+		Handler handler = new FileHandler( "output//log.txt" );
+		handler.setLevel(Level.FINEST);
+		log.addHandler(handler);
+		log.setLevel(Level.FINEST);
+		
+		try {	
 		
 		// /////////////////////////////////////////////
 		// run variables
@@ -34,8 +48,8 @@ public class BIBBVocabularyExtractionApp {
 		// extraction parameters
 		// /////////////////////////////////////////////
 		
-		boolean useDewacVocabulary = true;
-		boolean extendContextsWithDewac = true;
+		boolean useDewacVocabulary = false;
+		boolean extendContextsWithDewac = false;
 		String externalVoc = "output//dewac//DewacVoc.txt";
 		boolean filterByProportion = true;
 		double filterMeasure = 1d;
@@ -70,7 +84,7 @@ public class BIBBVocabularyExtractionApp {
 		BibbVocabularyBuilder vocBuilder = new BibbVocabularyBuilder(dbPath, expConfig, excludeYear);
 		
 		// extract full Vocabulary and build Dictionary
-		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc);
+		dict = vocBuilder.buildDictionary(useDewacVocabulary, externalVoc, log);
 		
 		// print
 		voc = vocBuilder.fullVoc;
@@ -80,7 +94,6 @@ public class BIBBVocabularyExtractionApp {
 		ambiguities = vocBuilder.findAmbiguities(filterByProportion, filterMeasure, filterNames);
 		
 		// print
-		dict = vocBuilder.dict;
 		dict.printToFile(destPath, "bibbDictionary");
 		
 		
@@ -96,6 +109,10 @@ public class BIBBVocabularyExtractionApp {
 		// print
 		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
 		contexts.printKeywordContexts(destPath, "bibbContexts");
+		
+		}catch (Exception e){
+			log.log(Level.SEVERE, "FEHLER: ", e);
+		}
 
 	}
 

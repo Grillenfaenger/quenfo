@@ -21,9 +21,13 @@ public class Dictionary {
 	
 	public Dictionary(Vocabulary voc) {
 		dictionary = new HashMap<String, String>();
-		for (String key : voc.vocabulary.keySet()) {
-			addEntry(key);
+		for (String word : voc.vocabulary.keySet()) {
+			addEntry(word);
 		}
+	}
+	
+	public Dictionary(HashMap<String,String> dictionary){
+		this.dictionary = dictionary;
 	}
 	
 	public void setDictionary(Map<String, String> vocabulary) {
@@ -35,7 +39,12 @@ public class Dictionary {
 	}
 	
 	public void addEntry(String umlautWord) {
-		dictionary.put(replaceUmlaut(umlautWord), umlautWord);
+		String without = replaceUmlaut(umlautWord);
+		if(dictionary.containsKey(umlautWord)){
+			System.out.println("Uncaught ambiguity: " + umlautWord + ", " +  without + ", " + dictionary.get(umlautWord));
+//			log.log(Level.INFO, "Uncaught ambiguity: " + umlautWord + ", " + dictionary.get(without));
+		}
+		dictionary.put(umlautWord, without);
 	}
 	
 	public void addEntries(Map<String, String> dict){
@@ -61,50 +70,56 @@ public class Dictionary {
 		
 		// Ambiguitäten zwichen umlautbefreiten Wörtern
 		
-		ArrayList<String> ambige = new ArrayList<String>();
-		ArrayList<String> valueList = new ArrayList<String>();
+		HashSet<String> ambige = new HashSet<String>();
+		HashSet<String> valueSet = new HashSet<String>();
 		
 		// Liste ambiger umlautbefreiter Wörter erzeugen
 		for(String key : dictionary.keySet()){
-			if (!valueList.contains(key)) {
-				valueList.add(key);
+			String without = dictionary.get(key);
+			if (!valueSet.contains(without)) {
+				valueSet.add(without);
 			} else {
-				ambige.add(key);
+				ambige.add(without);
 			}
 		}
 		
 		// Die jeweiligen Lesweisen sichern
 		for(String key : dictionary.keySet()){
-			if(ambige.contains(key)) {
-				if (ambiguities.containsKey(key)){
-					ambiguities.get(key).add(dictionary.get(key));
+			String without = dictionary.get(key);
+			if(ambige.contains(without)) {
+				if (ambiguities.containsKey(without)){
+					ambiguities.get(without).add(key);
 				} else {
 					HashSet<String> value = new HashSet<String>();
-					value.add(dictionary.get(key));
-					ambiguities.put(key, value);
+					value.add(key);
+					ambiguities.put(without, value);
 				}
 			}
 		}
 		
 		// Ambiguitäten im gesamten Ursprungsvokabular
-		for(String key : dictionary.keySet()){
-			if(referenceVoc.vocabulary.containsKey(key)) {
-				if (ambiguities.containsKey(key)){
-					ambiguities.get(key).add(key);
-					ambiguities.get(key).add(dictionary.get(key));
+		for(String key : dictionary.keySet()){ 
+			String without = dictionary.get(key);
+			if(referenceVoc.vocabulary.containsKey(without)) {
+				if (ambiguities.containsKey(without)){
+					HashSet<String> newValues = new HashSet<String>();
+					newValues.add(without);
+					newValues.add(key);
+					ambiguities.get(without).addAll(newValues);
 				} else {
 					HashSet<String> value = new HashSet<String>();
+					value.add(without);
 					value.add(key);
-					value.add(dictionary.get(key));
-					ambiguities.put(key, value);
+					ambiguities.put(without, value);
 				}
 			}
 		}
 		
 		System.out.println("Es gibt " + ambiguities.size() + " Fälle mit Ambiguitäten.");
 		
+		// invert Dictionary for the purpose of correction
+		invertDictionary();
 		return ambiguities;
-		
 	}
 	
 	public Set<String> createDictSet() {
@@ -126,12 +141,19 @@ public class Dictionary {
 		return ambiguitySet;
 	}
 	
-	public Map<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
-		HashMap<String, String> simpleReplacements = dictionary;
-		for(String word : ambiguousWords){
-			simpleReplacements.remove(word);
+	/**
+	 * inverts the Dictionary for the purpose of using for correction.
+	 * Note, that by reversion some entries could get lost due to same key. 
+	 * @return
+	 */
+	public Dictionary invertDictionary(){
+		HashMap<String, String> invertedMap = new HashMap<String,String>();
+		for(String key : dictionary.keySet()){
+			invertedMap.put(dictionary.get(key), key);
 		}
-		return simpleReplacements;
+		Dictionary reverseDictionary = new Dictionary(invertedMap);
+		dictionary = invertedMap;
+		return reverseDictionary;
 	}
 	
 	public void printToFile(String destPath, String fileName) throws IOException{
@@ -153,9 +175,9 @@ public class Dictionary {
 		
 		List<String> removed = new ArrayList<String>();
 		for(String name : names){
-			name = replaceUmlaut(name);
-			if(ambiguities.containsKey(name)){
-				ambiguities.remove(name);
+			String nameWithout = replaceUmlaut(name);
+			if(ambiguities.containsKey(nameWithout)){
+				ambiguities.remove(nameWithout);
 				dictionary.remove(name);
 			}
 		}
@@ -181,21 +203,34 @@ public class Dictionary {
 			HashSet<String> variants = ambiguities.get(key);
 			if(variants.size() == 2){
 				Integer[] occurences = new Integer[2];
-				String without = key;
-				String with = null;
-				for(String var : variants){
-					if(!dictionary.containsKey(var)){
-						with = var;
-						sb.append(key+"("+voc.getOccurenceOf(key)+")"+", ");
-						sb.append(var+"("+voc.getOccurenceOf(var)+")");
-						break;
+				String[] variant = new String[2]; // 0 : without, 1: with
+				if(variants.contains(key)){
+					variant[0] = key;
+					for(String s : variants){
+						if(!dictionary.containsKey(s)){
+							variant[1] = s;
+						}
+					}
+				} else {
+					int i = 0;
+					for(String s : variants){
+						variant[i] = s;
+						i++;
 					}
 				}
-				if(without == null){
+				
+				sb.append(variant[0]+"("+voc.getOccurenceOf(variant[0])+")"+", ");
+				sb.append(variant[1]+"("+voc.getOccurenceOf(variant[1])+")");
+				
+				if(variant[1] == null){
 					System.out.println("Error: " + key);
 				}
-				occurences[0] = voc.getOccurenceOf(without);
-				occurences[1] = voc.getOccurenceOf(with);
+				occurences[0] = voc.getOccurenceOf(variant[0]); // without
+				occurences[1] = voc.getOccurenceOf(variant[1]);	// with
+				
+				if(occurences[0] == 0 || occurences[1] == 0){
+					System.out.println(variants);
+				}
 				
 				if(!occurences[0].equals(occurences[1])){
 //					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
@@ -220,7 +255,9 @@ public class Dictionary {
 					dictionary.remove(key); // d. h. es wird klassifiziert
 				}
 			} else {
-				System.out.println(variants);
+				System.out.println(variants + "!= 2");
+				dictionary.remove(key);
+				System.out.println(variants + "werden klassifiziert");
 			}
 			if(removedInfo != null){
 				removed.add(removedInfo);

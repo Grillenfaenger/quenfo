@@ -312,6 +312,8 @@ public class ClassificationTools {
 		for(String key : vocBuilder.ambiguities.keySet()){
 			int occurence = 0;
 			for(String variant : vocBuilder.ambiguities.get(key)){
+				int variantOcc = 0;
+				
 				occurence += vocBuilder.fullVoc.getOccurenceOf(variant);
 				total += occurence;
 			}
@@ -319,36 +321,19 @@ public class ClassificationTools {
 		}
 		
 		Collections.sort(occurences, Collections.reverseOrder());
+		return median(occurences);
 		
-		int half = total/2;
-		int threeQuarters = total/4*3;
-		
-		System.out.println("entries: " + occurences.size());
-		System.out.println("sum total in Corpus: " + total + ", half: " + half + ", 3/4: " + threeQuarters);
-		
-		int sum = 0;
-		for(int i = 0; i < occurences.size(); i++){
-			Integer count = occurences.get(i);
-			sum += count;
-			if(count.equals(2)){
-				System.out.println("first 2 at " + i + ", " + sum);
-				break;
-			}
-			if(count.equals(4)) System.out.println("first 4 at " + i);
-			if(count.equals(half)) System.out.println(half + "at " + i);
-			if(sum > half) {
-				System.out.println(half + "at " + i);
-				return count;
-			}
-			if(sum<threeQuarters+100000 && sum > threeQuarters-100000) {
-				System.out.println(threeQuarters + "at " + i);
-				break;
-			}
-		}
-		
-		
-		return half;
 	}
+	
+	 public static Integer median (List<Integer> a){
+	        int middle = a.size()/2;
+	 
+	        if (a.size() % 2 == 1) {
+	            return a.get(middle);
+	        } else {
+	           return (int) ((a.get(middle-1) + a.get(middle)) / 2.0);
+	        }
+	    }
 
 	public static void correctAmbiguousWords3(BibbVocabularyBuilder vocBuilder, int year, Connection input, Connection dbOut, UmlautExperimentConfiguration config) throws SQLException, IOException {
 		IETokenizer tokenizer = new IETokenizer();

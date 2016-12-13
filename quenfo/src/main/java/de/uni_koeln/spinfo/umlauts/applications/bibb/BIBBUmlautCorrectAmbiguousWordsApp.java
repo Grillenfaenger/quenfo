@@ -36,7 +36,9 @@ public class BIBBUmlautCorrectAmbiguousWordsApp {
 		
 		// logging
 		Handler handler = new FileHandler( "output//log.txt" );
+		handler.setLevel(Level.FINEST);
 		log.addHandler(handler);
+		log.setLevel(Level.FINEST);
 		
 		try{
 		

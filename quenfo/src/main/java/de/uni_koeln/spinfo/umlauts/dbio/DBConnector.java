@@ -204,6 +204,15 @@ public class DBConnector {
 				List<String> tokenizedSentence = Arrays.asList(ietokenizer.tokenizeSentence(sentence));
 				tokenizedSentences.add(tokenizedSentence);	
 			}
+			
+			// Kontrolle
+			if(jobAd.getContent().contains("Abendbuffets")){
+				System.out.println(jobAd.getContent());
+				System.out.println(sentences);
+				System.out.println(tokenizedSentences);
+			}
+			
+			
 			for(List<String> sentencetokens : tokenizedSentences){	
 				for (int i = 0; i < sentencetokens.size(); i++) {
 					String token = sentencetokens.get(i);

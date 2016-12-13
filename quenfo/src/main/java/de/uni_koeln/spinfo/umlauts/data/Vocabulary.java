@@ -43,7 +43,8 @@ public class Vocabulary {
 	}
 	
 	public Integer getOccurenceOf(String word){
-		return vocabulary.get(word);
+		if(vocabulary.containsKey(word)) return vocabulary.get(word);
+		return 0;
 	}
 	
 	public void generateNumberOfTokens() {
