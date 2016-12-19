@@ -59,12 +59,12 @@ public class Dictionary {
 		replacement = replacement.replaceAll("ö", "o");
 		replacement = replacement.replaceAll("Ü", "U");
 		replacement = replacement.replaceAll("ü", "u");
-		replacement = replacement.replaceAll("ß", "ss");
+//		replacement = replacement.replaceAll("ß", "ss");
 		
 		return replacement;
 	}
 	
-	public Map<String, HashSet<String>> findAmbiguities(Vocabulary referenceVoc) {
+	public Map<String, HashSet<String>> findAmbiguities(Vocabulary referenceVoc) throws IOException {
 		
 		HashMap<String, HashSet<String>>ambiguities = new HashMap<String, HashSet<String>>();
 		
@@ -115,6 +115,7 @@ public class Dictionary {
 			}
 		}
 		
+		FileUtils.printMap(ambiguities, "output//stats//", "bibbAmbiguitiesZwischenstand");
 		System.out.println("Es gibt " + ambiguities.size() + " Fälle mit Ambiguitäten.");
 		
 		// invert Dictionary for the purpose of correction
@@ -194,10 +195,14 @@ public class Dictionary {
 		remainingAmbiguities.putAll(ambiguities);
 		
 		ArrayList<String> removed = new ArrayList<String>();
+		ArrayList<String> ambiguitiesToRemove = new ArrayList<String>();
 		String removedInfo = null;
 		StringBuffer sb = null;
 		
+		int keep;
+		
 		for(String key : ambiguities.keySet()){
+			keep = 2;
 			removedInfo = null;
 			sb = new StringBuffer();
 			HashSet<String> variants = ambiguities.get(key);
@@ -232,23 +237,38 @@ public class Dictionary {
 					System.out.println(variants);
 				}
 				
+				
 				if(!occurences[0].equals(occurences[1])){
 //					double occurenceRatio = Math.log10(occurences[0].doubleValue()/occurences[1].doubleValue());
 					double occurenceRatio = Math.log10(occurences[0].doubleValue())-Math.log10(occurences[1].doubleValue());
 					if(occurenceRatio < logRate*-1){
-						// aus den ambiguities herauslöschen
-						remainingAmbiguities.remove(key); // d. h. es wird nicht klassifiziert, aber immer direkt korrigiert.
-						sb.append(": "+occurenceRatio+"Es wird immer in zu " + dictionary.get(key)+ " korrigiert.");
-						removedInfo = sb.toString();
+						keep = 1;
+
 					} else if(occurenceRatio > logRate){
-						// aus dem Dict und aus den ambiguities löschen
-						dictionary.remove(key); // d. h. es wird nicht korrigiert
-						remainingAmbiguities.remove(key); // und nicht klassifiziert
-						sb.append(": "+occurenceRatio + " "+ key+ " wird nie korrigiert.");
-						removedInfo = sb.toString();
+						keep = 0;	
 					} else {
 						dictionary.remove(key); // d. h. es wird klassifiziert
 					}
+					if(keep != 2){
+						if(variant[keep].equals(key)){ // nie korrigieren, nie klassifizieren
+							dictionary.remove(key);
+							ambiguitiesToRemove.add(key);
+							sb.append(": "+occurenceRatio + " "+ key+ " wird nie korrigiert.");
+							removedInfo = sb.toString();
+						} else { // immer korrigieren zu variant[keep] != key
+							int toRemove;
+							if(keep == 0){
+								toRemove = 1; 
+							} else {
+								toRemove = 0;
+							}
+							ambiguitiesToRemove.add(key);
+//							ambiguities.get(key).remove(variant[toRemove]);
+							sb.append(": "+occurenceRatio+"Es wird immer in zu " + variant[keep]+ " korrigiert.");
+							removedInfo = sb.toString();
+						}
+					}
+					
 				} else {
 					// wenn es genau gleich viele Vorkommen gibt
 					System.out.println(variants + "werden klassifiziert");
@@ -259,11 +279,22 @@ public class Dictionary {
 				dictionary.remove(key);
 				System.out.println(variants + "werden klassifiziert");
 			}
+			
+			
+			
+			
 			if(removedInfo != null){
 				removed.add(removedInfo);
 			}
 			
 		}
+		
+		// remove the clear ones from ambiguities
+		for(String key : ambiguitiesToRemove){
+			ambiguities.remove(key);
+		}
+		
+		
 		if(!removed.isEmpty()){
 			FileUtils.printList(removed, "output//stats//", "decidedByRatio", ".txt");
 		}

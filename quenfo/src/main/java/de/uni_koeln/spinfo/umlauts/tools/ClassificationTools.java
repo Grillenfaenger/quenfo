@@ -70,11 +70,12 @@ public class ClassificationTools {
 		}
 		
 		dbOut.setAutoCommit(false);
-		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_2012_Spinfo (row_names,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		// Verbindung zur Datenbank aufbauen und JobAds abrufen
 		input.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_2012_Spinfo WHERE(Jahrgang = '"+year+"') ";
+//		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 		Statement stmt = input.createStatement();
 		ResultSet resultSet = stmt.executeQuery(sql);
 		
@@ -168,11 +169,12 @@ public class ClassificationTools {
 		ZoneJobs jobs = new ZoneJobs();
 		
 		dbOut.setAutoCommit(false);
-		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_2012_Spinfo (row_names,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		// Verbindung zur Datenbank aufbauen und JobAds abrufen
 		input.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_2012_Spinfo WHERE(Jahrgang = '"+year+"') ";
+//		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 		Statement stmt = input.createStatement();
 		ResultSet resultSet = stmt.executeQuery(sql);
 		
@@ -181,7 +183,12 @@ public class ClassificationTools {
 		
 		// Jede Anzeige durchgehen, evtl. klassifizieren und korrigieren.
 		JobAd jobAd = null;
+		
+//		int count = 0;
 		while(resultSet.next()){
+//			count++;
+//			if(count > 1000) break;
+			
 			HashSet<String> modelsToRemove = new HashSet<String>();
 			jobAd = new JobAd(resultSet.getInt(3), resultSet.getInt(2), resultSet.getString(4), resultSet.getInt(1));
 			StringBuffer buf = new StringBuffer();
@@ -199,72 +206,79 @@ public class ClassificationTools {
 					log.log(Level.FINER, word + ": " + i);
 					
 					if(vocBuilder.ambiguities.containsKey(word)){
-						
-						// build model
-						if(!models.containsKey(word)){
-							// create Classification Units
-							HashSet<String> variants = vocBuilder.ambiguities.get(word);
-							String[] senses = variants.toArray(new String[variants.size()]);
-							
-							System.out.println("build model for " + word + ", Varianten: " + variants);
-							log.log(Level.FINER, "build model for " + word + ", Varianten: " + variants);
-							
-							List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
-							for(String string : variants){
-								List<List<String>> contexts = vocBuilder.contexts.getContext(string);
-								System.out.println(contexts.size() + " Kontexte mit " + string);
-								for (List<String> context : contexts){
-									
-									ZoneClassifyUnit cu = new UmlautClassifyUnit(context, string, senses, true);
-									trainingData.add(cu);
-								}
-								
-							}
-							trainingData = jobs.setFeatures(trainingData, config.getFeatureConfiguration(), true);
-							trainingData = jobs.setFeatureVectors(trainingData, config.getFeatureQuantifier(), null);
-
-							// build model for each group
-							Model model = jobs.getNewModelForClassifier(trainingData, config);
-							models.put(word, model);
-							if(computeOccurenceOfKey(word, vocBuilder)<critOccurence){
-								modelsToRemove.add(word);
-							}
+						if(word.equals("Hauptschulabschluss")){
+							System.out.println(word);
 						}
 						
 						// extract contexts
-						List<String> context = extractContext(tokens2, i, config.getContextBefore(),config.getContextAfter());
-						// build ClassifyUnit
-						List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
-						ZoneClassifyUnit zcu = new UmlautClassifyUnit(context, word, vocBuilder.ambiguities.get(word).toArray(new String[vocBuilder.ambiguities.get(word).size()]), true);
-						cus.add(zcu);
-						cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
-						cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), models.get(word).getFUOrder());
-						
-						// classify
-						Map<ClassifyUnit, boolean[]> classified = jobs.classify(cus, config, models.get(word));
-
-						List<ClassifyUnit> cuList = new ArrayList<ClassifyUnit>(classified.keySet());
-						UmlautClassifyUnit result = (UmlautClassifyUnit) cuList.get(0);
-						String wordAsClassified = result.getSense(classified.get(result));
-						
-						System.out.print("CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
-						log.log(Level.FINER, "CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
-						
-						// only relevant in evaluation mode
-						if(word.equals(wordAsClassified)){
-							System.out.print(" NOT CHANGED\n ");
-							correct++;
-						} else {
-							System.out.print(" CORRECTED\n ");
-							failure++;
+						List<String> correctionContext = extractContext(tokens2, i, config.getContextBefore(),config.getContextAfter());
+						if(correctionContext.size()!=1){
+							// build model
+							if(!models.containsKey(word)){
+								
+								// create Classification Units
+								HashSet<String> variants = vocBuilder.ambiguities.get(word);
+								String[] senses = variants.toArray(new String[variants.size()]);
+								
+								System.out.println("build model for " + word + ", Varianten: " + variants);
+								log.log(Level.FINER, "build model for " + word + ", Varianten: " + variants);
+								
+								List<ClassifyUnit> trainingData = new ArrayList<ClassifyUnit>();
+								for(String string : variants){
+									List<List<String>> contexts = vocBuilder.contexts.getContext(string);
+									System.out.println(contexts.size() + " Kontexte mit " + string);
+									for (List<String> context : contexts){
+										
+										ZoneClassifyUnit cu = new UmlautClassifyUnit(context, string, senses, true);
+										trainingData.add(cu);
+									}
+									
+								}
+								trainingData = jobs.setFeatures(trainingData, config.getFeatureConfiguration(), true);
+								trainingData = jobs.setFeatureVectors(trainingData, config.getFeatureQuantifier(), null);
+	
+								// build model for each group
+								Model model = jobs.getNewModelForClassifier(trainingData, config);
+								models.put(word, model);
+								if(computeOccurenceOfKey(word, vocBuilder)<critOccurence){
+									modelsToRemove.add(word);
+								}
+							}
+							
+							
+							// build ClassifyUnit
+							List<ClassifyUnit> cus = new ArrayList<ClassifyUnit>();
+							ZoneClassifyUnit zcu = new UmlautClassifyUnit(correctionContext, word, vocBuilder.ambiguities.get(word).toArray(new String[vocBuilder.ambiguities.get(word).size()]), false);
+							cus.add(zcu);
+							cus = jobs.setFeatures(cus, config.getFeatureConfiguration(), false);
+							cus = jobs.setFeatureVectors(cus, config.getFeatureQuantifier(), models.get(word).getFUOrder());
+							
+							// classify
+							Map<ClassifyUnit, boolean[]> classified = jobs.classify(cus, config, models.get(word));
+	
+							List<ClassifyUnit> cuList = new ArrayList<ClassifyUnit>(classified.keySet());
+							UmlautClassifyUnit result = (UmlautClassifyUnit) cuList.get(0);
+							String wordAsClassified = result.getSense(classified.get(result));
+							
+							System.out.print("CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
+							log.log(Level.FINER, "CLASSIFICATION: Im Text: "+ word + " Klassifiziert: "+ wordAsClassified);
+							
+							// only relevant in evaluation mode
+							if(word.equals(wordAsClassified)){
+								System.out.print(" NOT CHANGED\n ");
+								correct++;
+							} else {
+								System.out.print(" CORRECTED\n ");
+								failure++;
+							}
+							// reconstruct Umlaut, if necessary
+							if(!wordAsClassified.equals(word)){
+								Span span = s.getAbsoluteSpanOfToken(i);
+								int start = span.getStart();
+							    int end = span.getEnd();
+							    buf.replace(start, end, wordAsClassified);   
+							}
 						}
-						// reconstruct Umlaut, if necessary
-						if(!wordAsClassified.equals(word)){
-							Span span = s.getAbsoluteSpanOfToken(i);
-							int start = span.getStart();
-						    int end = span.getEnd();
-						    buf.replace(start, end, wordAsClassified);   
-						}		
 					}
 				}
 			}
@@ -292,6 +306,9 @@ public class ClassificationTools {
 		log.log(Level.FINER, "not changed/correct(in Test mode): " + correct + ", changed/failure (test Mode): " + failure + ", not changed ratio:" + ratio);
 		
 		} catch (Exception e){
+			input.close();
+			dbOut.commit();
+			dbOut.close();
 			log.log(Level.SEVERE, "FEHLER: ", e);
 		}
 	}
@@ -343,7 +360,7 @@ public class ClassificationTools {
 		int change = 0;
 		
 		dbOut.setAutoCommit(false);
-		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (row_names,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		// for every ambiguity
 		for(String ambigKey : vocBuilder.ambiguities.keySet()){
@@ -370,7 +387,7 @@ public class ClassificationTools {
 			
 			/////// look for occurences in the whole db ///////
 			// Connect to db and get jobAds
-			String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
+			String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 			Statement stmt = input.createStatement();
 			ResultSet resultSet = stmt.executeQuery(sql);
 			
@@ -452,11 +469,11 @@ public class ClassificationTools {
 		Set<String> ambiguitySet = createAmbiguitySet(vocBuilder.ambiguities);
 		
 		dbOut.setAutoCommit(false);
-		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_2012_Spinfo (row_names,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
 		// Verbindung zur Datenbank aufbauen und JobAds abrufen
 		input.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 		Statement stmt = input.createStatement();
 		ResultSet resultSet = stmt.executeQuery(sql);
 		
@@ -572,6 +589,9 @@ public class ClassificationTools {
 
 	public static void correctUnabiguousWords(BibbVocabularyBuilder vocBuilder, int year, String dbIn, Connection dbOut, Logger log) throws ClassNotFoundException, SQLException {
 		
+		Connection inputConnection = DBConnector.connect(dbIn);
+		inputConnection.setAutoCommit(false);
+		
 		try{
 			
 		IETokenizer tokenizer = new IETokenizer();
@@ -579,19 +599,19 @@ public class ClassificationTools {
 		int corrections = 0;
 		int correct = 0;
 		
-		Connection inputConnection = DBConnector.connect(dbIn);
-		inputConnection.setAutoCommit(false);
-		
 		dbOut.setAutoCommit(false);
-		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_ALL_Spinfo (OrigID,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
+		PreparedStatement outPStmt = dbOut.prepareStatement("INSERT INTO DL_2012_Spinfo (row_names,ZEILENNR, Jahrgang, STELLENBESCHREIBUNG, CORRECTED) VALUES(?,?,?,?,?)");
 		
-		
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_2012_Spinfo WHERE(Jahrgang = '"+year+"') ";
+//		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE(Jahrgang = '"+year+"') ";
 		Statement stmt = inputConnection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 		
 		JobAd jobAd = null;
+//		int count = 0;
 		while(result.next()){
+//			count++;
+//			if(count > 1000) break;
 			jobAd = new JobAd(result.getInt(3), result.getInt(2), result.getString(4), result.getInt(1));
 			StringBuffer buf = new StringBuffer();
 			buf.append(jobAd.getContent());
@@ -638,6 +658,9 @@ public class ClassificationTools {
 		System.out.println("Corrections: " + corrections);
 		
 		}catch (Exception e){
+			inputConnection.close();
+			dbOut.commit();
+			dbOut.close();
 			log.log(Level.SEVERE, "FEHLER: ", e);
 		}
 	}

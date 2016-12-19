@@ -87,7 +87,7 @@ public class UmlautSingleExperimentExecutor {
 		
 	    //evaluate
 	    before = System.nanoTime();
-//		Map<ClassifyUnit, boolean[]> classified = null;
+		Map<ClassifyUnit, boolean[]> classified = null;
 		ExperimentResult result = jobs.evaluate(classified , evaluationCategories, expConfig);
 		after = System.nanoTime();
 		//system.out.println("evaluate: " + (after - before)/1000000000d);

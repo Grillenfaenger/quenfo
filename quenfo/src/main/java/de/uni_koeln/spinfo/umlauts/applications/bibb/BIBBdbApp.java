@@ -35,9 +35,9 @@ public class BIBBdbApp {
 		
 	// logging
 		Handler handler = new FileHandler( "output//log.txt" );
-		handler.setLevel(Level.FINEST);
+		handler.setLevel(Level.INFO);
 		log.addHandler(handler);
-		log.setLevel(Level.FINEST);
+		log.setLevel(Level.INFO);
 		
 	try {	
 		
@@ -45,29 +45,29 @@ public class BIBBdbApp {
 		// run variables
 		// /////////////////////////////////////////////
 		
-		String dbPath = "umlaute_db.db";	
-		String intermediateDbPath = "inter_db.db";
-		String correctedDbPath = "corrected_db.db";
+		String dbPath = "D:/Daten/sqlite/SteA.db3";	
+		String intermediateDbPath = "output//production//inter_db.db";
+		String correctedDbPath = "output//production//corrected_db.db";
 		int excludeYear = 2012;
-		String destPath = "output//bibb//";
+		String destPath = "output//production//";
 		
 		// /////////////////////////////////////////////
 		// extraction parameters
 		// /////////////////////////////////////////////
 		
-		boolean useDewacVocabulary = true;
+		boolean useDewacVocabulary = false;
 		String externalVoc = "output//dewac//DewacVoc.txt";
 		boolean filterByProportion = true;
 		double filterMeasure = 1d;
-		boolean filterNames = true;
-		boolean extendContextsWithDewac = true;
+		boolean filterNames = false;
+		boolean extendContextsWithDewac = false;
 		
 		if(useDewacVocabulary){
 			extendContextsWithDewac = true;
 		}
 		
 		// /////////////////////////////////////////////
-		// /////experiment parameters
+		// /////classification parameters
 		// /////////////////////////////////////////////
 		
 		int knnValue = 3;
@@ -143,7 +143,7 @@ public class BIBBdbApp {
 		// classifiy and correct ambiguous words
 		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig, log);
 		
-	}catch (Exception e){
+	}catch (Throwable e){
 		log.log(Level.SEVERE, "FEHLER: ", e);
 	}
 	}

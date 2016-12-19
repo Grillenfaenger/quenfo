@@ -30,7 +30,7 @@ public class BIBBVocabularyExtractionApp {
 		
 		// logging
 		Handler handler = new FileHandler( "output//log.txt" );
-		handler.setLevel(Level.FINEST);
+		handler.setLevel(Level.INFO);
 		log.addHandler(handler);
 		log.setLevel(Level.FINEST);
 		
@@ -40,9 +40,11 @@ public class BIBBVocabularyExtractionApp {
 		// run variables
 		// /////////////////////////////////////////////
 		
-		String dbPath = "umlaute_db.db";	
+//		String dbPath = "umlaute_db.db";
+		String dbPath = "D:/Daten/sqlite/SteA.db3";	
 		int excludeYear = 2012;
-		String destPath = "output//bibb//";
+//		String destPath = "output//bibb//";
+		String destPath = "output//production//";
 		
 		// /////////////////////////////////////////////
 		// extraction parameters
@@ -53,7 +55,7 @@ public class BIBBVocabularyExtractionApp {
 		String externalVoc = "output//dewac//DewacVoc.txt";
 		boolean filterByProportion = true;
 		double filterMeasure = 1d;
-		boolean filterNames = true;
+		boolean filterNames = false;
 		
 		if(useDewacVocabulary){
 			extendContextsWithDewac = true;
@@ -110,7 +112,7 @@ public class BIBBVocabularyExtractionApp {
 		FileUtils.printMap(ambiguities, destPath, "bibbAmbiguities");
 		contexts.printKeywordContexts(destPath, "bibbContexts");
 		
-		}catch (Exception e){
+		}catch (Throwable e){
 			log.log(Level.SEVERE, "FEHLER: ", e);
 		}
 

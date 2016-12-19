@@ -47,9 +47,9 @@ public class BIBBUmlautReconstructionApp {
 		// run variables
 		// /////////////////////////////////////////////
 		
-		String dbPath = "umlaute_db.db";	
-		String intermediateDbPath = "inter_db.db";
-		String correctedDbPath = "corrected_db.db";
+		String dbPath = "D:/Daten/sqlite/SteA.db3";	
+		String intermediateDbPath = "output//production//inter_db.db";
+		String correctedDbPath = "output//production//corrected_db.db";
 		int excludeYear = 2012;
 		
 		// /////////////////////////////////////////////
@@ -90,10 +90,10 @@ public class BIBBUmlautReconstructionApp {
 		BibbVocabularyBuilder vocBuilder = new BibbVocabularyBuilder(dbPath, expConfig, excludeYear);
 		
 		// load Vocabulary from Files
-		dict.loadDictionary("output//bibb//bibbDictionary.txt");
-		ambiguities = FileUtils.fileToAmbiguities("output//bibb//bibbAmbiguities.txt");
-		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
-		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
+		dict.loadDictionary("output//production//bibbDictionary.txt");
+		ambiguities = FileUtils.fileToAmbiguities("output//production//bibbAmbiguities.txt");
+		contexts = contexts.loadKeywordContextsFromFile("output//production//BibbContexts.txt");
+		voc.loadVocabularyFromFile("output//production//BibbVocabulary.txt");
 		
 		vocBuilder.setAmbiguities(ambiguities);
 		vocBuilder.setDict(dict);
@@ -114,7 +114,7 @@ public class BIBBUmlautReconstructionApp {
 		// classifiy and correct ambiguous words
 		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig, log);
 		
-		}catch (Exception e){
+		}catch (Throwable e){
 			log.log(Level.SEVERE, "FEHLER: ", e);
 		}
 	}

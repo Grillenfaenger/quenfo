@@ -74,7 +74,7 @@ public class BibbVocabularyBuilder {
 		}
 		
 		// reduce Vocabulary to Umlaut words
-		Vocabulary umlautVoc = fullVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
+		Vocabulary umlautVoc = fullVoc.getAllByRegex(".*([ÄäÖöÜü]).*");
 		umlautVoc.generateNumberOfTokens();
 		vocLog.add("Token with Umlaut: " + umlautVoc.getNumberOfTokens());
 		vocLog.add("Types with Umlaut: " + umlautVoc.vocabulary.size());
@@ -151,7 +151,8 @@ public class BibbVocabularyBuilder {
 		Connection connection = DBConnector.connect(dbPath);
 		
 		connection.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
+//		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
 		Statement stmt = connection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 		JobAd jobAd = null;

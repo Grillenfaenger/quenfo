@@ -60,9 +60,9 @@ public class DBConnector {
 		System.out.println("create BIBB_DB");
 		connection.setAutoCommit(false);
 		Statement stmt = connection.createStatement();
-		String sql = "DROP TABLE IF EXISTS DL_ALL_Spinfo";
+		String sql = "DROP TABLE IF EXISTS DL_2012_Spinfo";
 		stmt.executeUpdate(sql);
-		sql = "CREATE TABLE DL_ALL_Spinfo (ID  INTEGER PRIMARY KEY AUTOINCREMENT, OrigID INT NOT NULL, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT, CORRECTED TEXT)";
+		sql = "CREATE TABLE DL_2012_Spinfo (ID  INTEGER PRIMARY KEY AUTOINCREMENT, row_names INT NOT NULL, ZEILENNR INT NOT NULL, Jahrgang INT NOT NULL, STELLENBESCHREIBUNG TEXT, CORRECTED TEXT)";
 		stmt.executeUpdate(sql);
 		stmt.close();
 		connection.commit();
@@ -190,7 +190,7 @@ public class DBConnector {
 		IETokenizer ietokenizer = new IETokenizer();
 		
 		connection.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+notjahrgang+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+notjahrgang+"') ";
 		Statement stmt = connection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 	
@@ -372,7 +372,7 @@ public class DBConnector {
 		replacement = replacement.replaceAll("ö", "o");
 		replacement = replacement.replaceAll("Ü", "U");
 		replacement = replacement.replaceAll("ü", "u");
-		replacement = replacement.replaceAll("ß", "ss");
+//		replacement = replacement.replaceAll("ß", "ss");
 		
 		return replacement;
 	}
