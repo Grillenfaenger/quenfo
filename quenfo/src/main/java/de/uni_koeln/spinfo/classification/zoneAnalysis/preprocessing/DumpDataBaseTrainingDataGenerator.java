@@ -69,7 +69,7 @@ public class DumpDataBaseTrainingDataGenerator {
 				}
 				int jahrgang = Integer.parseInt(sheet.getCell(3,i).getContents());
 				int zeilennr = Integer.parseInt(sheet.getCell(4,i).getContents());
-				cu = new JASCClassifyUnit(content, jahrgang, zeilennr, id);
+				cu = new JASCClassifyUnit(content, jahrgang, zeilennr, id, stmc);
 				cu.setClassIDs(classes);
 				cu.setActualClassID(stmc.getSingleClass(classes));
 				data.add(cu);

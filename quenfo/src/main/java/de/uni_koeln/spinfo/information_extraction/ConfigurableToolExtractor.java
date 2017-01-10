@@ -27,13 +27,16 @@ import is2.data.SentenceData09;
 import is2.lemmatizer.Lemmatizer;
 
 public class ConfigurableToolExtractor {
+	
+	SingleToMultiClassConverter stmc;
 
 	public void extractTools(int startPos, int count, boolean matchWithDB, int tableSize, Connection inputConnection, Connection outputConnection, File toolsFile, File noToolsFile, File contextFile) throws SQLException, IOException {
 		
 		IEJobs_Tools jobs = new IEJobs_Tools();
 		
+		
 		//set number of single- and multiclasses
-		setNumberOfSingleAndMultiClasses();	
+		stmc = setNumberOfSingleAndMultiClasses();	
 		//get 2- or 3-classified Paragraphs from ClassesCorrectable
 		String query = "SELECT TxtID, ClassTWO, ClassTHREE FROM Classes_Correctable WHERE(ClassTWO = '1' OR ClassTHREE = '1') LIMIT ? OFFSET ?;";
 		
@@ -129,7 +132,7 @@ public class ConfigurableToolExtractor {
 			sql = "SELECT ParaID, Jahrgang, ZEILENNR, STELLENBESCHREIBUNG FROM ClassifiedParaTexts WHERE (ID = '"+textID+"')";
 			stmt = inputConnection.createStatement();
 			cuResult = stmt.executeQuery(sql);
-			classifyUnit = new JASCClassifyUnit(cuResult.getString(4), cuResult.getInt(2), cuResult.getInt(3), UUID.fromString(cuResult.getString(1)));
+			classifyUnit = new JASCClassifyUnit(cuResult.getString(4), cuResult.getInt(2), cuResult.getInt(3), UUID.fromString(cuResult.getString(1)), stmc);
 			((ZoneClassifyUnit) classifyUnit).setActualClassID(classID);
 			classifyUnits.add(classifyUnit);
 		}
@@ -139,7 +142,7 @@ public class ConfigurableToolExtractor {
 		return classifyUnits;
 	}
 
-	private void setNumberOfSingleAndMultiClasses(){
+	private SingleToMultiClassConverter setNumberOfSingleAndMultiClasses(){
 		Map<Integer, List<Integer>> translations = new HashMap<Integer, List<Integer>>();
 		List<Integer> categories = new ArrayList<Integer>();
 		categories.add(1);
@@ -151,6 +154,7 @@ public class ConfigurableToolExtractor {
 		translations.put(6, categories);
 		SingleToMultiClassConverter stmc = new SingleToMultiClassConverter(6, 4, translations);
 //		JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(), stmc.getTranslations());
+		return stmc;
 	}
 	
 

@@ -15,6 +15,7 @@ import java.util.UUID;
 import de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import de.uni_koeln.spinfo.classification.zoneAnalysis.data.ZoneClassifyUnit;
+import de.uni_koeln.spinfo.classification.zoneAnalysis.helpers.SingleToMultiClassConverter;
 
 /**
  * Class to annotate ClassifyUnits manually with (one or more) classIDs
@@ -29,6 +30,7 @@ public class TrainingDataGenerator {
 	private int numberOfSingleClasses = 0;
 	int deletions;
 //	private int numberOfMulticlasses = 4;
+	private SingleToMultiClassConverter stmc;;
 
 	/**
 	 * Instanciates a new TrainingDataGenerator corresponding to the specified
@@ -56,6 +58,7 @@ public class TrainingDataGenerator {
 		classifiedData = new ArrayList<ClassifyUnit>();
 		this.numberOfSingleClasses = classes;
 //		JASCClassifyUnit.setNumberOfCategories(categories, classes, translations);
+		this.stmc = new SingleToMultiClassConverter(classes, categories, translations);
 	}
 
 	/**
@@ -86,10 +89,10 @@ public class TrainingDataGenerator {
 					classID != 0) {
 						ZoneClassifyUnit utc = null;
 						if(splits.length == 3){
-							utc = new JASCClassifyUnit(content.toString(), parentID,secondParentID, paragraphID);
+							utc = new JASCClassifyUnit(content.toString(), parentID,secondParentID, paragraphID, stmc);
 						}
 						else{
-							utc = new ZoneClassifyUnit(content.toString(),paragraphID);
+							utc = new ZoneClassifyUnit(content.toString(),paragraphID, stmc);
 						}
 					
 						utc.setActualClassID(classID);
@@ -119,7 +122,7 @@ public class TrainingDataGenerator {
 			if (/** classes.length **/
 			classID != 0) {
 				JASCClassifyUnit utc = new JASCClassifyUnit(content.toString(),
-						parentID, secondParentID, paragraphID);
+						parentID, secondParentID, paragraphID, stmc);
 				utc.setActualClassID(classID);
 				classifiedData.add(utc);
 			}

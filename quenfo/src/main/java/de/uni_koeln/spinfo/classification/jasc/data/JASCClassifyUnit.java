@@ -22,23 +22,23 @@ public class JASCClassifyUnit extends ZoneClassifyUnit {
 	private int parentID;
 	private int secondParentID = -1;
 
-	public JASCClassifyUnit(String content, int parentID, UUID id) {
-		super(content,id);
+	public JASCClassifyUnit(String content, int parentID, UUID id, SingleToMultiClassConverter converter) {
+		super(content,id, converter);
 		this.parentID = parentID;
 	}
 
-	public JASCClassifyUnit(String content, int parentID, int secondParentID, UUID id) {
-		super(content,id);
+	public JASCClassifyUnit(String content, int parentID, int secondParentID, UUID id, SingleToMultiClassConverter converter) {
+		super(content,id, converter);
 		this.parentID = parentID;
 		this.secondParentID = secondParentID;
 	}
 	
-	public JASCClassifyUnit(String content, int parentID, int secondParentID){
-		this(content, parentID, secondParentID, UUID.randomUUID());
+	public JASCClassifyUnit(String content, int parentID, int secondParentID, SingleToMultiClassConverter converter){
+		this(content, parentID, secondParentID, UUID.randomUUID(), converter);
 	}
 	
-	public JASCClassifyUnit(String content, int parentID) {
-		this(content, parentID, UUID.randomUUID());
+	public JASCClassifyUnit(String content, int parentID, SingleToMultiClassConverter converter) {
+		this(content, parentID, UUID.randomUUID(), converter);
 	}
 
 	public int getParentID() {

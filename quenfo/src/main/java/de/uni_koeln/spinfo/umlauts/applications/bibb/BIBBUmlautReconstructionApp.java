@@ -5,6 +5,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import de.uni_koeln.spinfo.classification.core.distance.Distance;
@@ -25,17 +29,27 @@ import de.uni_koeln.spinfo.umlauts.utils.FileUtils;
 
 public class BIBBUmlautReconstructionApp {
 	
+	private static final Logger log = Logger.getLogger( BIBBUmlautReconstructionApp.class.getName() );
+	
 	public static void main(String[] args) throws ClassNotFoundException,
 	IOException, SQLException {
+		
+		// logging
+		Handler handler = new FileHandler( "output//log.txt" );
+		handler.setLevel(Level.FINEST);
+		log.addHandler(handler);
+		log.setLevel(Level.FINEST);
+		
+		try{
 		
 
 		// /////////////////////////////////////////////
 		// run variables
 		// /////////////////////////////////////////////
 		
-		String dbPath = "umlaute_db.db";	
-		String intermediateDbPath = "inter_db.db";
-		String correctedDbPath = "corrected_db.db";
+		String dbPath = "D:/Daten/sqlite/SteA.db3";	
+		String intermediateDbPath = "output//production//inter_db.db";
+		String correctedDbPath = "output//production//corrected_db.db";
 		int excludeYear = 2012;
 		
 		// /////////////////////////////////////////////
@@ -76,27 +90,32 @@ public class BIBBUmlautReconstructionApp {
 		BibbVocabularyBuilder vocBuilder = new BibbVocabularyBuilder(dbPath, expConfig, excludeYear);
 		
 		// load Vocabulary from Files
-		dict.loadDictionary("output//bibb//bibbDictionary.txt");
-		ambiguities = FileUtils.fileToAmbiguities("output//bibb//bibbAmbiguities.txt");
-		contexts = contexts.loadKeywordContextsFromFile("output//bibb//BibbContexts.txt");
-		voc.loadVocabularyFromFile("output//bibb//BibbVocabulary.txt");
+		dict.loadDictionary("output//production//bibbDictionary.txt");
+		ambiguities = FileUtils.fileToAmbiguities("output//production//bibbAmbiguities.txt");
+		contexts = contexts.loadKeywordContextsFromFile("output//production//BibbContexts.txt");
+		voc.loadVocabularyFromFile("output//production//BibbVocabulary.txt");
 		
 		vocBuilder.setAmbiguities(ambiguities);
 		vocBuilder.setDict(dict);
 		vocBuilder.setFullVoc(voc);
+		vocBuilder.setContexts(contexts);
 		
 		// create outputDB
 		Connection intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(intermediateDB);
 		
 		// correct unambiguous words
-		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB);
+		ClassificationTools.correctUnabiguousWords(vocBuilder, 2012, dbPath,intermediateDB, log);
 		
 		Connection correctedDB = DBConnector.connect(correctedDbPath);
 		intermediateDB = DBConnector.connect(intermediateDbPath);
 		DBConnector.createBIBBDBcorrected(correctedDB);
 		
 		// classifiy and correct ambiguous words
-		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig);
+		ClassificationTools.correctAmbiguousWords2(vocBuilder, 2012, intermediateDB, correctedDB, expConfig, log);
+		
+		}catch (Throwable e){
+			log.log(Level.SEVERE, "FEHLER: ", e);
+		}
 	}
 }

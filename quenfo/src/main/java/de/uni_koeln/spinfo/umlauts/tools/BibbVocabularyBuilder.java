@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 import de.uni_koeln.spinfo.umlauts.data.Dictionary;
@@ -41,16 +42,16 @@ public class BibbVocabularyBuilder {
 		this.excludeYear = excludeYear;
 	}
 	
-	public Dictionary buildDictionary(boolean useExternalVocabulary, String externalVoc) throws ClassNotFoundException, SQLException, IOException {
+	public Dictionary buildDictionary(boolean useExternalVocabulary, String externalVoc, Logger log) throws ClassNotFoundException, SQLException, IOException {
 		
 		System.out.println("build dictionary");
 		
-		List<String> log = new ArrayList<String>();
+		List<String> vocLog = new ArrayList<String>();
 		
 		// extract Vocabulary
 		fullVoc = extractVocabulary(dbPath, excludeYear);
-		log.add("Tokens: " + fullVoc.getNumberOfTokens());
-		log.add("Types: " + fullVoc.vocabulary.size());
+		vocLog.add("Tokens: " + fullVoc.getNumberOfTokens());
+		vocLog.add("Types: " + fullVoc.vocabulary.size());
 //		FileUtils.printMap(fullVoc.vocabulary, "output//", "SteADBVocabulary");
 		
 		if(useExternalVocabulary){
@@ -63,26 +64,26 @@ public class BibbVocabularyBuilder {
 				vocabulary.put(key, Integer.valueOf(loadVoc.get(key)));
 			}
 			dewacVoc.setVocabulary(vocabulary);
-			log.add("dewac Tokens: " + dewacVoc.getNumberOfTokens());
-			log.add("dewac Types: " + dewacVoc.vocabulary.size());
+			vocLog.add("dewac Tokens: " + dewacVoc.getNumberOfTokens());
+			vocLog.add("dewac Types: " + dewacVoc.vocabulary.size());
 			
 			fullVoc.mergeVocabularies(dewacVoc);
-			log.add("total Tokens: " + fullVoc.getNumberOfTokens());
-			log.add("total Types: " + fullVoc.vocabulary.size());
+			vocLog.add("total Tokens: " + fullVoc.getNumberOfTokens());
+			vocLog.add("total Types: " + fullVoc.vocabulary.size());
 //			FileUtils.printMap(fullVoc.vocabulary, "output//", "mergedVocabulary");
 		}
 		
 		// reduce Vocabulary to Umlaut words
-		Vocabulary umlautVoc = fullVoc.getAllByRegex(".*([ÄäÖöÜüß]).*");
+		Vocabulary umlautVoc = fullVoc.getAllByRegex(".*([ÄäÖöÜü]).*");
 		umlautVoc.generateNumberOfTokens();
-		log.add("Token with Umlaut: " + umlautVoc.getNumberOfTokens());
-		log.add("Types with Umlaut: " + umlautVoc.vocabulary.size());
+		vocLog.add("Token with Umlaut: " + umlautVoc.getNumberOfTokens());
+		vocLog.add("Types with Umlaut: " + umlautVoc.vocabulary.size());
 		
 		// for Statistics: words with dark Vowels
 		Vocabulary darkVowelVoc = fullVoc.getAllByRegex(".*([AaOoUu]).*");
 		darkVowelVoc.generateNumberOfTokens();
-		log.add("Token with dark vowels: " + darkVowelVoc.getNumberOfTokens());
-		log.add("Types with dark vowels: " + darkVowelVoc.vocabulary.size());
+		vocLog.add("Token with dark vowels: " + darkVowelVoc.getNumberOfTokens());
+		vocLog.add("Types with dark vowels: " + darkVowelVoc.vocabulary.size());
 		
 		// create Dictionary for correcting
 		System.out.println("create dictionary");
@@ -90,7 +91,7 @@ public class BibbVocabularyBuilder {
 		
 //		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 //		FileUtils.printList(log, "output//logs//", "VocLog"+sdf.format(new Timestamp(System.currentTimeMillis())), ".txt");
-		FileUtils.printList(log, "output//logs//", "VocLog", ".txt");
+		FileUtils.printList(vocLog, "output//logs//", "VocLog", ".txt");
 		
 		return dict;
 	}
@@ -105,6 +106,10 @@ public class BibbVocabularyBuilder {
 
 	public void setDict(Dictionary dict) {
 		this.dict = dict;
+	}
+	
+	public void setContexts(KeywordContexts contexts) {
+		this.contexts = contexts;
 	}
 
 	public Map<String, HashSet<String>> findAmbiguities(boolean filterByProportion, double filterMeasure, boolean filterNames) throws IOException{
@@ -124,6 +129,12 @@ public class BibbVocabularyBuilder {
 				ambiguities = dict.removeNamesFromAmbiguities(ambiguities);
 			}
 			
+			if(!filterByProportion){
+				for(String key : ambiguities.keySet()){
+					dict.dictionary.remove(key);
+				}
+			}
+			
 //			FileUtils.printMap(ambiguities, "output//bibb//", "bibbFilteredAmbiguities");
 			
 		return ambiguities;
@@ -140,7 +151,8 @@ public class BibbVocabularyBuilder {
 		Connection connection = DBConnector.connect(dbPath);
 		
 		connection.setAutoCommit(false);
-		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
+//		String sql ="SELECT ID, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
+		String sql ="SELECT row_names, ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM DL_ALL_Spinfo WHERE NOT(Jahrgang = '"+excludeYear+"') ";
 		Statement stmt = connection.createStatement();
 		ResultSet result = stmt.executeQuery(sql);
 		JobAd jobAd = null;
@@ -272,5 +284,7 @@ public class BibbVocabularyBuilder {
 		}
 		
 	}
+
+	
 
 }

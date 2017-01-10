@@ -181,7 +181,7 @@ public class ConfigurableDatabaseClassifier {
 			//	if (executeAtBIBB) {
 					// SteA-DB
 					// TODO
-					classifyUnits.add(new JASCClassifyUnit(string, jahrgang, zeilenNr));
+					classifyUnits.add(new JASCClassifyUnit(string, jahrgang, zeilenNr, stmc));
 //				} else {
 //					// TrainingData.db
 //					classifyUnits.add(new JASCClassifyUnit(string, currentId));

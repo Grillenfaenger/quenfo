@@ -22,28 +22,21 @@ public class ZoneClassifyUnit extends ClassifyUnit{
 	
 
 	
-	public ZoneClassifyUnit(String content, UUID id){
+	public ZoneClassifyUnit(String content, UUID id, SingleToMultiClassConverter converter){
 		super(content,id);
-		//this.classIDs = new boolean[8];
 		this.actualClassID = -1;
+		this.NUMBEROFSINGLECLASSES = converter.getNumberOfCategories();
+		this.NUMBEROFMULTICLASSES = converter.getNumberOfClasses();
+		this.CONVERTER = converter;
 	}
 	
-	public ZoneClassifyUnit(String content, UUID id, int numberOfCategories){
-		super(content,id);
-		this.setNumberOfCategories(numberOfCategories);
-		//this.classIDs = new boolean[8];
-		this.actualClassID = -1;
-	}
-	
-	public ZoneClassifyUnit(String content, int numberOfCategories){
+	public ZoneClassifyUnit(String content, SingleToMultiClassConverter converter){
 		super(content, UUID.randomUUID());
-		this.setNumberOfCategories(numberOfCategories);
-		
 		this.actualClassID = -1;
+		this.NUMBEROFSINGLECLASSES = converter.getNumberOfCategories();
+		this.NUMBEROFMULTICLASSES = converter.getNumberOfClasses();
+		this.CONVERTER = converter;
 	}
-	
-
-	
 	
 	public void setNumberOfCategories(int categoriesNo){
 		setNumberOfCategories(categoriesNo, categoriesNo, null);

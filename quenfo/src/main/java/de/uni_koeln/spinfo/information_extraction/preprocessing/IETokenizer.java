@@ -116,6 +116,9 @@ public class IETokenizer {
 	}
 	
 	public List<Sentence> tokenizeWithPositions(String text, boolean innerSentenceSplitting){
+		if(text==null){
+			text="";
+		}
 		String[] sentences = null;
 		Span[] spans = null;
 		Tokenizer tokenizer = new TokenizerME(tokenizeModel);
@@ -150,7 +153,11 @@ public class IETokenizer {
 	public String[] tokenizeSentence(String sentence) {
 		String tokens[] = null;
 		Tokenizer tokenizer = new TokenizerME(tokenizeModel);
-		tokens = tokenizer.tokenize(sentence);
+		try {
+			tokens = tokenizer.tokenize(sentence);
+		} catch (NullPointerException e) {
+			tokens = new String[0];
+		}
 		return tokens;
 	}
 }
