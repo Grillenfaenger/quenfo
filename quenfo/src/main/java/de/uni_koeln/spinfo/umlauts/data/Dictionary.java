@@ -142,6 +142,14 @@ public class Dictionary {
 		return ambiguitySet;
 	}
 	
+	public Map<String,String> createSimpleReplacementMap(Set<String> ambiguousWords){
+		HashMap<String, String> simpleReplacements = dictionary;
+		for(String word : ambiguousWords){
+			simpleReplacements.remove(word);
+		}
+		return simpleReplacements;
+	}
+	
 	/**
 	 * inverts the Dictionary for the purpose of using for correction.
 	 * Note, that by reversion some entries could get lost due to same key. 
